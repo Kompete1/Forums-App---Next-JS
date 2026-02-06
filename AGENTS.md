@@ -5,7 +5,11 @@ This file defines how Codex and contributors should operate in Repo B (Playgroun
 
 ## Scope
 - Repo B only: Next.js forums mini-app, docs, SQL migrations, and tests.
+- Application code lives in `web/` from PR1 onward.
 - Repo A (GitHub Pages hub) is separate and must be changed in a separate PR/repo unless explicitly requested.
+
+## Local App Path
+- Run app/package commands from `web/` unless doing root-level docs-only work.
 
 ## Non-Negotiables
 - Never commit secrets. Use `.env.local` locally and platform env vars in Vercel/Supabase.
