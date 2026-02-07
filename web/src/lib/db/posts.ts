@@ -6,6 +6,9 @@ export type ForumThread = {
   title: string;
   body: string;
   category_id: string;
+  is_locked: boolean;
+  locked_at: string | null;
+  locked_by: string | null;
   created_at: string;
   updated_at: string;
   author_display_name: string | null;
@@ -19,6 +22,9 @@ type ThreadRow = {
   title: string;
   body: string;
   category_id: string;
+  is_locked: boolean;
+  locked_at: string | null;
+  locked_by: string | null;
   created_at: string;
   updated_at: string;
   profiles: { display_name: string | null } | { display_name: string | null }[] | null;
@@ -102,7 +108,7 @@ export async function listThreads() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("posts")
-    .select("id, author_id, title, body, category_id, created_at, updated_at, profiles:author_id(display_name), categories:category_id(slug, name)")
+    .select("id, author_id, title, body, category_id, is_locked, locked_at, locked_by, created_at, updated_at, profiles:author_id(display_name), categories:category_id(slug, name)")
     .order("created_at", { ascending: false })
     .limit(100);
 
@@ -120,6 +126,9 @@ export async function listThreads() {
       title: row.title,
       body: row.body,
       category_id: row.category_id,
+      is_locked: row.is_locked,
+      locked_at: row.locked_at,
+      locked_by: row.locked_by,
       created_at: row.created_at,
       updated_at: row.updated_at,
       author_display_name: toDisplayName(row.profiles),
