@@ -19,7 +19,8 @@ export default async function HelloForumPage() {
       )}
       <p>
         <Link href="/auth/login">Login</Link> | <Link href="/auth/signup">Sign up</Link> |{" "}
-        <Link href="/protected">Protected</Link> | <Link href="/auth/logout">Logout</Link>
+        <Link href="/protected">Protected</Link> | <Link href="/forum">Forum</Link> |{" "}
+        <Link href="/auth/logout">Logout</Link>
       </p>
     </main>
   );
