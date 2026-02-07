@@ -1,38 +1,41 @@
-# V2 ExecPlan: Roles Foundation (PR10)
+# V2 ExecPlan: Moderation and QoL
 
 ## Summary
-Introduce a canonical roles foundation for V2 with schema + RLS only, and migrate newsletter authorization to role-based checks.
+V2 started with a roles foundation and has progressed through thread locking and reports.
+This document now tracks completed slices and explicit deferrals.
+
+## Current Status
+- Completed PR10: Roles foundation (`user_roles`, role-based newsletter authorization).
+- Completed PR11: Thread locking (`posts.is_locked` + mod/admin lock policy + locked-reply guard).
+- Completed PR12: Reports pipeline (`reports` table + reporter/moderator RLS + `/moderation/reports`).
+- Deferred for now: hide/remove posts moderation slice.
+- Remaining V2 priorities: pagination, search, anti-spam/rate-limit basics.
 
 ## Goals
-- Add reusable `admin/mod/user` role model.
-- Backfill and maintain default `user` role assignment.
-- Move newsletter write authorization from `newsletter_admins` to `user_roles`.
-- Keep UI behavior stable (no new moderation UI yet).
+- Preserve completed moderation foundation and document validated behavior.
+- Keep V2 work split into small reviewable PRs.
+- Make defer/skip decisions explicit to avoid roadmap ambiguity.
 
 ## Scope
-- New migration for enum, `user_roles`, backfill, trigger, and policy updates.
-- Add role helpers in app DB layer.
-- Keep `newsletter_admins` table for compatibility but mark as deprecated in docs.
+- Documentation of completed V2 slices and verification expectations.
+- Record that hide/remove moderation is intentionally deferred.
 
 ## Out of Scope
-- Thread locking, reports, moderation UI, admin dashboard.
+- Re-opening already completed PR10/PR11/PR12 work.
+- Implementing deferred hide/remove moderation in this cycle.
 
 ## Acceptance Criteria
-1. `npm run lint` passes in `web/`.
-2. `npm run build` passes in `web/`.
-3. `user_roles` exists with RLS enabled and own-read policy.
-4. Existing profiles have `user` role rows.
-5. Newsletter writes require `user_roles.role = 'admin'` and ownership.
-6. Public newsletter read remains available.
+1. Docs reflect completed V2 slices through PR12.
+2. Docs explicitly state hide/remove moderation is deferred/skipped for now.
+3. Next V2 priorities are documented as pagination/search/anti-spam-rate-limit basics.
 
 ## Verification
-- Apply migrations in order through PR10.
-- Insert admin role in `user_roles`, verify admin can publish newsletter.
-- Verify non-admin cannot publish newsletter.
-- Verify non-owner admin cannot update/delete another author's newsletter.
+- `SPEC.md` includes current V2 status and defer note.
+- `plans/v2-execplan.md` reflects PR10/PR11/PR12 completion and remaining scope.
+- `web/README.md` includes a roadmap status note with the defer decision.
 
 ## Risks / Mitigations
-- Risk: role bootstrap missing and no admin can publish.
-  - Mitigation: README includes explicit bootstrap SQL.
-- Risk: legacy `newsletter_admins` confusion.
-  - Mitigation: README marks table as deprecated for authorization.
+- Risk: team assumes hide/remove moderation is still in active implementation.
+  - Mitigation: explicit deferred status in spec/plan/readme.
+- Risk: roadmap drift after multiple merged PRs.
+  - Mitigation: keep this file as the single V2 progress snapshot.

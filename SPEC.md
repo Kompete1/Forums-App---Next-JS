@@ -37,6 +37,16 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
 - Lock threads, hide/remove posts, reports.
 - Pagination, search, anti-spam/rate limit basics.
 
+## V2 Implementation Status (Current)
+- Completed:
+  - Roles foundation (`user_roles`, role-based RLS checks)
+  - Thread locking (mod/admin lock/unlock + locked-reply guard)
+  - Reports pipeline (report thread/reply + moderator review list)
+- Deferred / Skipped for now:
+  - Hide/remove posts moderation slice
+- Remaining V2 focus:
+  - Pagination/search/anti-spam-rate-limit basics
+
 ## V3: Platform Features
 - In-app notifications.
 - Realtime updates.

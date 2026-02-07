@@ -7,6 +7,12 @@ Current scope includes:
 - V2 PR2 thread locking: moderator/admin lock control and locked-reply guard
 - V2 PR3 reports pipeline: report thread/reply and moderator report review
 
+## Roadmap Status Note
+
+- Completed through V2 PR3: roles, thread locking, reports.
+- Hide/remove posts moderation slice is intentionally deferred/skipped for now.
+- Next V2 focus is pagination/search/anti-spam-rate-limit basics.
+
 ## Prerequisites
 
 - Node.js 20+
