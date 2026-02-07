@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { listCategories } from "@/lib/db/categories";
 import { createThread, deleteThread, listThreads, updateThread } from "@/lib/db/posts";
+import { canCurrentUserModerateThreads, setThreadLockState } from "@/lib/db/moderation";
 import { createReply, listRepliesByThreadIds } from "@/lib/db/replies";
 import { getMyProfile, updateMyDisplayName } from "@/lib/db/profiles";
 
@@ -31,6 +32,7 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
 
   const repliesByThreadId = await listRepliesByThreadIds(threads.map((thread) => thread.id));
   const myProfile = user ? await getMyProfile().catch(() => null) : null;
+  const canModerateThreads = user ? await canCurrentUserModerateThreads().catch(() => false) : false;
 
   async function createThreadAction(formData: FormData) {
     "use server";
@@ -101,6 +103,42 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
       await createReply({ threadId, body });
     } catch (error) {
       console.error("createReplyAction failed", error);
+    }
+
+    revalidatePath("/forum");
+  }
+
+  async function lockThreadAction(formData: FormData) {
+    "use server";
+
+    const threadId = String(formData.get("threadId") ?? "");
+
+    if (!threadId) {
+      return;
+    }
+
+    try {
+      await setThreadLockState(threadId, true);
+    } catch (error) {
+      console.error("lockThreadAction failed", error);
+    }
+
+    revalidatePath("/forum");
+  }
+
+  async function unlockThreadAction(formData: FormData) {
+    "use server";
+
+    const threadId = String(formData.get("threadId") ?? "");
+
+    if (!threadId) {
+      return;
+    }
+
+    try {
+      await setThreadLockState(threadId, false);
+    } catch (error) {
+      console.error("unlockThreadAction failed", error);
     }
 
     revalidatePath("/forum");
@@ -210,6 +248,16 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
                   Category: {thread.category_name ?? "Unknown"} | By {thread.author_display_name ?? thread.author_id} on{" "}
                   {new Date(thread.created_at).toLocaleString()}
                 </p>
+                <p style={{ fontSize: "0.875rem", color: thread.is_locked ? "crimson" : "#2e7d32" }}>
+                  Status: {thread.is_locked ? "Locked" : "Open"}
+                </p>
+
+                {canModerateThreads ? (
+                  <form action={thread.is_locked ? unlockThreadAction : lockThreadAction} style={{ marginBottom: "1rem" }}>
+                    <input type="hidden" name="threadId" value={thread.id} />
+                    <button type="submit">{thread.is_locked ? "Unlock thread" : "Lock thread"}</button>
+                  </form>
+                ) : null}
 
                 {isOwner ? (
                   <div style={{ display: "grid", gap: "0.75rem", marginBottom: "1rem" }}>
@@ -273,7 +321,11 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
                     ))}
                   </div>
 
-                  {user ? (
+                  {thread.is_locked ? (
+                    <p>Thread is locked.</p>
+                  ) : null}
+
+                  {user && !thread.is_locked ? (
                     <form action={createReplyAction} style={{ display: "grid", gap: "0.5rem" }}>
                       <input type="hidden" name="threadId" value={thread.id} />
                       <label htmlFor={`reply-${thread.id}`}>Add reply</label>
