@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Forums App (Next.js)
 
-## Getting Started
+PR2 wires Supabase auth (V0) into the App Router project in `web/`.
 
-First, run the development server:
+## Prerequisites
+
+- Node.js 20+
+- A Supabase project with Email auth enabled
+
+## Environment Variables
+
+Set these values locally in `web/.env.local` (do not commit this file):
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Set the same two variables in Vercel for Preview and Production:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Supabase Auth Redirect URLs
 
-## Learn More
+In Supabase Dashboard -> Authentication -> URL Configuration:
 
-To learn more about Next.js, take a look at the following resources:
+- Site URL:
+  - `https://forums-app-next-js.vercel.app`
+- Redirect URLs:
+  - `http://localhost:3000/*`
+  - `https://forums-app-next-js.vercel.app/*`
+  - `https://*.vercel.app/*` (or your exact preview domain pattern)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Run Locally
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm install
+npm run dev
+```
 
-## Deploy on Vercel
+Open:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `http://localhost:3000/`
+- `http://localhost:3000/auth/login`
+- `http://localhost:3000/protected`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Verification Commands
+
+```bash
+npm run lint
+npm run build
+```
