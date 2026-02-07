@@ -5,6 +5,7 @@ Current scope includes:
 - V1.5 newsletter: admin-only newsletter creation and public newsletter feed
 - V2 PR1 roles foundation: canonical app roles for future moderation
 - V2 PR2 thread locking: moderator/admin lock control and locked-reply guard
+- V2 PR3 reports pipeline: report thread/reply and moderator report review
 
 ## Prerequisites
 
@@ -66,6 +67,7 @@ Apply in this exact order:
 - `web/supabase/migrations/20260207_pr9_v1_5_newsletters.sql`
 - `web/supabase/migrations/20260207_pr10_v2_roles_foundation.sql`
 - `web/supabase/migrations/20260207_pr11_v2_thread_locking.sql`
+- `web/supabase/migrations/20260207_pr12_v2_reports_pipeline.sql`
 
 ## Apply SQL (Dashboard-first)
 
@@ -74,7 +76,7 @@ Apply in this exact order:
 3. Open `SQL Editor`.
 4. Run each migration file above in order (new query tab per file).
 5. Verify tables exist in `Table Editor`:
-   - `profiles`, `posts`, `categories`, `replies`, `newsletter_admins`, `newsletters`, `user_roles`.
+   - `profiles`, `posts`, `categories`, `replies`, `newsletter_admins`, `newsletters`, `user_roles`, `reports`.
 6. Verify triggers in `Database` -> `Triggers`:
    - `on_auth_user_created`
    - `set_profiles_updated_at`
@@ -152,22 +154,39 @@ values ('<locked-thread-id>', '<signed-in-user-id>', 'should fail while locked')
 
 3. Unlock thread and retry; insert should succeed when thread is open.
 
-### D) Newsletter feed public read (V1.5)
+### D) Reports flow (V2 PR3)
+1. Sign in as regular authenticated user.
+2. Open `/forum` and submit `Report thread` for one thread.
+3. Submit `Report reply` for one reply.
+4. Confirm duplicate report on same target by same user is rejected (unique constraint).
+5. Sign in as admin/mod and open `/moderation/reports`; confirm reports are visible.
+6. Sign in as non-mod user and open `/moderation/reports`; confirm access denied.
+7. Verify non-mod cannot read all reports via SQL/API:
+
+```sql
+select id, reporter_id, target_type, reason, created_at
+from public.reports
+order by created_at desc;
+```
+
+Expected for non-mod: only own reports are returned (or none).
+
+### E) Newsletter feed public read (V1.5)
 1. Open `/newsletter` as guest.
 2. Confirm existing newsletter entries are visible.
 
-### E) Newsletter admin-only create via roles (V2 PR1)
+### F) Newsletter admin-only create via roles (V2 PR1)
 1. Ensure your user has `admin` in `user_roles`.
 2. Sign in as that user.
 3. Open `/newsletter` and confirm create form is visible.
 4. Publish a newsletter entry and confirm it appears in feed.
 
-### F) Newsletter non-admin restrictions
+### G) Newsletter non-admin restrictions
 1. Sign in as user without `admin` role in `user_roles`.
 2. Open `/newsletter` and confirm create form is hidden.
 3. Attempt insert/update/delete directly as non-admin and confirm RLS rejection.
 
-### G) Owner boundary on newsletters
+### H) Owner boundary on newsletters
 1. Create newsletter as admin user A.
 2. Sign in as admin user B.
 3. Attempt update/delete of user A's newsletter and confirm rejection (owner boundary remains enforced).
@@ -178,6 +197,7 @@ values ('<locked-thread-id>', '<signed-in-user-id>', 'should fail while locked')
 - `posts` (threads): public read, owner insert/update/delete + moderator/admin lock/unlock updates
 - `categories`: public read only
 - `replies`: public read, owner insert/update/delete, insert blocked when target thread is locked
+- `reports`: reporter insert, reporter own read, moderator/admin read all; no update/delete
 - `user_roles`: user can read own roles; no client write policies
 - `newsletter_admins`: own-read only (deprecated for authorization)
 - `newsletters`: public read, admin owner insert/update/delete (admin from `user_roles`)

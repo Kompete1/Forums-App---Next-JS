@@ -5,6 +5,7 @@ import { listCategories } from "@/lib/db/categories";
 import { createThread, deleteThread, listThreads, updateThread } from "@/lib/db/posts";
 import { canCurrentUserModerateThreads, setThreadLockState } from "@/lib/db/moderation";
 import { createReply, listRepliesByThreadIds } from "@/lib/db/replies";
+import { createReport } from "@/lib/db/reports";
 import { getMyProfile, updateMyDisplayName } from "@/lib/db/profiles";
 
 export const dynamic = "force-dynamic";
@@ -108,6 +109,54 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
     revalidatePath("/forum");
   }
 
+  async function createThreadReportAction(formData: FormData) {
+    "use server";
+
+    const threadId = String(formData.get("threadId") ?? "");
+    const reason = String(formData.get("reason") ?? "");
+    const notes = String(formData.get("notes") ?? "");
+
+    if (!threadId) {
+      return;
+    }
+
+    try {
+      await createReport({
+        target: { targetType: "thread", threadId },
+        reason,
+        notes,
+      });
+    } catch (error) {
+      console.error("createThreadReportAction failed", error);
+    }
+
+    revalidatePath("/forum");
+  }
+
+  async function createReplyReportAction(formData: FormData) {
+    "use server";
+
+    const replyId = String(formData.get("replyId") ?? "");
+    const reason = String(formData.get("reason") ?? "");
+    const notes = String(formData.get("notes") ?? "");
+
+    if (!replyId) {
+      return;
+    }
+
+    try {
+      await createReport({
+        target: { targetType: "reply", replyId },
+        reason,
+        notes,
+      });
+    } catch (error) {
+      console.error("createReplyReportAction failed", error);
+    }
+
+    revalidatePath("/forum");
+  }
+
   async function lockThreadAction(formData: FormData) {
     "use server";
 
@@ -167,6 +216,11 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
         {user ? `Signed in as ${user.email}` : "Browsing as guest."} <Link href="/auth/login">Login</Link> |{" "}
         <Link href="/auth/signup">Sign up</Link> | <Link href="/hello-forum">Hello Forum</Link> |{" "}
         <Link href="/newsletter">Newsletter</Link>
+        {canModerateThreads ? (
+          <>
+            {" "}| <Link href="/moderation/reports">Moderation Reports</Link>
+          </>
+        ) : null}
       </p>
 
       {user ? (
@@ -259,6 +313,34 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
                   </form>
                 ) : null}
 
+                {user ? (
+                  <form
+                    action={createThreadReportAction}
+                    style={{ display: "grid", gap: "0.5rem", marginBottom: "1rem", maxWidth: "36rem" }}
+                  >
+                    <input type="hidden" name="threadId" value={thread.id} />
+                    <label htmlFor={`report-thread-reason-${thread.id}`}>Report thread reason</label>
+                    <input
+                      id={`report-thread-reason-${thread.id}`}
+                      name="reason"
+                      type="text"
+                      required
+                      minLength={1}
+                      maxLength={500}
+                      placeholder="Reason for report"
+                    />
+                    <label htmlFor={`report-thread-notes-${thread.id}`}>Notes (optional)</label>
+                    <textarea
+                      id={`report-thread-notes-${thread.id}`}
+                      name="notes"
+                      maxLength={2000}
+                      rows={2}
+                      placeholder="Extra context"
+                    />
+                    <button type="submit">Report thread</button>
+                  </form>
+                ) : null}
+
                 {isOwner ? (
                   <div style={{ display: "grid", gap: "0.75rem", marginBottom: "1rem" }}>
                     <form action={updateThreadAction} style={{ display: "grid", gap: "0.5rem" }}>
@@ -317,6 +399,30 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
                           By {reply.author_display_name ?? reply.author_id} on{" "}
                           {new Date(reply.created_at).toLocaleString()}
                         </p>
+                        {user ? (
+                          <form action={createReplyReportAction} style={{ display: "grid", gap: "0.5rem", marginTop: "0.5rem" }}>
+                            <input type="hidden" name="replyId" value={reply.id} />
+                            <label htmlFor={`report-reply-reason-${reply.id}`}>Report reply reason</label>
+                            <input
+                              id={`report-reply-reason-${reply.id}`}
+                              name="reason"
+                              type="text"
+                              required
+                              minLength={1}
+                              maxLength={500}
+                              placeholder="Reason for report"
+                            />
+                            <label htmlFor={`report-reply-notes-${reply.id}`}>Notes (optional)</label>
+                            <textarea
+                              id={`report-reply-notes-${reply.id}`}
+                              name="notes"
+                              maxLength={2000}
+                              rows={2}
+                              placeholder="Extra context"
+                            />
+                            <button type="submit">Report reply</button>
+                          </form>
+                        ) : null}
                       </div>
                     ))}
                   </div>
