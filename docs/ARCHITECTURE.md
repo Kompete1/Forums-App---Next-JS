@@ -18,6 +18,17 @@ Repo A points users into Repo B using an iframe and/or direct link.
 3. Session state drives UI on hello page.
 4. Profile row is created for each auth user (trigger-based).
 
+## Route Boundaries (Current)
+- `/`: landing page with SA motorsport hero carousel and latest thread/category entry points.
+- `/forum`: global thread discovery (threads-first, filter rail, pagination, create-thread CTA).
+- `/forum/new`: dedicated thread creation form.
+- `/forum/category/[slug]`: category-specific thread discovery.
+- `/forum/[threadId]`: thread detail (replying, reporting, owner edit/delete, mod lock/unlock).
+- `/categories`: category directory for forum taxonomy.
+- `/profile`: account settings and display name updates.
+- `/moderation/reports`: role-gated moderation report review.
+- `/newsletter`: public feed with admin-only creation.
+
 ## Security Boundary Notes
 - Secrets remain in `.env.local` and Vercel env vars.
 - Only `NEXT_PUBLIC_*` values needed for client-side Supabase initialization.
@@ -32,4 +43,4 @@ Repo A points users into Repo B using an iframe and/or direct link.
 ## Evolution Points
 - V1: categories/threads/posts schema and RLS expansion.
 - V1.5: newsletter tables and admin-only policies.
-- V2+: moderation roles, search, anti-spam, and QoL additions.
+- V2+: moderation roles, search, UI readability and domain-focused IA, anti-spam, and QoL additions.

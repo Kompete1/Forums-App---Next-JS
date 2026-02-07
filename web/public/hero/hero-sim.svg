@@ -1,0 +1,10 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#111827"/>
+  <rect x="240" y="180" width="1120" height="460" rx="20" fill="#0F172A" stroke="#334155" stroke-width="8"/>
+  <path d="M300 560C450 470 580 610 760 510C890 440 1010 450 1180 520" stroke="#38BDF8" stroke-width="12" stroke-linecap="round"/>
+  <path d="M300 520C450 430 580 570 760 470C890 400 1010 410 1180 480" stroke="#22C55E" stroke-width="8" stroke-linecap="round" stroke-dasharray="14 14"/>
+  <rect x="650" y="680" width="300" height="80" rx="12" fill="#1E293B"/>
+  <circle cx="800" cy="720" r="56" fill="#0EA5E9"/>
+  <circle cx="800" cy="720" r="26" fill="#F8FAFC"/>
+  <text x="560" y="132" fill="#CBD5E1" font-size="52" font-family="Arial" font-weight="700">SIM RACING DISCUSSIONS</text>
+</svg>

@@ -37,8 +37,33 @@ type ThreadInput = {
   categoryId: string;
 };
 
+export type ThreadSort = "newest" | "oldest";
+
+export type ListThreadsParams = {
+  categoryId?: string;
+  query?: string;
+  sort?: ThreadSort;
+  page?: number;
+  pageSize?: number;
+};
+
+export type ListThreadsPage = {
+  threads: ForumThread[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
 function normalizeText(value: string) {
   return value.trim();
+}
+
+function normalizePositiveInt(value: number | undefined, fallback: number, max: number) {
+  if (!value || !Number.isFinite(value)) {
+    return fallback;
+  }
+
+  return Math.max(1, Math.min(max, Math.floor(value)));
 }
 
 function toDisplayName(value: ThreadRow["profiles"]) {
@@ -105,19 +130,45 @@ async function requireUserId() {
 }
 
 export async function listThreads() {
+  const result = await listThreadsPage();
+  return result.threads;
+}
+
+export async function listThreadsPage(params: ListThreadsParams = {}) {
+  const pageSize = normalizePositiveInt(params.pageSize, 10, 30);
+  const page = normalizePositiveInt(params.page, 1, 10000);
+  const categoryId = normalizeText(params.categoryId ?? "");
+  const query = normalizeText(params.query ?? "");
+  const sort = params.sort === "oldest" ? "oldest" : "newest";
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let request = supabase
     .from("posts")
-    .select("id, author_id, title, body, category_id, is_locked, locked_at, locked_by, created_at, updated_at, profiles:author_id(display_name), categories:category_id(slug, name)")
-    .order("created_at", { ascending: false })
-    .limit(100);
+    .select(
+      "id, author_id, title, body, category_id, is_locked, locked_at, locked_by, created_at, updated_at, profiles:author_id(display_name), categories:category_id(slug, name)",
+      { count: "exact" },
+    )
+    .order("created_at", { ascending: sort === "oldest" })
+    .range(from, to);
+
+  if (categoryId) {
+    request = request.eq("category_id", categoryId);
+  }
+
+  if (query) {
+    request = request.or(`title.ilike.%${query}%,body.ilike.%${query}%`);
+  }
+
+  const { data, error, count } = await request;
 
   if (error) {
     throw new Error(error.message);
   }
 
   const rows = (data ?? []) as ThreadRow[];
-  return rows.map((row) => {
+  const threads = rows.map((row) => {
     const category = toCategory(row.categories);
 
     return {
@@ -136,22 +187,80 @@ export async function listThreads() {
       category_name: category.name,
     } as ForumThread;
   });
+
+  return {
+    threads,
+    total: count ?? 0,
+    page,
+    pageSize,
+  } as ListThreadsPage;
+}
+
+export async function getThreadById(id: string) {
+  const threadId = normalizeText(id);
+
+  if (!threadId) {
+    throw new Error("Thread ID is required.");
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("posts")
+    .select(
+      "id, author_id, title, body, category_id, is_locked, locked_at, locked_by, created_at, updated_at, profiles:author_id(display_name), categories:category_id(slug, name)",
+    )
+    .eq("id", threadId)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const row = data as ThreadRow;
+  const category = toCategory(row.categories);
+
+  return {
+    id: row.id,
+    author_id: row.author_id,
+    title: row.title,
+    body: row.body,
+    category_id: row.category_id,
+    is_locked: row.is_locked,
+    locked_at: row.locked_at,
+    locked_by: row.locked_by,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    author_display_name: toDisplayName(row.profiles),
+    category_slug: category.slug,
+    category_name: category.name,
+  } as ForumThread;
 }
 
 export async function createThread(input: ThreadInput) {
   const { title, body, categoryId } = validateThreadInput(input);
   const { supabase, userId } = await requireUserId();
 
-  const { error } = await supabase.from("posts").insert({
-    author_id: userId,
-    category_id: categoryId,
-    title,
-    body,
-  });
+  const { data, error } = await supabase
+    .from("posts")
+    .insert({
+      author_id: userId,
+      category_id: categoryId,
+      title,
+      body,
+    })
+    .select("id")
+    .single();
 
   if (error) {
     throw new Error(error.message);
   }
+
+  return data.id as string;
 }
 
 export async function updateThread(id: string, input: ThreadInput) {
