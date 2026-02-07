@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/browser";
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,11 +20,14 @@ export default function SignupPage() {
     setError(null);
     setMessage(null);
 
+    const normalizedDisplayName = displayName.trim();
+
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/hello-forum`,
+        data: normalizedDisplayName ? { display_name: normalizedDisplayName } : undefined,
       },
     });
 
@@ -58,6 +62,14 @@ export default function SignupPage() {
           onChange={(event) => setPassword(event.target.value)}
           required
           minLength={6}
+        />
+        <label htmlFor="displayName">Display name (optional)</label>
+        <input
+          id="displayName"
+          type="text"
+          value={displayName}
+          onChange={(event) => setDisplayName(event.target.value)}
+          maxLength={40}
         />
         <button type="submit" disabled={isSubmitting}>
           Sign up
