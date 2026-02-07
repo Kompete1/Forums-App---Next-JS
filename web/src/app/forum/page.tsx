@@ -127,7 +127,8 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
       <h1>Forum</h1>
       <p>
         {user ? `Signed in as ${user.email}` : "Browsing as guest."} <Link href="/auth/login">Login</Link> |{" "}
-        <Link href="/auth/signup">Sign up</Link> | <Link href="/hello-forum">Hello Forum</Link>
+        <Link href="/auth/signup">Sign up</Link> | <Link href="/hello-forum">Hello Forum</Link> |{" "}
+        <Link href="/newsletter">Newsletter</Link>
       </p>
 
       {user ? (

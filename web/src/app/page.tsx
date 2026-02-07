@@ -8,7 +8,7 @@ export default function HomePage() {
       <p>
         <Link href="/hello-forum">Hello Forum</Link> | <Link href="/auth/login">Login</Link> |{" "}
         <Link href="/auth/signup">Sign up</Link> | <Link href="/protected">Protected</Link> |{" "}
-        <Link href="/forum">Forum</Link>
+        <Link href="/forum">Forum</Link> | <Link href="/newsletter">Newsletter</Link>
       </p>
     </main>
   );
