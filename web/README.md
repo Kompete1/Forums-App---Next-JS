@@ -6,12 +6,13 @@ Current scope includes:
 - V2 PR1 roles foundation: canonical app roles for future moderation
 - V2 PR2 thread locking: moderator/admin lock control and locked-reply guard
 - V2 PR3 reports pipeline: report thread/reply and moderator report review
+- V2 PR4 UI/UX redesign: SA motorsport branding, landing hero, forum discovery + detail IA
 
 ## Roadmap Status Note
 
-- Completed through V2 PR3: roles, thread locking, reports.
+- Completed through V2 PR4: roles, thread locking, reports, UI/UX redesign + SA category structure.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Next V2 focus is pagination/search/anti-spam-rate-limit basics.
+- Next V2 focus is anti-spam-rate-limit basics.
 
 ## Prerequisites
 
@@ -51,7 +52,12 @@ npm run dev
 ```
 
 Open:
+- `http://localhost:3000/`
 - `http://localhost:3000/forum`
+- `http://localhost:3000/forum/new`
+- `http://localhost:3000/forum/category/main-circuit-discussions`
+- `http://localhost:3000/categories`
+- `http://localhost:3000/profile`
 - `http://localhost:3000/newsletter`
 - `http://localhost:3000/auth/login`
 - `http://localhost:3000/auth/signup`
@@ -74,6 +80,7 @@ Apply in this exact order:
 - `web/supabase/migrations/20260207_pr10_v2_roles_foundation.sql`
 - `web/supabase/migrations/20260207_pr11_v2_thread_locking.sql`
 - `web/supabase/migrations/20260207_pr12_v2_reports_pipeline.sql`
+- `web/supabase/migrations/20260207_pr13_v2_sa_forum_categories.sql`
 
 ## Apply SQL (Dashboard-first)
 
@@ -83,7 +90,8 @@ Apply in this exact order:
 4. Run each migration file above in order (new query tab per file).
 5. Verify tables exist in `Table Editor`:
    - `profiles`, `posts`, `categories`, `replies`, `newsletter_admins`, `newsletters`, `user_roles`, `reports`.
-6. Verify triggers in `Database` -> `Triggers`:
+6. Verify SA motorsport categories exist in `categories` (including `sim-racing-discussions`).
+7. Verify triggers in `Database` -> `Triggers`:
    - `on_auth_user_created`
    - `set_profiles_updated_at`
    - `set_posts_updated_at`
@@ -136,10 +144,13 @@ supabase db push
 ## Manual Verification
 
 ### A) Forum (V1)
-1. Open `/forum` as guest and confirm read-only categories/threads/replies.
-2. Sign in and create a thread + reply.
-3. Update display name and confirm it renders on authored content.
-4. Confirm non-owner cannot edit/delete others' thread content.
+1. Open `/forum` as guest and confirm discovery list is read-only and threads are primary content.
+2. Open `/forum/category/<slug>` from category links and confirm feed is scoped to that category.
+3. Sign in and open `/forum/new` to create a thread; confirm redirect to `/forum/category/<slug>` and that the new thread appears in that feed.
+4. Reply on `/forum/<threadId>`.
+5. Apply filters (search/sort/category where available) and confirm results remain scoped correctly.
+6. Confirm non-owner cannot edit/delete others' thread content.
+7. Open `/profile`, update display name, and confirm it renders on authored content.
 
 ### B) Thread locking moderation (V2 PR2)
 1. Sign in as a user with `admin` or `mod` role in `user_roles`.

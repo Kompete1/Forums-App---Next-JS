@@ -42,44 +42,57 @@ export default function SignupPage() {
   }
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "32rem" }}>
+    <main className="page-wrap">
+      <section className="auth-wrap card stack">
       <h1>Sign up</h1>
-      <p>Create an account with email and password.</p>
-      <form onSubmit={handleSignUp} style={{ display: "grid", gap: "0.75rem" }}>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          required
-        />
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-          minLength={6}
-        />
-        <label htmlFor="displayName">Display name (optional)</label>
-        <input
-          id="displayName"
-          type="text"
-          value={displayName}
-          onChange={(event) => setDisplayName(event.target.value)}
-          maxLength={40}
-        />
-        <button type="submit" disabled={isSubmitting}>
+      <p className="meta">Create an account with email and password.</p>
+      <form onSubmit={handleSignUp} className="stack">
+        <div className="field">
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            minLength={6}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="displayName">Display name (optional)</label>
+          <input
+            id="displayName"
+            type="text"
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+            maxLength={40}
+          />
+        </div>
+        <button type="submit" disabled={isSubmitting} className="btn btn-primary">
           Sign up
         </button>
       </form>
-      {message ? <p>{message}</p> : null}
-      {error ? <p style={{ color: "crimson" }}>{error}</p> : null}
-      <p>
-        <Link href="/auth/login">Login</Link> | <Link href="/">Home</Link>
+      {message ? <p className="meta">{message}</p> : null}
+      {error ? <p className="thread-status locked">{error}</p> : null}
+      <p className="inline-actions">
+        <Link href="/auth/login" className="btn-link focus-link">
+          Login
+        </Link>
+        <Link href="/" className="btn-link focus-link">
+          Home
+        </Link>
       </p>
+      </section>
     </main>
   );
 }

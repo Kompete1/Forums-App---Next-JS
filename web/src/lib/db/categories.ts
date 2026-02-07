@@ -19,5 +19,19 @@ export async function listCategories() {
     throw new Error(error.message);
   }
 
-  return (data ?? []) as ForumCategory[];
+  const categories = (data ?? []) as ForumCategory[];
+
+  categories.sort((a, b) => {
+    if (a.slug === "general-paddock" && b.slug !== "general-paddock") {
+      return -1;
+    }
+
+    if (b.slug === "general-paddock" && a.slug !== "general-paddock") {
+      return 1;
+    }
+
+    return a.name.localeCompare(b.name);
+  });
+
+  return categories;
 }

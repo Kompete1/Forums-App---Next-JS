@@ -1,15 +1,76 @@
 import Link from "next/link";
+import { HeroCarousel } from "@/components/hero-carousel";
+import { heroSlides } from "@/content/hero-slides";
+import { listCategories } from "@/lib/db/categories";
+import { listThreadsPage } from "@/lib/db/posts";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [categories, latest] = await Promise.all([
+    listCategories(),
+    listThreadsPage({ page: 1, pageSize: 6, sort: "newest" }),
+  ]);
+
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-      <h1>Hello Forum (V0)</h1>
-      <p>PR2 auth wiring is in progress.</p>
-      <p>
-        <Link href="/hello-forum">Hello Forum</Link> | <Link href="/auth/login">Login</Link> |{" "}
-        <Link href="/auth/signup">Sign up</Link> | <Link href="/protected">Protected</Link> |{" "}
-        <Link href="/forum">Forum</Link> | <Link href="/newsletter">Newsletter</Link>
-      </p>
+    <main className="page-wrap stack">
+      <HeroCarousel slides={heroSlides} />
+
+      <section className="stack">
+        <div>
+          <p className="kicker">Browse Categories</p>
+          <h2>Find Your Racing Lane</h2>
+        </div>
+        <div className="category-grid">
+          {categories.map((category) => (
+            <article key={category.id} className="card">
+              <h3>{category.name}</h3>
+              <p className="meta">{category.description ?? "Community discussions."}</p>
+              <Link href={`/forum/category/${encodeURIComponent(category.slug)}`} className="btn-link focus-link">
+                Open discussions
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="stack">
+        <div className="inline-actions">
+          <h2>Latest Threads</h2>
+          <Link href="/forum" className="btn-link focus-link">
+            View all
+          </Link>
+        </div>
+        <div className="thread-grid">
+          {latest.threads.map((thread) => (
+            <article key={thread.id} className="card thread-item">
+              <h3>{thread.title}</h3>
+              <p>
+                {thread.body.slice(0, 160)}
+                {thread.body.length > 160 ? "..." : ""}
+              </p>
+              <p className="meta">
+                {thread.category_name ?? "Uncategorized"} | by {thread.author_display_name ?? "Member"}
+              </p>
+              <Link href={`/forum/${thread.id}`} className="btn-link focus-link">
+                Read thread
+              </Link>
+            </article>
+          ))}
+          {latest.threads.length === 0 ? <p className="empty-note">No threads yet.</p> : null}
+        </div>
+      </section>
+
+      <section className="card">
+        <h2>Account Access</h2>
+        <p className="meta">Sign in to post threads, reply, and report content for moderation review.</p>
+        <div className="inline-actions">
+          <Link href="/auth/login" className="btn btn-primary">
+            Login
+          </Link>
+          <Link href="/auth/signup" className="btn btn-secondary">
+            Sign up
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }

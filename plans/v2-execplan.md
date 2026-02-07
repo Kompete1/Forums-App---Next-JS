@@ -1,4 +1,4 @@
-# V2 ExecPlan: Moderation and QoL
+# V2 ExecPlan: Moderation, QoL, and UX Refresh
 
 ## Summary
 V2 started with a roles foundation and has progressed through thread locking and reports.
@@ -8,8 +8,10 @@ This document now tracks completed slices and explicit deferrals.
 - Completed PR10: Roles foundation (`user_roles`, role-based newsletter authorization).
 - Completed PR11: Thread locking (`posts.is_locked` + mod/admin lock policy + locked-reply guard).
 - Completed PR12: Reports pipeline (`reports` table + reporter/moderator RLS + `/moderation/reports`).
+- Completed PR13: SA motorsport UI/UX redesign foundation (`/` landing refresh, `/forum` discovery, `/forum/[threadId]` detail, category model refresh).
+- Completed PR14: forum IA refactor (`/forum` threads-first layout, `/forum/new`, `/forum/category/[slug]`, `/profile`).
 - Deferred for now: hide/remove posts moderation slice.
-- Remaining V2 priorities: pagination, search, anti-spam/rate-limit basics.
+- Remaining V2 priorities: anti-spam/rate-limit basics.
 
 ## Goals
 - Preserve completed moderation foundation and document validated behavior.
@@ -21,18 +23,19 @@ This document now tracks completed slices and explicit deferrals.
 - Record that hide/remove moderation is intentionally deferred.
 
 ## Out of Scope
-- Re-opening already completed PR10/PR11/PR12 work.
+- Re-opening already completed PR10/PR11/PR12/PR13 work.
 - Implementing deferred hide/remove moderation in this cycle.
 
 ## Acceptance Criteria
-1. Docs reflect completed V2 slices through PR12.
+1. Docs reflect completed V2 slices through PR13.
 2. Docs explicitly state hide/remove moderation is deferred/skipped for now.
-3. Next V2 priorities are documented as pagination/search/anti-spam-rate-limit basics.
+3. Next V2 priorities are documented as anti-spam-rate-limit basics.
 
 ## Verification
 - `SPEC.md` includes current V2 status and defer note.
 - `plans/v2-execplan.md` reflects PR10/PR11/PR12 completion and remaining scope.
-- `web/README.md` includes a roadmap status note with the defer decision.
+- `plans/pr13-v2-ui-redesign-execplan.md` exists and is aligned with implementation.
+- `web/README.md` includes updated IA/status note with the defer decision.
 
 ## Risks / Mitigations
 - Risk: team assumes hide/remove moderation is still in active implementation.

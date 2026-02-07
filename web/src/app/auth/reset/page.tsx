@@ -114,44 +114,54 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "32rem" }}>
+    <main className="page-wrap">
+      <section className="auth-wrap card stack">
       <h1>Reset password</h1>
       {mode === "request" ? (
-        <form onSubmit={handleRequestReset} style={{ display: "grid", gap: "0.75rem" }}>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
-          <button type="submit" disabled={isSubmitting}>
+        <form onSubmit={handleRequestReset} className="stack">
+          <div className="field">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+          </div>
+          <button type="submit" disabled={isSubmitting} className="btn btn-primary">
             Send reset email
           </button>
         </form>
       ) : (
-        <form onSubmit={handleUpdatePassword} style={{ display: "grid", gap: "0.75rem" }}>
-          <label htmlFor="new-password">New password</label>
-          <input
-            id="new-password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-            minLength={6}
-          />
-          <button type="submit" disabled={isSubmitting}>
+        <form onSubmit={handleUpdatePassword} className="stack">
+          <div className="field">
+            <label htmlFor="new-password">New password</label>
+            <input
+              id="new-password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+              minLength={6}
+            />
+          </div>
+          <button type="submit" disabled={isSubmitting} className="btn btn-primary">
             Update password
           </button>
         </form>
       )}
-      {message ? <p>{message}</p> : null}
-      {error ? <p style={{ color: "crimson" }}>{error}</p> : null}
-      <p>
-        <Link href="/auth/login">Login</Link> | <Link href="/auth/signup">Sign up</Link> |{" "}
-        <Link href="/hello-forum">Hello Forum</Link>
+      {message ? <p className="meta">{message}</p> : null}
+      {error ? <p className="thread-status locked">{error}</p> : null}
+      <p className="inline-actions">
+        <Link href="/auth/login" className="btn-link focus-link">
+          Login
+        </Link>
+        <Link href="/auth/signup" className="btn-link focus-link">
+          Sign up
+        </Link>
       </p>
+      </section>
     </main>
   );
 }

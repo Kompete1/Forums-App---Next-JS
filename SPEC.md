@@ -36,16 +36,21 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
 - Roles: admin/mod/user.
 - Lock threads, hide/remove posts, reports.
 - Pagination, search, anti-spam/rate limit basics.
+- UI/UX redesign for readability and domain-specific information architecture.
 
 ## V2 Implementation Status (Current)
 - Completed:
   - Roles foundation (`user_roles`, role-based RLS checks)
   - Thread locking (mod/admin lock/unlock + locked-reply guard)
   - Reports pipeline (report thread/reply + moderator review list)
+  - South African motorsport UI/UX refresh foundations:
+    - Landing-first IA (`/`, `/forum`, `/forum/[threadId]`)
+    - Readability-first design system and navigation shell
+    - SA motorsport category model including sim racing
 - Deferred / Skipped for now:
   - Hide/remove posts moderation slice
 - Remaining V2 focus:
-  - Pagination/search/anti-spam-rate-limit basics
+  - Anti-spam/rate-limit basics
 
 ## V3: Platform Features
 - In-app notifications.

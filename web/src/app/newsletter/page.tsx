@@ -31,44 +31,52 @@ export default async function NewsletterPage() {
   }
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "56rem" }}>
+    <main className="page-wrap stack">
       <h1>Newsletter</h1>
-      <p>
-        {user ? `Signed in as ${user.email}` : "Browsing as guest."} <Link href="/auth/login">Login</Link> |{" "}
-        <Link href="/auth/signup">Sign up</Link> | <Link href="/forum">Forum</Link> |{" "}
-        <Link href="/hello-forum">Hello Forum</Link>
-      </p>
+      <p className="meta">{user ? `Signed in as ${user.email}` : "Browsing as guest."}</p>
 
       {isAdmin ? (
-        <section style={{ marginBottom: "2rem" }}>
+        <section className="card stack">
           <h2>Create newsletter entry</h2>
-          <form action={createNewsletterAction} style={{ display: "grid", gap: "0.75rem", maxWidth: "44rem" }}>
-            <label htmlFor="newsletter-title">Title</label>
-            <input id="newsletter-title" name="title" type="text" required minLength={1} maxLength={160} />
-            <label htmlFor="newsletter-body">Body</label>
-            <textarea id="newsletter-body" name="body" required minLength={1} maxLength={12000} rows={8} />
-            <button type="submit">Publish newsletter</button>
+          <form action={createNewsletterAction} className="stack">
+            <div className="field">
+              <label htmlFor="newsletter-title">Title</label>
+              <input id="newsletter-title" name="title" type="text" required minLength={1} maxLength={160} />
+            </div>
+            <div className="field">
+              <label htmlFor="newsletter-body">Body</label>
+              <textarea id="newsletter-body" name="body" required minLength={1} maxLength={12000} rows={8} />
+            </div>
+            <button type="submit" className="btn btn-primary">
+              Publish newsletter
+            </button>
           </form>
         </section>
       ) : (
-        <p style={{ marginBottom: "2rem" }}>Newsletter publishing is restricted to admins.</p>
+        <p className="empty-note">Newsletter publishing is restricted to admins.</p>
       )}
 
       <section>
         <h2>Latest entries</h2>
-        {newsletters.length === 0 ? <p>No newsletter entries yet.</p> : null}
-        <div style={{ display: "grid", gap: "1rem" }}>
+        {newsletters.length === 0 ? <p className="empty-note">No newsletter entries yet.</p> : null}
+        <div className="thread-grid">
           {newsletters.map((item) => (
-            <article key={item.id} style={{ border: "1px solid #ccc", borderRadius: "8px", padding: "1rem" }}>
-              <h3 style={{ marginTop: 0 }}>{item.title}</h3>
+            <article key={item.id} className="card">
+              <h3>{item.title}</h3>
               <p style={{ whiteSpace: "pre-wrap" }}>{item.body}</p>
-              <p style={{ fontSize: "0.875rem", color: "#444", marginBottom: 0 }}>
+              <p className="meta">
                 By {item.author_display_name ?? item.author_id} on {new Date(item.created_at).toLocaleString()}
               </p>
             </article>
           ))}
         </div>
       </section>
+
+      <p>
+        <Link href="/forum" className="btn-link focus-link">
+          Back to forum
+        </Link>
+      </p>
     </main>
   );
 }

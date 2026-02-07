@@ -32,43 +32,51 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/protected");
+    router.push("/profile");
     router.refresh();
   }
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "32rem" }}>
+    <main className="page-wrap">
+      <section className="auth-wrap card stack">
       <h1>Login</h1>
-      <p>Sign in with your email and password.</p>
-      <form onSubmit={handleSignIn} style={{ display: "grid", gap: "0.75rem" }}>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          required
-        />
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-          minLength={6}
-        />
-        <button type="submit" disabled={isSubmitting}>
+      <p className="meta">Sign in with your email and password.</p>
+      <form onSubmit={handleSignIn} className="stack">
+        <div className="field">
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            minLength={6}
+          />
+        </div>
+        <button type="submit" disabled={isSubmitting} className="btn btn-primary">
           Sign in
         </button>
       </form>
-      {error ? <p style={{ color: "crimson" }}>{error}</p> : null}
-      <p>
-        <Link href="/auth/signup">Sign up</Link> | <Link href="/auth/reset">Reset password</Link>
+      {error ? <p className="thread-status locked">{error}</p> : null}
+      <p className="inline-actions">
+        <Link href="/auth/signup" className="btn-link focus-link">
+          Sign up
+        </Link>
+        <Link href="/auth/reset" className="btn-link focus-link">
+          Reset password
+        </Link>
       </p>
-      <p>
-        <Link href="/hello-forum">Hello Forum</Link> | <Link href="/protected">Protected</Link>
-      </p>
+      </section>
     </main>
   );
 }

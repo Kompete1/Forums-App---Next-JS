@@ -1,455 +1,170 @@
 import Link from "next/link";
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { listCategories } from "@/lib/db/categories";
-import { createThread, deleteThread, listThreads, updateThread } from "@/lib/db/posts";
-import { canCurrentUserModerateThreads, setThreadLockState } from "@/lib/db/moderation";
-import { createReply, listRepliesByThreadIds } from "@/lib/db/replies";
-import { createReport } from "@/lib/db/reports";
-import { getMyProfile, updateMyDisplayName } from "@/lib/db/profiles";
+import { listThreadsPage, type ThreadSort } from "@/lib/db/posts";
+import { listRepliesByThreadIds } from "@/lib/db/replies";
+import { ForumFilterPanel } from "@/components/forum-filter-panel";
+import { ThreadFeedList } from "@/components/thread-feed-list";
 
 export const dynamic = "force-dynamic";
 
 type ForumPageProps = {
-  searchParams?: {
-    category?: string;
-  };
+  searchParams?: Promise<{
+    category?: string | string[];
+    q?: string | string[];
+    sort?: string | string[];
+    page?: string | string[];
+  }>;
 };
 
+function getParamValue(value: string | string[] | undefined) {
+  if (Array.isArray(value)) {
+    return value[0]?.trim() ?? "";
+  }
+
+  return value?.trim() ?? "";
+}
+
+function toPositiveInt(value: string, fallback: number) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return fallback;
+  }
+  return parsed;
+}
+
+function forumHref(input: { category?: string; q?: string; sort?: string; page?: number }) {
+  const search = new URLSearchParams();
+
+  if (input.category) {
+    search.set("category", input.category);
+  }
+  if (input.q) {
+    search.set("q", input.q);
+  }
+  if (input.sort && input.sort !== "newest") {
+    search.set("sort", input.sort);
+  }
+  if (input.page && input.page > 1) {
+    search.set("page", String(input.page));
+  }
+
+  const query = search.toString();
+  return query ? `/forum?${query}` : "/forum";
+}
+
 export default async function ForumPage({ searchParams }: ForumPageProps) {
+  const resolvedParams = (await searchParams) ?? {};
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const categories = await listCategories();
-  const selectedCategorySlug = searchParams?.category?.trim() ?? "";
+  const selectedCategorySlug = getParamValue(resolvedParams.category);
   const selectedCategory = categories.find((category) => category.slug === selectedCategorySlug) ?? null;
+  const hasInvalidCategoryFilter = Boolean(selectedCategorySlug) && !selectedCategory;
+  const sort = getParamValue(resolvedParams.sort) === "oldest" ? ("oldest" as ThreadSort) : ("newest" as ThreadSort);
+  const query = getParamValue(resolvedParams.q);
+  const page = toPositiveInt(getParamValue(resolvedParams.page), 1);
 
-  const allThreads = await listThreads();
-  const threads = selectedCategory
-    ? allThreads.filter((thread) => thread.category_id === selectedCategory.id)
-    : allThreads;
+  const threadsPage = await listThreadsPage({
+    categoryId: selectedCategory?.id,
+    query,
+    sort,
+    page,
+    pageSize: 10,
+  });
 
-  const repliesByThreadId = await listRepliesByThreadIds(threads.map((thread) => thread.id));
-  const myProfile = user ? await getMyProfile().catch(() => null) : null;
-  const canModerateThreads = user ? await canCurrentUserModerateThreads().catch(() => false) : false;
-
-  async function createThreadAction(formData: FormData) {
-    "use server";
-
-    const title = String(formData.get("title") ?? "");
-    const body = String(formData.get("body") ?? "");
-    const categoryId = String(formData.get("categoryId") ?? "");
-
-    try {
-      await createThread({ title, body, categoryId });
-    } catch (error) {
-      console.error("createThreadAction failed", error);
-    }
-
-    revalidatePath("/forum");
-  }
-
-  async function updateThreadAction(formData: FormData) {
-    "use server";
-
-    const id = String(formData.get("id") ?? "");
-    const title = String(formData.get("title") ?? "");
-    const body = String(formData.get("body") ?? "");
-    const categoryId = String(formData.get("categoryId") ?? "");
-
-    if (!id) {
-      return;
-    }
-
-    try {
-      await updateThread(id, { title, body, categoryId });
-    } catch (error) {
-      console.error("updateThreadAction failed", error);
-    }
-
-    revalidatePath("/forum");
-  }
-
-  async function deleteThreadAction(formData: FormData) {
-    "use server";
-
-    const id = String(formData.get("id") ?? "");
-
-    if (!id) {
-      return;
-    }
-
-    try {
-      await deleteThread(id);
-    } catch (error) {
-      console.error("deleteThreadAction failed", error);
-    }
-
-    revalidatePath("/forum");
-  }
-
-  async function createReplyAction(formData: FormData) {
-    "use server";
-
-    const threadId = String(formData.get("threadId") ?? "");
-    const body = String(formData.get("body") ?? "");
-
-    if (!threadId) {
-      return;
-    }
-
-    try {
-      await createReply({ threadId, body });
-    } catch (error) {
-      console.error("createReplyAction failed", error);
-    }
-
-    revalidatePath("/forum");
-  }
-
-  async function createThreadReportAction(formData: FormData) {
-    "use server";
-
-    const threadId = String(formData.get("threadId") ?? "");
-    const reason = String(formData.get("reason") ?? "");
-    const notes = String(formData.get("notes") ?? "");
-
-    if (!threadId) {
-      return;
-    }
-
-    try {
-      await createReport({
-        target: { targetType: "thread", threadId },
-        reason,
-        notes,
-      });
-    } catch (error) {
-      console.error("createThreadReportAction failed", error);
-    }
-
-    revalidatePath("/forum");
-  }
-
-  async function createReplyReportAction(formData: FormData) {
-    "use server";
-
-    const replyId = String(formData.get("replyId") ?? "");
-    const reason = String(formData.get("reason") ?? "");
-    const notes = String(formData.get("notes") ?? "");
-
-    if (!replyId) {
-      return;
-    }
-
-    try {
-      await createReport({
-        target: { targetType: "reply", replyId },
-        reason,
-        notes,
-      });
-    } catch (error) {
-      console.error("createReplyReportAction failed", error);
-    }
-
-    revalidatePath("/forum");
-  }
-
-  async function lockThreadAction(formData: FormData) {
-    "use server";
-
-    const threadId = String(formData.get("threadId") ?? "");
-
-    if (!threadId) {
-      return;
-    }
-
-    try {
-      await setThreadLockState(threadId, true);
-    } catch (error) {
-      console.error("lockThreadAction failed", error);
-    }
-
-    revalidatePath("/forum");
-  }
-
-  async function unlockThreadAction(formData: FormData) {
-    "use server";
-
-    const threadId = String(formData.get("threadId") ?? "");
-
-    if (!threadId) {
-      return;
-    }
-
-    try {
-      await setThreadLockState(threadId, false);
-    } catch (error) {
-      console.error("unlockThreadAction failed", error);
-    }
-
-    revalidatePath("/forum");
-  }
-
-  async function updateDisplayNameAction(formData: FormData) {
-    "use server";
-
-    const displayName = String(formData.get("displayName") ?? "");
-
-    try {
-      await updateMyDisplayName(displayName);
-    } catch (error) {
-      console.error("updateDisplayNameAction failed", error);
-    }
-
-    revalidatePath("/forum");
-  }
-
-  const activeCategoryId = selectedCategory?.id ?? categories[0]?.id ?? "";
+  const repliesByThreadId = await listRepliesByThreadIds(threadsPage.threads.map((thread) => thread.id));
+  const repliesCountByThreadId = Object.fromEntries(
+    Object.entries(repliesByThreadId).map(([threadId, replies]) => [threadId, replies.length]),
+  );
+  const totalPages = Math.max(1, Math.ceil(threadsPage.total / threadsPage.pageSize));
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "64rem" }}>
-      <h1>Forum</h1>
-      <p>
-        {user ? `Signed in as ${user.email}` : "Browsing as guest."} <Link href="/auth/login">Login</Link> |{" "}
-        <Link href="/auth/signup">Sign up</Link> | <Link href="/hello-forum">Hello Forum</Link> |{" "}
-        <Link href="/newsletter">Newsletter</Link>
-        {canModerateThreads ? (
-          <>
-            {" "}| <Link href="/moderation/reports">Moderation Reports</Link>
-          </>
-        ) : null}
-      </p>
-
-      {user ? (
-        <section style={{ marginBottom: "2rem", padding: "1rem", border: "1px solid #ccc", borderRadius: "8px" }}>
-          <h2 style={{ marginTop: 0 }}>Profile</h2>
-          <p style={{ marginTop: 0 }}>
-            Current display name: <strong>{myProfile?.display_name ?? "(not set)"}</strong>
-          </p>
-          <form action={updateDisplayNameAction} style={{ display: "grid", gap: "0.75rem", maxWidth: "24rem" }}>
-            <label htmlFor="displayName">Display name</label>
-            <input
-              id="displayName"
-              name="displayName"
-              type="text"
-              defaultValue={myProfile?.display_name ?? ""}
-              placeholder="Enter display name"
-              maxLength={40}
-            />
-            <button type="submit">Save display name</button>
-          </form>
-        </section>
-      ) : null}
-
-      <section style={{ marginBottom: "2rem" }}>
-        <h2>Categories</h2>
-        <p style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-          <Link href="/forum" style={{ fontWeight: selectedCategory ? "normal" : "bold" }}>
-            All
-          </Link>
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              href={`/forum?category=${encodeURIComponent(category.slug)}`}
-              style={{ fontWeight: selectedCategory?.id === category.id ? "bold" : "normal" }}
-            >
-              {category.name}
-            </Link>
-          ))}
-        </p>
+    <main className="page-wrap stack">
+      <section>
+        <p className="kicker">Forum Discovery</p>
+        <h1>South African Motorsport Forum</h1>
+        <p className="meta">{user ? `Signed in as ${user.email}` : "Browsing as guest. Sign in to post and reply."}</p>
       </section>
 
-      {user ? (
-        <section style={{ marginBottom: "2rem" }}>
-          <h2>Create thread</h2>
-          <form action={createThreadAction} style={{ display: "grid", gap: "0.75rem", maxWidth: "44rem" }}>
-            <label htmlFor="thread-category">Category</label>
-            <select id="thread-category" name="categoryId" defaultValue={activeCategoryId} required>
+      <section className="forum-layout">
+        <aside className="forum-rail stack">
+          <ForumFilterPanel
+            categories={categories}
+            selectedCategorySlug={selectedCategory?.slug}
+            query={query}
+            sort={sort}
+            applyPath="/forum"
+            clearHref="/forum"
+            showCategorySelect
+            selectedLabel={selectedCategory?.name ?? "All categories"}
+          />
+
+          <section className="card stack">
+            <div className="inline-actions">
+              <h3>Quick categories</h3>
+              <Link href="/categories" className="btn-link focus-link">
+                View all
+              </Link>
+            </div>
+            {hasInvalidCategoryFilter ? (
+              <p className="meta">Invalid category filter was reset.</p>
+            ) : null}
+            <div className="stack-tight">
               {categories.map((category) => (
-                <option key={category.id} value={category.id}>
+                <Link key={category.id} href={`/forum/category/${encodeURIComponent(category.slug)}`} className="category-quick-link focus-link">
                   {category.name}
-                </option>
+                </Link>
               ))}
-            </select>
-            <label htmlFor="thread-title">Title</label>
-            <input id="thread-title" name="title" type="text" required minLength={1} maxLength={120} />
-            <label htmlFor="thread-body">Body</label>
-            <textarea id="thread-body" name="body" required minLength={1} maxLength={5000} rows={5} />
-            <button type="submit">Create thread</button>
-          </form>
-        </section>
-      ) : null}
+            </div>
+            {user ? (
+              <Link
+                href={selectedCategory?.slug ? `/forum/new?category=${encodeURIComponent(selectedCategory.slug)}` : "/forum/new"}
+                className="btn btn-primary"
+              >
+                Create thread
+              </Link>
+            ) : (
+              <Link href="/auth/login" className="btn btn-secondary">
+                Login to create thread
+              </Link>
+            )}
+          </section>
+        </aside>
 
-      <section>
-        <h2>
-          Threads{selectedCategory ? ` in ${selectedCategory.name}` : ""}
-        </h2>
-        {threads.length === 0 ? <p>No threads yet.</p> : null}
-
-        <div style={{ display: "grid", gap: "1rem" }}>
-          {threads.map((thread) => {
-            const isOwner = user?.id === thread.author_id;
-            const replies = repliesByThreadId[thread.id] ?? [];
-
-            return (
-              <article key={thread.id} style={{ border: "1px solid #ccc", borderRadius: "8px", padding: "1rem" }}>
-                <h3 style={{ marginTop: 0 }}>{thread.title}</h3>
-                <p style={{ whiteSpace: "pre-wrap" }}>{thread.body}</p>
-                <p style={{ fontSize: "0.875rem", color: "#444" }}>
-                  Category: {thread.category_name ?? "Unknown"} | By {thread.author_display_name ?? thread.author_id} on{" "}
-                  {new Date(thread.created_at).toLocaleString()}
-                </p>
-                <p style={{ fontSize: "0.875rem", color: thread.is_locked ? "crimson" : "#2e7d32" }}>
-                  Status: {thread.is_locked ? "Locked" : "Open"}
-                </p>
-
-                {canModerateThreads ? (
-                  <form action={thread.is_locked ? unlockThreadAction : lockThreadAction} style={{ marginBottom: "1rem" }}>
-                    <input type="hidden" name="threadId" value={thread.id} />
-                    <button type="submit">{thread.is_locked ? "Unlock thread" : "Lock thread"}</button>
-                  </form>
-                ) : null}
-
-                {user ? (
-                  <form
-                    action={createThreadReportAction}
-                    style={{ display: "grid", gap: "0.5rem", marginBottom: "1rem", maxWidth: "36rem" }}
-                  >
-                    <input type="hidden" name="threadId" value={thread.id} />
-                    <label htmlFor={`report-thread-reason-${thread.id}`}>Report thread reason</label>
-                    <input
-                      id={`report-thread-reason-${thread.id}`}
-                      name="reason"
-                      type="text"
-                      required
-                      minLength={1}
-                      maxLength={500}
-                      placeholder="Reason for report"
-                    />
-                    <label htmlFor={`report-thread-notes-${thread.id}`}>Notes (optional)</label>
-                    <textarea
-                      id={`report-thread-notes-${thread.id}`}
-                      name="notes"
-                      maxLength={2000}
-                      rows={2}
-                      placeholder="Extra context"
-                    />
-                    <button type="submit">Report thread</button>
-                  </form>
-                ) : null}
-
-                {isOwner ? (
-                  <div style={{ display: "grid", gap: "0.75rem", marginBottom: "1rem" }}>
-                    <form action={updateThreadAction} style={{ display: "grid", gap: "0.5rem" }}>
-                      <input type="hidden" name="id" value={thread.id} />
-                      <label htmlFor={`thread-category-${thread.id}`}>Edit category</label>
-                      <select
-                        id={`thread-category-${thread.id}`}
-                        name="categoryId"
-                        defaultValue={thread.category_id}
-                        required
-                      >
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
-                      <label htmlFor={`thread-title-${thread.id}`}>Edit title</label>
-                      <input
-                        id={`thread-title-${thread.id}`}
-                        name="title"
-                        type="text"
-                        defaultValue={thread.title}
-                        required
-                        minLength={1}
-                        maxLength={120}
-                      />
-                      <label htmlFor={`thread-body-${thread.id}`}>Edit body</label>
-                      <textarea
-                        id={`thread-body-${thread.id}`}
-                        name="body"
-                        defaultValue={thread.body}
-                        required
-                        minLength={1}
-                        maxLength={5000}
-                        rows={4}
-                      />
-                      <button type="submit">Update thread</button>
-                    </form>
-
-                    <form action={deleteThreadAction}>
-                      <input type="hidden" name="id" value={thread.id} />
-                      <button type="submit">Delete thread</button>
-                    </form>
-                  </div>
-                ) : null}
-
-                <section>
-                  <h4 style={{ marginBottom: "0.5rem" }}>Replies</h4>
-                  {replies.length === 0 ? <p>No replies yet.</p> : null}
-                  <div style={{ display: "grid", gap: "0.75rem", marginBottom: "0.75rem" }}>
-                    {replies.map((reply) => (
-                      <div key={reply.id} style={{ borderLeft: "3px solid #ccc", paddingLeft: "0.75rem" }}>
-                        <p style={{ marginTop: 0, whiteSpace: "pre-wrap" }}>{reply.body}</p>
-                        <p style={{ marginBottom: 0, fontSize: "0.875rem", color: "#444" }}>
-                          By {reply.author_display_name ?? reply.author_id} on{" "}
-                          {new Date(reply.created_at).toLocaleString()}
-                        </p>
-                        {user ? (
-                          <form action={createReplyReportAction} style={{ display: "grid", gap: "0.5rem", marginTop: "0.5rem" }}>
-                            <input type="hidden" name="replyId" value={reply.id} />
-                            <label htmlFor={`report-reply-reason-${reply.id}`}>Report reply reason</label>
-                            <input
-                              id={`report-reply-reason-${reply.id}`}
-                              name="reason"
-                              type="text"
-                              required
-                              minLength={1}
-                              maxLength={500}
-                              placeholder="Reason for report"
-                            />
-                            <label htmlFor={`report-reply-notes-${reply.id}`}>Notes (optional)</label>
-                            <textarea
-                              id={`report-reply-notes-${reply.id}`}
-                              name="notes"
-                              maxLength={2000}
-                              rows={2}
-                              placeholder="Extra context"
-                            />
-                            <button type="submit">Report reply</button>
-                          </form>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-
-                  {thread.is_locked ? (
-                    <p>Thread is locked.</p>
-                  ) : null}
-
-                  {user && !thread.is_locked ? (
-                    <form action={createReplyAction} style={{ display: "grid", gap: "0.5rem" }}>
-                      <input type="hidden" name="threadId" value={thread.id} />
-                      <label htmlFor={`reply-${thread.id}`}>Add reply</label>
-                      <textarea
-                        id={`reply-${thread.id}`}
-                        name="body"
-                        required
-                        minLength={1}
-                        maxLength={5000}
-                        rows={3}
-                      />
-                      <button type="submit">Post reply</button>
-                    </form>
-                  ) : null}
-                </section>
-              </article>
-            );
-          })}
+        <div className="forum-main stack">
+          <ThreadFeedList
+            threads={threadsPage.threads}
+            repliesCountByThreadId={repliesCountByThreadId}
+            total={threadsPage.total}
+            page={threadsPage.page}
+            totalPages={totalPages}
+            noResultsText="No threads found for this filter."
+            subtitleChip={`Showing: ${selectedCategory?.name ?? "All categories"}`}
+            prevHref={
+              threadsPage.page > 1
+                ? forumHref({
+                    category: selectedCategory?.slug,
+                    q: query,
+                    sort,
+                    page: threadsPage.page - 1,
+                  })
+                : null
+            }
+            nextHref={
+              threadsPage.page < totalPages
+                ? forumHref({
+                    category: selectedCategory?.slug,
+                    q: query,
+                    sort,
+                    page: threadsPage.page + 1,
+                  })
+                : null
+            }
+          />
         </div>
       </section>
     </main>
