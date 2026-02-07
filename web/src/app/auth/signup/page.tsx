@@ -2,45 +2,46 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 
-export default function LoginPage() {
-  const router = useRouter();
-
+export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleSignIn(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSignUp(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const supabase = createClient();
 
     setIsSubmitting(true);
     setError(null);
+    setMessage(null);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/hello-forum`,
+      },
     });
 
     setIsSubmitting(false);
 
-    if (signInError) {
-      setError(signInError.message);
+    if (signUpError) {
+      setError(signUpError.message);
       return;
     }
 
-    router.push("/protected");
-    router.refresh();
+    setMessage("Sign-up request submitted. Check your inbox if email confirmation is enabled.");
   }
 
   return (
     <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", maxWidth: "32rem" }}>
-      <h1>Login</h1>
-      <p>Sign in with your email and password.</p>
-      <form onSubmit={handleSignIn} style={{ display: "grid", gap: "0.75rem" }}>
+      <h1>Sign up</h1>
+      <p>Create an account with email and password.</p>
+      <form onSubmit={handleSignUp} style={{ display: "grid", gap: "0.75rem" }}>
         <label htmlFor="email">Email</label>
         <input
           id="email"
@@ -59,15 +60,13 @@ export default function LoginPage() {
           minLength={6}
         />
         <button type="submit" disabled={isSubmitting}>
-          Sign in
+          Sign up
         </button>
       </form>
+      {message ? <p>{message}</p> : null}
       {error ? <p style={{ color: "crimson" }}>{error}</p> : null}
       <p>
-        <Link href="/auth/signup">Sign up</Link> | <Link href="/auth/reset">Reset password</Link>
-      </p>
-      <p>
-        <Link href="/hello-forum">Hello Forum</Link> | <Link href="/protected">Protected</Link>
+        <Link href="/auth/login">Login</Link> | <Link href="/">Home</Link>
       </p>
     </main>
   );

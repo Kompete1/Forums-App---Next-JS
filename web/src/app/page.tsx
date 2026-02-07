@@ -6,7 +6,8 @@ export default function HomePage() {
       <h1>Hello Forum (V0)</h1>
       <p>PR2 auth wiring is in progress.</p>
       <p>
-        <Link href="/auth/login">Login</Link> | <Link href="/protected">Protected</Link>
+        <Link href="/hello-forum">Hello Forum</Link> | <Link href="/auth/login">Login</Link> |{" "}
+        <Link href="/auth/signup">Sign up</Link> | <Link href="/protected">Protected</Link>
       </p>
     </main>
   );

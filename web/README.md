@@ -42,7 +42,10 @@ npm run dev
 Open:
 
 - `http://localhost:3000/`
+- `http://localhost:3000/hello-forum`
 - `http://localhost:3000/auth/login`
+- `http://localhost:3000/auth/signup`
+- `http://localhost:3000/auth/reset`
 - `http://localhost:3000/protected`
 
 ## Verification Commands
@@ -51,3 +54,13 @@ Open:
 npm run lint
 npm run build
 ```
+
+## Manual Auth Verification
+
+1. Open `/auth/signup` and create an account.
+2. Open `/auth/login` and sign in.
+3. Open `/hello-forum`:
+   - Logged in: page shows signed-in email.
+   - Logged out: page shows guest message.
+4. Open `/protected` while logged out and confirm redirect to `/auth/login`.
+5. Open `/auth/reset`, request a password reset, use the email link, and set a new password.
