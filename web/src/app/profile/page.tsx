@@ -68,7 +68,7 @@ export default async function ProfilePage() {
           <Link href="/auth/logout" className="btn btn-secondary">
             Logout
           </Link>
-          <Link href="/forum" className="btn-link focus-link">
+          <Link href="/forum" className="btn-link focus-link" prefetch={false}>
             Back to forum
           </Link>
         </div>
