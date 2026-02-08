@@ -59,9 +59,15 @@ This file lists checks that are still manual (not fully automated in e2e).
 ### 8) Fixture setup checks (PR21)
 1. Create test users in Supabase Auth (admin/mod/user A/user B).
 2. Run `web/supabase/testing/assign_test_roles_template.sql` after replacing placeholder emails.
-3. Run `web/supabase/testing/seed_dummy_newsletters_threads_template.sql`.
-4. Verify seeded rows with `[SEED]` marker exist.
-5. Run `web/supabase/testing/reset_dummy_content_template.sql` and verify seeded rows are removed only.
+3. Confirm role map:
+   - `test-admin@example.com` -> `admin`
+   - `test-mod@example.com` -> `mod`
+   - `test-user-a@example.com` -> `user`
+   - `test-user-b@example.com` -> `user`
+4. Run `web/supabase/testing/seed_dummy_newsletters_threads_template.sql`.
+5. Verify seeded newsletter rows with `[SEED]` marker exist.
+6. Optional e2e check: set `E2E_TEST_*` + `E2E_ALT_*` in `web/.env.local` and run `npm run test:e2e`; dual-user notifications test should run (not skip).
+7. Run `web/supabase/testing/reset_dummy_content_template.sql` and verify only `[SEED]` rows are removed.
 
 ### 9) Attachments checks (PR22)
 1. Upload allowed image type/size during thread or reply creation.

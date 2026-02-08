@@ -32,6 +32,8 @@
 - Assign roles through `public.user_roles` SQL helpers, not hardcoded app mocks.
 - Seed dummy content with explicit markers (for example `[SEED]`) so cleanup is scoped and safe.
 - Never reuse production identities for test fixtures.
+- Never reuse production passwords for fixture accounts.
+- Rotate fixture account passwords if they are shared across contributors.
 
 ## Upcoming Hardening Checklist (PR24 Scope)
 - Add and verify baseline security headers in Next.js config.
