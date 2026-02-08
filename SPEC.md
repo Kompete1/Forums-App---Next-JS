@@ -60,6 +60,17 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
 - Attachments/images (Supabase Storage).
 - Admin dashboard.
 
+## V3 Implementation Status (Active)
+- In progress:
+  - PR17 notifications bundle:
+    - `notifications` schema + recipient-scoped RLS
+    - trigger-driven notification events for replies/reports
+    - `/notifications` inbox + read-state controls
+    - header unread badge + realtime inbox refresh
+- Pending after PR17:
+  - Attachments/images (Supabase Storage)
+  - Admin dashboard
+
 ## V4: Production Hardening
 - Backup/restore habit.
 - Logging/monitoring practice.

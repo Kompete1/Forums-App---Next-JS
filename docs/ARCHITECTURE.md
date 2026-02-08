@@ -28,6 +28,7 @@ Repo A points users into Repo B using an iframe and/or direct link.
 - `/profile`: account settings and display name updates.
 - `/moderation/reports`: role-gated moderation report review.
 - `/newsletter`: public feed with admin-only creation.
+- `/notifications`: signed-in inbox for reply/report notifications with read-state controls.
 
 ## Security Boundary Notes
 - Secrets remain in `.env.local` and Vercel env vars.
@@ -44,3 +45,4 @@ Repo A points users into Repo B using an iframe and/or direct link.
 - V1: categories/threads/posts schema and RLS expansion.
 - V1.5: newsletter tables and admin-only policies.
 - V2+: moderation roles, search, UI readability and domain-focused IA, anti-spam, and QoL additions.
+- V3: notifications + realtime inbox refresh, then attachments and admin dashboard slices.

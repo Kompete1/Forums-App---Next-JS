@@ -9,12 +9,14 @@ Current scope includes:
 - V2 PR4 UI/UX redesign: SA motorsport branding, landing hero, forum discovery + detail IA
 - V2 PR5 anti-spam baseline: DB cooldowns/burst limits with inline rate-limit feedback
 - V2 PR6 hardening: Playwright e2e baseline + shared flash-message parsing + verification assets
+- V3 PR17 notifications (in progress): schema + event triggers + inbox + realtime refresh
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
+- Active build: V3 PR17 notifications bundle.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Next V2 focus is optional QoL tuning and deferred-scope re-evaluation.
+- V3 next focus after PR17: attachments/storage and admin dashboard slices.
 
 ## Prerequisites
 
@@ -61,6 +63,7 @@ Open:
 - `http://localhost:3000/categories`
 - `http://localhost:3000/profile`
 - `http://localhost:3000/newsletter`
+- `http://localhost:3000/notifications`
 - `http://localhost:3000/auth/login`
 - `http://localhost:3000/auth/signup`
 
@@ -87,11 +90,14 @@ Optional auth test credentials in `web/.env.local`:
 ```bash
 E2E_TEST_EMAIL=your_test_user_email
 E2E_TEST_PASSWORD=your_test_user_password
+E2E_ALT_EMAIL=secondary_test_user_email
+E2E_ALT_PASSWORD=secondary_test_user_password
 ```
 
 Notes:
 - Guest e2e tests run without these credentials.
 - Auth e2e tests are skipped automatically if credentials are missing.
+- Dual-user notifications e2e tests are skipped if `E2E_ALT_*` credentials are missing.
 
 ## Migration Files
 
@@ -104,6 +110,7 @@ Apply in this exact order:
 - `web/supabase/migrations/20260207_pr12_v2_reports_pipeline.sql`
 - `web/supabase/migrations/20260207_pr13_v2_sa_forum_categories.sql`
 - `web/supabase/migrations/20260208_pr15_v2_anti_spam_rate_limit.sql`
+- `web/supabase/migrations/20260208_pr17_v3_notifications.sql`
 
 ## Apply SQL (Dashboard-first)
 
@@ -239,6 +246,16 @@ Expected for non-mod: only own reports are returned (or none).
 5. Submit more than 10 reports within 15 minutes and confirm burst-limit message appears.
 6. Confirm duplicate same-target report is still rejected by the existing unique constraint.
 
+### J) Notifications baseline (V3 PR17)
+1. Sign in as user A and create a thread.
+2. Sign out and sign in as user B.
+3. Reply to user A's thread.
+4. Sign in again as user A and open `/notifications`.
+5. Confirm a new notification appears for the reply.
+6. Click `Mark read` and confirm notification changes to read state.
+7. Click `Mark all as read` and confirm no unread notifications remain.
+8. If user A has `mod`/`admin`, submit a new report as user B and confirm moderation notification appears for user A.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -246,6 +263,7 @@ Run these manually even when Playwright passes:
 - Report burst window validation (`>10` in 15 minutes).
 - Cross-user owner-boundary checks.
 - SQL object verification using `web/supabase/verification/pr15_rate_limit_checks.sql`.
+- Notifications SQL object verification using `web/supabase/verification/pr17_notifications_checks.sql`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.
 

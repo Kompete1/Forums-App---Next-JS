@@ -32,7 +32,20 @@ This file lists checks that are still manual (not fully automated in e2e).
 2. User B attempts update/delete for User A content.
 3. Confirm rejection by RLS.
 
+### 5) Notifications and realtime checks
+1. Sign in as User A and create a thread.
+2. Sign out, sign in as User B, and reply to User A thread.
+3. Sign in as User A and open `/notifications`.
+4. Confirm notification text indicates another user replied.
+5. Keep `/notifications` open in one tab.
+6. In another tab/session as User B, trigger another reply/report event.
+7. Confirm User A inbox refreshes and new notification appears without manual reload.
+8. Use `Mark read` and `Mark all as read`; confirm unread items clear.
+9. Verify User A cannot read/modify User B notifications.
+
 ## SQL verification (Supabase Dashboard)
 1. Open `SQL Editor`.
 2. Run `web/supabase/verification/pr15_rate_limit_checks.sql`.
 3. Confirm expected rows are returned for all sections.
+4. Run `web/supabase/verification/pr17_notifications_checks.sql`.
+5. Confirm notifications functions, triggers, and indexes are present.
