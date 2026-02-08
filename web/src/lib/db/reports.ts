@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { toWriteActionError } from "@/lib/db/write-errors";
 
 export type ReportTarget =
   | { targetType: "thread"; threadId: string; replyId?: never }
@@ -111,7 +112,7 @@ export async function createReport(input: { target: ReportTarget; reason: string
   const { error } = await supabase.from("reports").insert(payload);
 
   if (error) {
-    throw new Error(error.message);
+    throw toWriteActionError(error);
   }
 }
 

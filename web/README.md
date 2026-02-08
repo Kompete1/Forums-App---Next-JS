@@ -10,9 +10,9 @@ Current scope includes:
 
 ## Roadmap Status Note
 
-- Completed through V2 PR4: roles, thread locking, reports, UI/UX redesign + SA category structure.
+- Completed through V2 PR5: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Next V2 focus is anti-spam-rate-limit basics.
+- Next V2 focus is optional QoL tuning and deferred-scope re-evaluation.
 
 ## Prerequisites
 
@@ -81,6 +81,7 @@ Apply in this exact order:
 - `web/supabase/migrations/20260207_pr11_v2_thread_locking.sql`
 - `web/supabase/migrations/20260207_pr12_v2_reports_pipeline.sql`
 - `web/supabase/migrations/20260207_pr13_v2_sa_forum_categories.sql`
+- `web/supabase/migrations/20260208_pr15_v2_anti_spam_rate_limit.sql`
 
 ## Apply SQL (Dashboard-first)
 
@@ -207,6 +208,14 @@ Expected for non-mod: only own reports are returned (or none).
 1. Create newsletter as admin user A.
 2. Sign in as admin user B.
 3. Attempt update/delete of user A's newsletter and confirm rejection (owner boundary remains enforced).
+
+### I) Anti-spam / rate-limit baseline (V2 PR15)
+1. Sign in as regular user and create a thread in `/forum/new`.
+2. Immediately create a second thread and confirm thread cooldown message appears (about 60s window).
+3. Open one thread, post a reply, then immediately post another and confirm reply cooldown message appears (about 20s window).
+4. Submit a thread or reply report, then immediately submit another and confirm report cooldown message appears (about 30s window).
+5. Submit more than 10 reports within 15 minutes and confirm burst-limit message appears.
+6. Confirm duplicate same-target report is still rejected by the existing unique constraint.
 
 ## RLS Policy Summary
 
