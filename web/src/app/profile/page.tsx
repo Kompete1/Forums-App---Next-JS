@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getMyProfile, updateMyDisplayName } from "@/lib/db/profiles";
+import { getProfileByUserId, updateDisplayNameByUserId } from "@/lib/db/profiles";
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { logServerError } from "@/lib/server/logging";
 
@@ -32,13 +32,14 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   if (!user) {
     redirect("/auth/login");
   }
+  const userId = user.id;
 
   const nextPath = getSafeNextPath(resolvedSearchParams.next);
   if (nextPath) {
     redirect(nextPath);
   }
 
-  const myProfile = await getMyProfile().catch(() => null);
+  const myProfile = await getProfileByUserId(userId).catch(() => null);
 
   async function updateDisplayNameAction(formData: FormData) {
     "use server";
@@ -46,7 +47,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     const displayName = String(formData.get("displayName") ?? "");
 
     try {
-      await updateMyDisplayName(displayName);
+      await updateDisplayNameByUserId(userId, displayName);
     } catch (error) {
       logServerError("updateDisplayNameAction", error);
     }
