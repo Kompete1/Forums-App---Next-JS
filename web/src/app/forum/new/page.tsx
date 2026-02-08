@@ -30,18 +30,22 @@ type NewThreadPageProps = {
 
 export default async function NewThreadPage({ searchParams }: NewThreadPageProps) {
   const resolvedParams = (await searchParams) ?? {};
+  const requestedSlug = getSingleSearchParam(resolvedParams, "category");
+  const fromNewsletterId = getSingleSearchParam(resolvedParams, "fromNewsletter");
+  const redirectBackTo = appendQueryParams("/forum/new", {
+    category: requestedSlug,
+    fromNewsletter: fromNewsletterId,
+  });
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/auth/login");
+    redirect(appendQueryParams("/auth/login", { next: redirectBackTo }));
   }
 
   const categories = await listCategories();
-  const requestedSlug = getSingleSearchParam(resolvedParams, "category");
-  const fromNewsletterId = getSingleSearchParam(resolvedParams, "fromNewsletter");
   const sourceNewsletter = fromNewsletterId ? await getNewsletterById(fromNewsletterId).catch(() => null) : null;
   const submitErrorMessage = getWriteErrorMessageFromSearchParams(resolvedParams, "errorCode");
   const attachmentErrorMessage = getAttachmentErrorMessage(getSingleSearchParam(resolvedParams, "attachmentErrorCode"));

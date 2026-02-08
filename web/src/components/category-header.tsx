@@ -4,9 +4,13 @@ import type { ForumCategory } from "@/lib/db/categories";
 type CategoryHeaderProps = {
   category: ForumCategory;
   threadCount: number;
+  isSignedIn: boolean;
 };
 
-export function CategoryHeader({ category, threadCount }: CategoryHeaderProps) {
+export function CategoryHeader({ category, threadCount, isSignedIn }: CategoryHeaderProps) {
+  const createThreadPath = `/forum/new?category=${encodeURIComponent(category.slug)}`;
+  const loginToCreatePath = `/auth/login?next=${encodeURIComponent(createThreadPath)}`;
+
   return (
     <section className="card stack">
       <p className="kicker">Category Feed</p>
@@ -19,9 +23,15 @@ export function CategoryHeader({ category, threadCount }: CategoryHeaderProps) {
         <Link href="/categories" className="btn-link focus-link">
           Back to categories
         </Link>
-        <Link href={`/forum/new?category=${encodeURIComponent(category.slug)}`} className="btn btn-primary">
-          Create thread in this category
-        </Link>
+        {isSignedIn ? (
+          <Link href={createThreadPath} className="btn btn-primary">
+            Create thread in this category
+          </Link>
+        ) : (
+          <Link href={loginToCreatePath} className="btn btn-secondary">
+            Login to create thread
+          </Link>
+        )}
       </div>
     </section>
   );

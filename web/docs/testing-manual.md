@@ -86,6 +86,13 @@ This file lists checks that are still manual (not fully automated in e2e).
 3. Dry-run backup/restore checklist from `web/docs/operations-runbook.md` and record outcome.
 4. Re-run role-gated route checks after hardening changes.
 
+### 12) Create-thread auth redirect checks (PR25)
+1. Open `/forum/category/general-paddock` while signed out.
+2. Confirm CTA label is `Login to create thread`.
+3. Click it and verify `/auth/login?next=...` is used.
+4. Sign in and confirm redirect to `/forum/new?category=general-paddock`.
+5. Repeat while already signed in and confirm CTA label is `Create thread in this category` with direct navigation to `/forum/new`.
+
 ## SQL verification (Supabase Dashboard)
 1. Open `SQL Editor`.
 2. Run `web/supabase/verification/pr15_rate_limit_checks.sql`.
