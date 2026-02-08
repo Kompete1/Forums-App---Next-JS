@@ -390,6 +390,37 @@ h4 {
   gap: 0.6rem;
 }
 
+.admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.8rem;
+}
+
+.admin-kpi-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+}
+
+.admin-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.8rem;
+}
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 0.84rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  text-transform: lowercase;
+}
+
 .attachment-card {
   display: grid;
   gap: 0.3rem;

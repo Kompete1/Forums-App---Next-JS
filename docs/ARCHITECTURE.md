@@ -31,9 +31,7 @@ Repo A points users into Repo B using an iframe and/or direct link.
 - `/forum/new?fromNewsletter=<newsletter-id>`: prefilled thread creation from newsletter CTA.
 - `/forum?newsletter=<newsletter-id>`: linked-discussion filtering for newsletter topics.
 - `/notifications`: signed-in inbox for reply/report notifications with read-state controls.
-
-## Route Boundaries (Planned Additions)
-- `/admin`: moderator/admin operational dashboard (PR23).
+- `/admin`: moderator/admin operational dashboard with read-only operational summaries.
 
 ## Security Boundary Notes
 - Secrets remain in `.env.local` and Vercel env vars.
@@ -55,7 +53,7 @@ Repo A points users into Repo B using an iframe and/or direct link.
   - Completed: PR19 forum UX polish.
   - Completed: PR20 newsletter discussion bridge.
   - Completed: PR21 test fixtures.
-  - Active: PR22 attachments and storage.
-  - Planned: PR23 admin dashboard.
+  - Completed: PR22 attachments and storage.
+  - Active: PR23 admin dashboard.
 - V4:
   - Planned: PR24 production hardening pack (headers, logging hygiene, retention/runbook docs).
