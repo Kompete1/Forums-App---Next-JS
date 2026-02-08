@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ForumCategory } from "@/lib/db/categories";
 
 type CategoryHeaderProps = {
@@ -20,17 +19,17 @@ export function CategoryHeader({ category, threadCount, isSignedIn }: CategoryHe
       </div>
       <p className="meta">{category.description ?? "Motorsport discussions in this category."}</p>
       <div className="inline-actions">
-        <Link href="/categories" className="btn-link focus-link" prefetch={false}>
+        <a href="/categories" className="btn-link focus-link">
           Back to categories
-        </Link>
+        </a>
         {isSignedIn ? (
-          <Link href={createThreadPath} className="btn btn-primary" prefetch={false}>
+          <a href={createThreadPath} className="btn btn-primary">
             Create thread in this category
-          </Link>
+          </a>
         ) : (
-          <Link href={loginToCreatePath} className="btn btn-secondary" prefetch={false}>
+          <a href={loginToCreatePath} className="btn btn-secondary">
             Login to create thread
-          </Link>
+          </a>
         )}
       </div>
     </section>

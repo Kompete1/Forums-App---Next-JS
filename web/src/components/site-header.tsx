@@ -1,4 +1,4 @@
-import Link from "next/link";
+/* eslint-disable @next/next/no-html-link-for-pages */
 import { createClient } from "@/lib/supabase/server";
 import { canCurrentUserModerateThreads } from "@/lib/db/moderation";
 import { getUnreadNotificationCount } from "@/lib/db/notifications";
@@ -16,43 +16,44 @@ export async function SiteHeader() {
   return (
     <header className="site-header">
       <div className="site-header-inner">
-        <Link href="/" className="site-brand" prefetch={false}>
+        {/* Use full document navigations for auth-sensitive routes to avoid stale prefetched payloads. */}
+        <a href="/" className="site-brand">
           SA Racing Forum
-        </Link>
+        </a>
         <nav className="site-nav" aria-label="Primary">
-          <Link href="/forum" prefetch={false}>
+          <a href="/forum">
             Forum
-          </Link>
-          <Link href="/categories" prefetch={false}>
+          </a>
+          <a href="/categories">
             Categories
-          </Link>
-          <Link href="/newsletter" prefetch={false}>
+          </a>
+          <a href="/newsletter">
             Newsletter
-          </Link>
+          </a>
           {user ? (
-            <Link href="/notifications" className="notifications-link" prefetch={false}>
+            <a href="/notifications" className="notifications-link">
               Notifications
               {unreadCount > 0 ? <span className="unread-badge">{unreadLabel}</span> : null}
-            </Link>
+            </a>
           ) : null}
           {canModerate ? (
-            <Link href="/admin" prefetch={false}>
+            <a href="/admin">
               Admin
-            </Link>
+            </a>
           ) : null}
           {canModerate ? (
-            <Link href="/moderation/reports" prefetch={false}>
+            <a href="/moderation/reports">
               Moderation
-            </Link>
+            </a>
           ) : null}
           {user ? (
-            <Link href="/profile" prefetch={false}>
+            <a href="/profile">
               Profile
-            </Link>
+            </a>
           ) : (
-            <Link href="/auth/login" prefetch={false}>
+            <a href="/auth/login">
               Login
-            </Link>
+            </a>
           )}
         </nav>
       </div>

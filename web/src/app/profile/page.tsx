@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -7,7 +8,25 @@ import { logServerError } from "@/lib/server/logging";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProfilePage() {
+type ProfilePageProps = {
+  searchParams?: Promise<{
+    next?: string | string[];
+  }>;
+};
+
+function getSafeNextPath(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
+  const candidate = raw.trim();
+
+  if (!candidate || !candidate.startsWith("/") || candidate.startsWith("//") || candidate.startsWith("/profile")) {
+    return null;
+  }
+
+  return candidate;
+}
+
+export default async function ProfilePage({ searchParams }: ProfilePageProps) {
+  const resolvedSearchParams = (await searchParams) ?? {};
   const supabase = await createClient();
   const {
     data: { user },
@@ -15,6 +34,11 @@ export default async function ProfilePage() {
 
   if (!user) {
     redirect("/auth/login");
+  }
+
+  const nextPath = getSafeNextPath(resolvedSearchParams.next);
+  if (nextPath) {
+    redirect(nextPath);
   }
 
   const myProfile = await getMyProfile().catch(() => null);
@@ -68,9 +92,9 @@ export default async function ProfilePage() {
           <Link href="/auth/logout" className="btn btn-secondary">
             Logout
           </Link>
-          <Link href="/forum" className="btn-link focus-link" prefetch={false}>
+          <a href="/forum" className="btn-link focus-link">
             Back to forum
-          </Link>
+          </a>
         </div>
       </section>
     </main>

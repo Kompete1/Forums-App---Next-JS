@@ -41,8 +41,8 @@ export default function LoginPage() {
 
     const currentUrl = new URL(window.location.href);
     const nextPath = getSafeNextPath(currentUrl.searchParams.get("next")) ?? "/profile";
-    // Force a full navigation after auth state change to avoid stale prefetched payloads.
-    window.location.assign(nextPath);
+    const transitionPath = nextPath !== "/profile" ? `/profile?next=${encodeURIComponent(nextPath)}` : "/profile";
+    window.location.assign(transitionPath);
   }
 
   return (

@@ -9,8 +9,12 @@ async function loginFromCurrentPage(page: Page) {
     test.skip(true, "Set E2E_TEST_EMAIL and E2E_TEST_PASSWORD to run auth e2e tests.");
   }
 
-  await page.getByLabel("Email").fill(email!);
-  await page.getByLabel("Password").fill(password!);
+  const emailInput = page.locator("#email");
+  const passwordInput = page.locator("#password");
+  await expect(emailInput).toBeVisible();
+  await expect(passwordInput).toBeVisible();
+  await emailInput.fill(email!);
+  await passwordInput.fill(password!);
   await page.getByRole("button", { name: "Sign in" }).click();
 }
 
