@@ -43,9 +43,48 @@ This file lists checks that are still manual (not fully automated in e2e).
 8. Use `Mark read` and `Mark all as read`; confirm unread items clear.
 9. Verify User A cannot read/modify User B notifications.
 
+### 6) Forum UX polish checks (PR19)
+1. Open `/forum` on desktop and mobile widths.
+2. Confirm filter/search state is clearly visible and easy to reset.
+3. Confirm create-thread CTA remains discoverable in both breakpoints.
+4. Open `/forum/[threadId]` and confirm thread/replies/report controls remain visible and readable.
+5. Confirm no owner/mod controls disappeared after UI polish.
+
+### 7) Newsletter discussion bridge checks (PR20)
+1. Open `/newsletter` and click `Start discussion` on one newsletter entry.
+2. Confirm `/forum/new` is prefilled for discussion bootstrap.
+3. Publish thread and verify thread is linked back to source newsletter.
+4. Use linked-discussion view/filter and verify only related threads show.
+
+### 8) Fixture setup checks (PR21)
+1. Create test users in Supabase Auth (admin/mod/user A/user B).
+2. Run `web/supabase/testing/assign_test_roles_template.sql` after replacing placeholder emails.
+3. Run `web/supabase/testing/seed_dummy_newsletters_threads_template.sql`.
+4. Verify seeded rows with `[SEED]` marker exist.
+5. Run `web/supabase/testing/reset_dummy_content_template.sql` and verify seeded rows are removed only.
+
+### 9) Attachments checks (PR22)
+1. Upload allowed image type/size during thread or reply creation.
+2. Confirm uploaded attachment renders for authorized viewers.
+3. Attempt oversize/invalid MIME upload and confirm rejection message.
+4. Attempt cross-user unauthorized attachment access and confirm denial.
+
+### 10) Admin dashboard checks (PR23)
+1. Sign in as mod/admin and open `/admin`; confirm dashboard is visible.
+2. Sign in as non-mod user and open `/admin`; confirm access denied.
+3. Verify dashboard links route correctly to moderation/newsletter workflows.
+
+### 11) Production hardening checks (PR24)
+1. Verify response security headers in preview deployment.
+2. Confirm no sensitive auth/session values appear in server logs.
+3. Dry-run backup/restore checklist and record outcome.
+4. Re-run role-gated route checks after hardening changes.
+
 ## SQL verification (Supabase Dashboard)
 1. Open `SQL Editor`.
 2. Run `web/supabase/verification/pr15_rate_limit_checks.sql`.
 3. Confirm expected rows are returned for all sections.
 4. Run `web/supabase/verification/pr17_notifications_checks.sql`.
 5. Confirm notifications functions, triggers, and indexes are present.
+6. After PR20 migration, run `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql`.
+7. After PR22 migration, run `web/supabase/verification/pr22_attachments_checks.sql`.

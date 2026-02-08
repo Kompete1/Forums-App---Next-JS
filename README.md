@@ -3,7 +3,7 @@
 Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase Auth + Postgres.
 
 ## Status
-- Current milestone: `V3 PR18` PR17 closeout and lint reliability.
+- Current milestone: `V3 PR19` forum UX polish.
 
 ## Repository Role
 - This repository contains the dynamic forums application.
@@ -17,7 +17,7 @@ Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase A
 ## Workflow
 1. Read `SPEC.md` for scoped requirements.
 2. Read `PLANS.md` for planning standards.
-3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr18-v3-pr17-closeout-lint-execplan.md`).
+3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr19-v3-forum-ux-polish-execplan.md`).
 4. Ship one logical chunk per PR.
 
 ## Local Run

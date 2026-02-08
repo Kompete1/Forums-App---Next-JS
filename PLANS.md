@@ -45,3 +45,14 @@ Use this structure:
 - Verification steps executed and documented.
 - Docs updated if behavior/flows changed.
 - Security checks for secrets and policy changes completed.
+
+## Documentation Sync Requirements
+- Each feature PR must add one new `plans/<pr>-execplan.md`.
+- Each feature PR must update `SPEC.md` milestone/status text.
+- Each feature PR must update at least one verification doc:
+  - `web/README.md`
+  - `web/docs/testing-manual.md`
+- A PR is not done unless docs state:
+  - what changed
+  - how it was verified
+  - what remains pending

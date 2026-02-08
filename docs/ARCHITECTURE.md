@@ -30,6 +30,11 @@ Repo A points users into Repo B using an iframe and/or direct link.
 - `/newsletter`: public feed with admin-only creation.
 - `/notifications`: signed-in inbox for reply/report notifications with read-state controls.
 
+## Route Boundaries (Planned Additions)
+- `/forum/new?fromNewsletter=<newsletter-id>`: prefilled thread creation from newsletter CTA (PR20).
+- `/forum?newsletter=<newsletter-id>`: linked-discussion filtering (PR20).
+- `/admin`: moderator/admin operational dashboard (PR23).
+
 ## Security Boundary Notes
 - Secrets remain in `.env.local` and Vercel env vars.
 - Only `NEXT_PUBLIC_*` values needed for client-side Supabase initialization.
@@ -45,4 +50,9 @@ Repo A points users into Repo B using an iframe and/or direct link.
 - V1: categories/threads/posts schema and RLS expansion.
 - V1.5: newsletter tables and admin-only policies.
 - V2+: moderation roles, search, UI readability and domain-focused IA, anti-spam, and QoL additions.
-- V3: notifications + realtime inbox refresh, then attachments and admin dashboard slices.
+- V3:
+  - Completed: notifications + realtime inbox refresh.
+  - Active: PR19 forum UX polish.
+  - Planned: PR20 newsletter discussion bridge, PR21 test fixtures, PR22 attachments, PR23 admin dashboard.
+- V4:
+  - Planned: PR24 production hardening pack (headers, logging hygiene, retention/runbook docs).
