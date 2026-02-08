@@ -13,7 +13,8 @@ This document now tracks completed slices and explicit deferrals.
 - Completed PR15: anti-spam/rate-limit basics (DB cooldown triggers on posts/replies/reports + report burst cap + inline UI feedback).
 - Completed PR16: hardening bundle (Playwright e2e baseline + shared flash-message feedback parsing + SQL/manual verification assets).
 - Deferred for now: hide/remove posts moderation slice.
-- Remaining V2 priorities: optional QoL tuning and deferred moderation revisit decision.
+- Remaining V2 priorities: none required for V3 start; deferred moderation revisit remains optional.
+- Roadmap transition: active development moved to V3 PR17 notifications bundle.
 
 ## Goals
 - Preserve completed moderation foundation and document validated behavior.
