@@ -83,7 +83,7 @@ This file lists checks that are still manual (not fully automated in e2e).
 ### 11) Production hardening checks (PR24)
 1. Verify response security headers in preview deployment.
 2. Confirm no sensitive auth/session values appear in server logs.
-3. Dry-run backup/restore checklist and record outcome.
+3. Dry-run backup/restore checklist from `web/docs/operations-runbook.md` and record outcome.
 4. Re-run role-gated route checks after hardening changes.
 
 ## SQL verification (Supabase Dashboard)

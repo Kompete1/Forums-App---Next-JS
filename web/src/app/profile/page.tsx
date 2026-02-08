@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getMyProfile, updateMyDisplayName } from "@/lib/db/profiles";
+import { logServerError } from "@/lib/server/logging";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export default async function ProfilePage() {
     try {
       await updateMyDisplayName(displayName);
     } catch (error) {
-      console.error("updateDisplayNameAction failed", error);
+      logServerError("updateDisplayNameAction", error);
     }
 
     revalidatePath("/profile");

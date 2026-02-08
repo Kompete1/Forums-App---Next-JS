@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { NotificationsRealtimeSync } from "@/components/notifications-realtime-sync";
 import { listMyNotifications, markAllNotificationsRead, markNotificationRead } from "@/lib/db/notifications";
 import { createClient } from "@/lib/supabase/server";
+import { logServerError } from "@/lib/server/logging";
 
 export const dynamic = "force-dynamic";
 
@@ -86,7 +87,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     try {
       await markNotificationRead(id);
     } catch (error) {
-      console.error("markReadAction failed", error);
+      logServerError("markReadAction", error);
     }
 
     revalidatePath("/notifications");
@@ -99,7 +100,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
     try {
       await markAllNotificationsRead();
     } catch (error) {
-      console.error("markAllReadAction failed", error);
+      logServerError("markAllReadAction", error);
     }
 
     revalidatePath("/notifications");

@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isCurrentUserNewsletterAdmin } from "@/lib/db/newsletter-admins";
 import { createNewsletter, listNewsletters } from "@/lib/db/newsletters";
+import { logServerError } from "@/lib/server/logging";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export default async function NewsletterPage() {
     try {
       await createNewsletter({ title, body });
     } catch (error) {
-      console.error("createNewsletterAction failed", error);
+      logServerError("createNewsletterAction", error);
     }
 
     revalidatePath("/newsletter");
