@@ -6,6 +6,18 @@ export type MyProfile = {
   display_name: string | null;
 };
 
+type DbClient = Awaited<ReturnType<typeof createClient>>;
+
+function normalizeUserId(value: string) {
+  const userId = value.trim();
+
+  if (!userId) {
+    throw new Error("User ID is required.");
+  }
+
+  return userId;
+}
+
 function normalizeDisplayName(value: string) {
   const normalized = value.trim();
 
@@ -33,8 +45,7 @@ async function requireUserId() {
   return { supabase, userId: user.id };
 }
 
-export async function getMyProfile() {
-  const { supabase, userId } = await requireUserId();
+async function getProfileByUserIdInternal(supabase: DbClient, userId: string) {
   const { data, error } = await supabase
     .from("profiles")
     .select("id, email, display_name")
@@ -48,8 +59,7 @@ export async function getMyProfile() {
   return data as MyProfile;
 }
 
-export async function updateMyDisplayName(displayName: string) {
-  const { supabase, userId } = await requireUserId();
+async function updateDisplayNameByUserIdInternal(supabase: DbClient, userId: string, displayName: string) {
   const normalized = normalizeDisplayName(displayName);
 
   const { data, error } = await supabase
@@ -64,4 +74,26 @@ export async function updateMyDisplayName(displayName: string) {
   }
 
   return data as MyProfile;
+}
+
+export async function getProfileByUserId(userIdInput: string) {
+  const userId = normalizeUserId(userIdInput);
+  const supabase = await createClient();
+  return getProfileByUserIdInternal(supabase, userId);
+}
+
+export async function updateDisplayNameByUserId(userIdInput: string, displayName: string) {
+  const userId = normalizeUserId(userIdInput);
+  const supabase = await createClient();
+  return updateDisplayNameByUserIdInternal(supabase, userId, displayName);
+}
+
+export async function getMyProfile() {
+  const { supabase, userId } = await requireUserId();
+  return getProfileByUserIdInternal(supabase, userId);
+}
+
+export async function updateMyDisplayName(displayName: string) {
+  const { supabase, userId } = await requireUserId();
+  return updateDisplayNameByUserIdInternal(supabase, userId, displayName);
 }
