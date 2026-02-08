@@ -4,7 +4,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { listCategories } from "@/lib/db/categories";
 import { createThread } from "@/lib/db/posts";
-import { getWriteErrorMessage, isWriteErrorCode, normalizeWriteError } from "@/lib/db/write-errors";
+import { normalizeWriteError } from "@/lib/db/write-errors";
+import { appendQueryParams, getSingleSearchParam, getWriteErrorMessageFromSearchParams } from "@/lib/ui/flash-message";
 import { CreateThreadForm } from "@/components/create-thread-form";
 
 export const dynamic = "force-dynamic";
@@ -15,14 +16,6 @@ type NewThreadPageProps = {
     errorCode?: string | string[];
   }>;
 };
-
-function getParamValue(value: string | string[] | undefined) {
-  if (Array.isArray(value)) {
-    return value[0]?.trim() ?? "";
-  }
-
-  return value?.trim() ?? "";
-}
 
 export default async function NewThreadPage({ searchParams }: NewThreadPageProps) {
   const resolvedParams = (await searchParams) ?? {};
@@ -36,9 +29,8 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
   }
 
   const categories = await listCategories();
-  const requestedSlug = getParamValue(resolvedParams.category);
-  const rawErrorCode = getParamValue(resolvedParams.errorCode);
-  const submitErrorMessage = isWriteErrorCode(rawErrorCode) ? getWriteErrorMessage(rawErrorCode) : null;
+  const requestedSlug = getSingleSearchParam(resolvedParams, "category");
+  const submitErrorMessage = getWriteErrorMessageFromSearchParams(resolvedParams, "errorCode");
   const selectedCategory =
     categories.find((category) => category.slug === requestedSlug) ??
     categories.find((category) => category.slug === "general-paddock") ??
@@ -61,7 +53,7 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
       console.error("createThreadAction failed", error);
       const normalized = normalizeWriteError(error);
       const fallbackSlug = category?.slug ?? selectedCategory?.slug ?? "general-paddock";
-      redirect(`/forum/new?category=${encodeURIComponent(fallbackSlug)}&errorCode=${encodeURIComponent(normalized.code)}`);
+      redirect(appendQueryParams("/forum/new", { category: fallbackSlug, errorCode: normalized.code }));
     }
 
     revalidatePath("/forum");
@@ -69,7 +61,7 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
     revalidatePath("/categories");
     if (category?.slug) {
       revalidatePath(`/forum/category/${category.slug}`);
-      redirect(`/forum/category/${category.slug}?posted=1`);
+      redirect(appendQueryParams(`/forum/category/${category.slug}`, { posted: "1" }));
     }
 
     redirect(`/forum/${newThreadId}`);

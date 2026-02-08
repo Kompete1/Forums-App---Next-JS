@@ -7,7 +7,8 @@ import { listCategories } from "@/lib/db/categories";
 import { createReply, listRepliesByThreadIds } from "@/lib/db/replies";
 import { createReport } from "@/lib/db/reports";
 import { canCurrentUserModerateThreads, setThreadLockState } from "@/lib/db/moderation";
-import { getWriteErrorMessage, isWriteErrorCode, normalizeWriteError } from "@/lib/db/write-errors";
+import { normalizeWriteError } from "@/lib/db/write-errors";
+import { appendWriteErrorCode, getWriteErrorMessageFromSearchParams } from "@/lib/ui/flash-message";
 
 export const dynamic = "force-dynamic";
 
@@ -22,25 +23,12 @@ type ThreadDetailPageProps = {
   }>;
 };
 
-function getParamValue(value: string | string[] | undefined) {
-  if (Array.isArray(value)) {
-    return value[0]?.trim() ?? "";
-  }
-
-  return value?.trim() ?? "";
-}
-
 export default async function ThreadDetailPage({ params, searchParams }: ThreadDetailPageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = (await searchParams) ?? {};
-  const replyErrorCode = getParamValue(resolvedSearchParams.replyErrorCode);
-  const threadReportErrorCode = getParamValue(resolvedSearchParams.threadReportErrorCode);
-  const replyReportErrorCode = getParamValue(resolvedSearchParams.replyReportErrorCode);
-  const replyErrorMessage = isWriteErrorCode(replyErrorCode) ? getWriteErrorMessage(replyErrorCode) : null;
-  const threadReportErrorMessage = isWriteErrorCode(threadReportErrorCode)
-    ? getWriteErrorMessage(threadReportErrorCode)
-    : null;
-  const replyReportErrorMessage = isWriteErrorCode(replyReportErrorCode) ? getWriteErrorMessage(replyReportErrorCode) : null;
+  const replyErrorMessage = getWriteErrorMessageFromSearchParams(resolvedSearchParams, "replyErrorCode");
+  const threadReportErrorMessage = getWriteErrorMessageFromSearchParams(resolvedSearchParams, "threadReportErrorCode");
+  const replyReportErrorMessage = getWriteErrorMessageFromSearchParams(resolvedSearchParams, "replyReportErrorCode");
   const { threadId } = resolvedParams;
   const thread = await getThreadById(threadId);
 
@@ -118,7 +106,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
     } catch (error) {
       console.error("createReplyAction failed", error);
       const normalized = normalizeWriteError(error);
-      redirect(`/forum/${encodeURIComponent(tid)}?replyErrorCode=${encodeURIComponent(normalized.code)}`);
+      redirect(appendWriteErrorCode(`/forum/${encodeURIComponent(tid)}`, "replyErrorCode", normalized.code));
     }
 
     revalidatePath(`/forum/${tid}`);
@@ -146,7 +134,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
     } catch (error) {
       console.error("createThreadReportAction failed", error);
       const normalized = normalizeWriteError(error);
-      redirect(`/forum/${encodeURIComponent(tid)}?threadReportErrorCode=${encodeURIComponent(normalized.code)}`);
+      redirect(appendWriteErrorCode(`/forum/${encodeURIComponent(tid)}`, "threadReportErrorCode", normalized.code));
     }
 
     revalidatePath(`/forum/${tid}`);
@@ -173,7 +161,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
     } catch (error) {
       console.error("createReplyReportAction failed", error);
       const normalized = normalizeWriteError(error);
-      redirect(`/forum/${encodeURIComponent(threadIdValue)}?replyReportErrorCode=${encodeURIComponent(normalized.code)}`);
+      redirect(appendWriteErrorCode(`/forum/${encodeURIComponent(threadIdValue)}`, "replyReportErrorCode", normalized.code));
     }
 
     revalidatePath(`/forum/${threadIdValue}`);

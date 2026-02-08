@@ -11,6 +11,7 @@ This document now tracks completed slices and explicit deferrals.
 - Completed PR13: SA motorsport UI/UX redesign foundation (`/` landing refresh, `/forum` discovery, `/forum/[threadId]` detail, category model refresh).
 - Completed PR14: forum IA refactor (`/forum` threads-first layout, `/forum/new`, `/forum/category/[slug]`, `/profile`).
 - Completed PR15: anti-spam/rate-limit basics (DB cooldown triggers on posts/replies/reports + report burst cap + inline UI feedback).
+- Completed PR16: hardening bundle (Playwright e2e baseline + shared flash-message feedback parsing + SQL/manual verification assets).
 - Deferred for now: hide/remove posts moderation slice.
 - Remaining V2 priorities: optional QoL tuning and deferred moderation revisit decision.
 
@@ -28,14 +29,14 @@ This document now tracks completed slices and explicit deferrals.
 - Implementing deferred hide/remove moderation in this cycle.
 
 ## Acceptance Criteria
-1. Docs reflect completed V2 slices through PR15.
+1. Docs reflect completed V2 slices through PR16.
 2. Docs explicitly state hide/remove moderation is deferred/skipped for now.
 3. Remaining V2 priorities are documented without reintroducing deferred scope as active.
 
 ## Verification
 - `SPEC.md` includes current V2 status and defer note.
 - `plans/v2-execplan.md` reflects PR10/PR11/PR12 completion and remaining scope.
-- `plans/pr13-v2-ui-redesign-execplan.md`, `plans/pr14-v2-forum-ia-refactor-execplan.md`, and `plans/pr15-v2-anti-spam-execplan.md` exist and align with implementation.
+- `plans/pr13-v2-ui-redesign-execplan.md`, `plans/pr14-v2-forum-ia-refactor-execplan.md`, `plans/pr15-v2-anti-spam-execplan.md`, and `plans/pr16-v2-hardening-playwright-execplan.md` exist and align with implementation.
 - `web/README.md` includes updated IA/status note with the defer decision.
 
 ## Risks / Mitigations
