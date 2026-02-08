@@ -10,14 +10,15 @@ Current scope includes:
 - V2 PR5 anti-spam baseline: DB cooldowns/burst limits with inline rate-limit feedback
 - V2 PR6 hardening: Playwright e2e baseline + shared flash-message parsing + verification assets
 - V3 PR17 notifications (completed): schema + event triggers + inbox + realtime refresh
-- V3 PR19 (in progress): forum UX polish and layout refinements
+- V3 PR19 forum UX polish (completed)
+- V3 PR20 (in progress): newsletter discussion bridge (`Start discussion`, linked thread filter)
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
-- Active build: V3 PR19 forum UX polish.
+- Active build: V3 PR20 newsletter discussion bridge.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Planned sequence after PR19: PR20 newsletter discussion bridge, PR21 test fixtures, PR22 attachments, PR23 admin dashboard, PR24 production hardening.
+- Planned sequence after PR20: PR21 test fixtures, PR22 attachments, PR23 admin dashboard, PR24 production hardening.
 
 ## Documentation Sync Contract
 
@@ -129,9 +130,9 @@ Apply in this exact order:
 - `web/supabase/migrations/20260207_pr13_v2_sa_forum_categories.sql`
 - `web/supabase/migrations/20260208_pr15_v2_anti_spam_rate_limit.sql`
 - `web/supabase/migrations/20260208_pr17_v3_notifications.sql`
+- `web/supabase/migrations/20260208_pr20_v3_newsletter_discussion_bridge.sql`
 
 Planned upcoming migration checkpoints:
-- PR20: add `posts.source_newsletter_id` (newsletter discussion bridge).
 - PR22: add attachments/storage schema and policy objects.
 
 ## Apply SQL (Dashboard-first)
@@ -282,6 +283,15 @@ Expected for non-mod: only own reports are returned (or none).
 7. Click `Mark all as read` and confirm no unread notifications remain.
 8. If user A has `mod`/`admin`, submit a new report as user B and confirm moderation notification appears for user A.
 
+### K) Newsletter discussion bridge (V3 PR20)
+1. Open `/newsletter`.
+2. Click `Start discussion` on one newsletter entry while signed in.
+3. Confirm `/forum/new` is prefilled and shows newsletter linkage context.
+4. Publish thread and confirm it is created successfully.
+5. Open `/newsletter` again and click `View discussions` for that newsletter.
+6. Confirm `/forum?newsletter=<id>` shows linked threads for that newsletter topic.
+7. Open linked thread and confirm source newsletter backlink metadata is visible.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -290,7 +300,7 @@ Run these manually even when Playwright passes:
 - Cross-user owner-boundary checks.
 - SQL object verification using `web/supabase/verification/pr15_rate_limit_checks.sql`.
 - Notifications SQL object verification using `web/supabase/verification/pr17_notifications_checks.sql`.
-- Newsletter discussion-link verification using `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql` (after PR20 migration).
+- Newsletter discussion-link verification using `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql`.
 - Attachments verification using `web/supabase/verification/pr22_attachments_checks.sql` (after PR22 migration).
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.

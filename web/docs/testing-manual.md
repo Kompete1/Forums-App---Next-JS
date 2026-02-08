@@ -50,7 +50,7 @@ This file lists checks that are still manual (not fully automated in e2e).
 4. Open `/forum/[threadId]` and confirm thread/replies/report controls remain visible and readable.
 5. Confirm no owner/mod controls disappeared after UI polish.
 
-### 7) Newsletter discussion bridge checks (PR20)
+### 7) Newsletter discussion bridge checks (PR20 active)
 1. Open `/newsletter` and click `Start discussion` on one newsletter entry.
 2. Confirm `/forum/new` is prefilled for discussion bootstrap.
 3. Publish thread and verify thread is linked back to source newsletter.
@@ -86,5 +86,5 @@ This file lists checks that are still manual (not fully automated in e2e).
 3. Confirm expected rows are returned for all sections.
 4. Run `web/supabase/verification/pr17_notifications_checks.sql`.
 5. Confirm notifications functions, triggers, and indexes are present.
-6. After PR20 migration, run `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql`.
+6. Run `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql` once PR20 migration is applied.
 7. After PR22 migration, run `web/supabase/verification/pr22_attachments_checks.sql`.

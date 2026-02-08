@@ -53,6 +53,9 @@ export function ThreadFeedList({
                 {thread.category_name ?? "Unknown"} | By {thread.author_display_name ?? thread.author_id} on{" "}
                 {new Date(thread.created_at).toLocaleString()}
               </p>
+              {thread.source_newsletter_id ? (
+                <p className="meta">Linked newsletter: {thread.source_newsletter_title ?? "Newsletter topic"}</p>
+              ) : null}
               <p className={thread.is_locked ? "thread-status locked" : "thread-status open"}>
                 {thread.is_locked ? "Locked" : "Open"} | {repliesCount} replies
               </p>

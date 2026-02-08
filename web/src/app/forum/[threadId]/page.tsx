@@ -221,6 +221,14 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
         <p className="meta">
           By {thread.author_display_name ?? thread.author_id} on {new Date(thread.created_at).toLocaleString()}
         </p>
+        {thread.source_newsletter_id ? (
+          <p className="meta">
+            Source newsletter: {thread.source_newsletter_title ?? "Newsletter topic"} |{" "}
+            <Link href="/newsletter" className="btn-link focus-link">
+              Open newsletter feed
+            </Link>
+          </p>
+        ) : null}
         <p className={thread.is_locked ? "thread-status locked" : "thread-status open"}>
           Status: {thread.is_locked ? "Locked" : "Open"}
         </p>
