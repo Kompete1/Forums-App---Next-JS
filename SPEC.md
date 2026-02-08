@@ -79,6 +79,7 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
 - Data retention/privacy notes.
 - Active execution slice:
   - PR24 production hardening pack
+  - PR26 auth session consistency hotfix (logout prefetch)
 
 ## Non-Goals (Current)
 - Complex rich-text editor.

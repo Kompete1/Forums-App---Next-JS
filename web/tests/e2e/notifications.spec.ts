@@ -20,7 +20,8 @@ async function login(page: Page, email: string | undefined, password: string | u
 }
 
 async function logout(page: Page) {
-  await page.goto("/auth/logout");
+  await page.goto("/profile");
+  await page.getByRole("button", { name: "Logout" }).click();
   await expect(page).toHaveURL(/\/auth\/login$/);
 }
 
@@ -87,7 +88,7 @@ test("reply by secondary user produces notification and read controls update sta
 
   const response = await page.goto("/notifications");
   await skipIfNotificationsMigrationMissing(page, response);
-  await expect(page.getByText("replied to your thread.")).toBeVisible();
+  await expect(page.getByText("replied to your thread.").first()).toBeVisible();
   await expect(page.locator(".unread-badge")).toBeVisible();
 
   const markReadButtons = page.getByRole("button", { name: "Mark read" });
