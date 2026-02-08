@@ -54,6 +54,17 @@ export function CreateThreadForm({
         <label htmlFor="thread-body">Body</label>
         <textarea id="thread-body" name="body" defaultValue={defaultBody} required minLength={1} maxLength={5000} rows={7} />
       </div>
+      <div className="field">
+        <label htmlFor="thread-attachments">Images (optional, up to 3)</label>
+        <input
+          id="thread-attachments"
+          name="attachments"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          multiple
+        />
+        <p className="meta">Allowed: JPG, PNG, WEBP, GIF. Max 5MB each.</p>
+      </div>
       <SubmitButton />
     </form>
   );

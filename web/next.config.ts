@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    serverActions: {
+      // Allow up to 3 image files (max 5MB each) plus multipart overhead.
+      bodySizeLimit: "20mb",
+    },
+  },
 };
 
 export default nextConfig;

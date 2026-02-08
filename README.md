@@ -3,7 +3,7 @@
 Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase Auth + Postgres.
 
 ## Status
-- Current milestone: `V3 PR21` test fixtures and Supabase role setup.
+- Current milestone: `V3 PR22` attachments and storage.
 
 ## Repository Role
 - This repository contains the dynamic forums application.
@@ -17,7 +17,7 @@ Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase A
 ## Workflow
 1. Read `SPEC.md` for scoped requirements.
 2. Read `PLANS.md` for planning standards.
-3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr21-v3-test-fixtures-supabase-execplan.md`).
+3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr22-v3-attachments-storage-execplan.md`).
 4. Ship one logical chunk per PR.
 
 ## Local Run

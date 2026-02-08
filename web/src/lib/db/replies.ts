@@ -115,15 +115,21 @@ export async function createReply(input: ReplyInput) {
 
   const { supabase, userId } = await requireUserId();
 
-  const { error } = await supabase.from("replies").insert({
-    thread_id: threadId,
-    author_id: userId,
-    body,
-  });
+  const { data, error } = await supabase
+    .from("replies")
+    .insert({
+      thread_id: threadId,
+      author_id: userId,
+      body,
+    })
+    .select("id")
+    .single();
 
   if (error) {
     throw toWriteActionError(error);
   }
+
+  return data.id as string;
 }
 
 export async function updateReply(id: string, bodyInput: string) {

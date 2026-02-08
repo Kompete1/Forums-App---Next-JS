@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { getThreadById, updateThread, deleteThread } from "@/lib/db/posts";
 import { listCategories } from "@/lib/db/categories";
@@ -8,7 +9,15 @@ import { createReply, listRepliesByThreadIds } from "@/lib/db/replies";
 import { createReport } from "@/lib/db/reports";
 import { canCurrentUserModerateThreads, setThreadLockState } from "@/lib/db/moderation";
 import { normalizeWriteError } from "@/lib/db/write-errors";
-import { appendWriteErrorCode, getWriteErrorMessageFromSearchParams } from "@/lib/ui/flash-message";
+import { appendQueryParams, appendWriteErrorCode, getSingleSearchParam, getWriteErrorMessageFromSearchParams } from "@/lib/ui/flash-message";
+import {
+  AttachmentActionError,
+  getAttachmentErrorMessage,
+  getAttachmentFiles,
+  listAttachmentsForThreadAndReplies,
+  saveReplyAttachments,
+  validateAttachmentFiles,
+} from "@/lib/db/attachments";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +27,7 @@ type ThreadDetailPageProps = {
   }>;
   searchParams?: Promise<{
     replyErrorCode?: string | string[];
+    replyAttachmentErrorCode?: string | string[];
     threadReportErrorCode?: string | string[];
     replyReportErrorCode?: string | string[];
   }>;
@@ -27,6 +37,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
   const resolvedParams = await params;
   const resolvedSearchParams = (await searchParams) ?? {};
   const replyErrorMessage = getWriteErrorMessageFromSearchParams(resolvedSearchParams, "replyErrorCode");
+  const replyAttachmentErrorMessage = getAttachmentErrorMessage(getSingleSearchParam(resolvedSearchParams, "replyAttachmentErrorCode"));
   const threadReportErrorMessage = getWriteErrorMessageFromSearchParams(resolvedSearchParams, "threadReportErrorCode");
   const replyReportErrorMessage = getWriteErrorMessageFromSearchParams(resolvedSearchParams, "replyReportErrorCode");
   const { threadId } = resolvedParams;
@@ -40,6 +51,12 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
   const backToFeedHref = thread.category_slug ? `/forum/category/${encodeURIComponent(thread.category_slug)}` : "/forum";
   const [categories, repliesMap] = await Promise.all([listCategories(), listRepliesByThreadIds([thread.id])]);
   const replies = repliesMap[thread.id] ?? [];
+  const attachments = await listAttachmentsForThreadAndReplies({ threadId: thread.id, replyIds: replies.map((reply) => reply.id) }).catch(
+    () => ({
+      threadAttachments: [],
+      replyAttachmentsById: {} as Record<string, { id: string; file_name: string; url: string }[]>,
+    }),
+  );
 
   const supabase = await createClient();
   const {
@@ -96,14 +113,20 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
 
     const tid = String(formData.get("threadId") ?? "");
     const body = String(formData.get("body") ?? "");
+    const replyAttachments = getAttachmentFiles(formData, "replyAttachments");
 
     if (!tid) {
       return;
     }
 
     try {
-      await createReply({ threadId: tid, body });
+      validateAttachmentFiles(replyAttachments);
+      const replyId = await createReply({ threadId: tid, body });
+      await saveReplyAttachments(replyId, replyAttachments);
     } catch (error) {
+      if (error instanceof AttachmentActionError) {
+        redirect(appendQueryParams(`/forum/${encodeURIComponent(tid)}`, { replyAttachmentErrorCode: error.code }));
+      }
       console.error("createReplyAction failed", error);
       const normalized = normalizeWriteError(error);
       redirect(appendWriteErrorCode(`/forum/${encodeURIComponent(tid)}`, "replyErrorCode", normalized.code));
@@ -218,6 +241,23 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
           <h1>{thread.title}</h1>
         </div>
         <p style={{ whiteSpace: "pre-wrap" }}>{thread.body}</p>
+        {attachments.threadAttachments.length > 0 ? (
+          <div className="attachments-grid">
+            {attachments.threadAttachments.map((attachment) => (
+              <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="attachment-card">
+                <Image
+                  src={attachment.url}
+                  alt={attachment.file_name}
+                  className="attachment-image"
+                  width={320}
+                  height={240}
+                  unoptimized
+                />
+                <span className="meta">{attachment.file_name}</span>
+              </a>
+            ))}
+          </div>
+        ) : null}
         <p className="meta">
           By {thread.author_display_name ?? thread.author_id} on {new Date(thread.created_at).toLocaleString()}
         </p>
@@ -338,6 +378,23 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
           {replies.map((reply) => (
             <article key={reply.id} className="card">
               <p style={{ whiteSpace: "pre-wrap" }}>{reply.body}</p>
+              {(attachments.replyAttachmentsById[reply.id] ?? []).length > 0 ? (
+                <div className="attachments-grid">
+                  {(attachments.replyAttachmentsById[reply.id] ?? []).map((attachment) => (
+                    <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="attachment-card">
+                      <Image
+                        src={attachment.url}
+                        alt={attachment.file_name}
+                        className="attachment-image"
+                        width={320}
+                        height={240}
+                        unoptimized
+                      />
+                      <span className="meta">{attachment.file_name}</span>
+                    </a>
+                  ))}
+                </div>
+              ) : null}
               <p className="meta">
                 By {reply.author_display_name ?? reply.author_id} on {new Date(reply.created_at).toLocaleString()}
               </p>
@@ -380,10 +437,22 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
         {user && !thread.is_locked ? (
           <form action={createReplyAction} className="stack">
             <input type="hidden" name="threadId" value={thread.id} />
+            {replyAttachmentErrorMessage ? <p className="thread-status locked">{replyAttachmentErrorMessage}</p> : null}
             {replyErrorMessage ? <p className="thread-status locked">{replyErrorMessage}</p> : null}
             <div className="field">
               <label htmlFor={`reply-${thread.id}`}>Add reply</label>
               <textarea id={`reply-${thread.id}`} name="body" required minLength={1} maxLength={5000} rows={4} />
+            </div>
+            <div className="field">
+              <label htmlFor={`reply-attachments-${thread.id}`}>Images (optional, up to 3)</label>
+              <input
+                id={`reply-attachments-${thread.id}`}
+                name="replyAttachments"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                multiple
+              />
+              <p className="meta">Allowed: JPG, PNG, WEBP, GIF. Max 5MB each.</p>
             </div>
             <button type="submit" className="btn btn-primary">
               Post reply

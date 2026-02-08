@@ -41,6 +41,12 @@
 - Document backup/restore habit and incident response steps in reproducible checklists.
 - Document table-level data retention and privacy handling notes.
 
+## Attachments Security Notes (PR22)
+- Restrict uploads to image MIME types only (JPEG, PNG, WEBP, GIF).
+- Enforce per-file size limit (5MB) and per-action count limit.
+- Use private storage bucket and policy-gated object access.
+- Ensure storage object paths are owner-scoped and not guessable by simple sequential IDs.
+
 ## Incident Basics
 - If policy bug or secret leak occurs:
   1. Restrict access (disable affected route/policy or rotate keys).
