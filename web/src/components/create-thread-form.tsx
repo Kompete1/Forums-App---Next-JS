@@ -6,7 +6,7 @@ import type { ForumCategory } from "@/lib/db/categories";
 type CreateThreadFormProps = {
   categories: ForumCategory[];
   defaultCategoryId: string;
-  hasError?: boolean;
+  errorMessage?: string | null;
   action: (formData: FormData) => Promise<void>;
 };
 
@@ -19,11 +19,11 @@ function SubmitButton() {
   );
 }
 
-export function CreateThreadForm({ categories, defaultCategoryId, hasError = false, action }: CreateThreadFormProps) {
+export function CreateThreadForm({ categories, defaultCategoryId, errorMessage = null, action }: CreateThreadFormProps) {
   return (
     <form action={action} className="card stack">
       <h2>Create thread</h2>
-      {hasError ? <p className="thread-status locked">Could not publish thread. Please try again.</p> : null}
+      {errorMessage ? <p className="thread-status locked">{errorMessage}</p> : null}
       <div className="field">
         <label htmlFor="thread-category">Category</label>
         <select id="thread-category" name="categoryId" defaultValue={defaultCategoryId} required>

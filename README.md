@@ -3,7 +3,7 @@
 Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase Auth + Postgres.
 
 ## Status
-- Current milestone: `PR1` scaffold.
+- Current milestone: `V2 PR15` anti-spam/rate-limit baseline implemented.
 
 ## Repository Role
 - This repository contains the dynamic forums application.
@@ -17,18 +17,19 @@ Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase A
 ## Workflow
 1. Read `SPEC.md` for scoped requirements.
 2. Read `PLANS.md` for planning standards.
-3. Execute from `plans/v0-execplan.md` for V0.
+3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr15-v2-anti-spam-execplan.md`).
 4. Ship one logical chunk per PR.
 
-## Local Run (PR1)
+## Local Run
 1. `cd web`
 2. `npm install`
 3. `npm run dev`
 4. Open `http://localhost:3000`
 
-## Smoke Check (PR1)
-1. Open `http://localhost:3000/` and confirm page shows `Hello Forum (V0)`.
-2. Open `http://localhost:3000/health` and confirm response body is plain `OK`.
+## Smoke Check
+1. Open `http://localhost:3000/` and confirm landing page renders.
+2. Open `http://localhost:3000/forum` and confirm thread discovery renders.
+3. Open `http://localhost:3000/health` and confirm response body is plain `OK`.
 
 ## Docs Index
 - `AGENTS.md`: operating rules for Codex and contributors

@@ -7,17 +7,41 @@ import { listCategories } from "@/lib/db/categories";
 import { createReply, listRepliesByThreadIds } from "@/lib/db/replies";
 import { createReport } from "@/lib/db/reports";
 import { canCurrentUserModerateThreads, setThreadLockState } from "@/lib/db/moderation";
+import { getWriteErrorMessage, isWriteErrorCode, normalizeWriteError } from "@/lib/db/write-errors";
 
 export const dynamic = "force-dynamic";
 
 type ThreadDetailPageProps = {
-  params: {
+  params: Promise<{
     threadId: string;
-  };
+  }>;
+  searchParams?: Promise<{
+    replyErrorCode?: string | string[];
+    threadReportErrorCode?: string | string[];
+    replyReportErrorCode?: string | string[];
+  }>;
 };
 
-export default async function ThreadDetailPage({ params }: ThreadDetailPageProps) {
-  const { threadId } = params;
+function getParamValue(value: string | string[] | undefined) {
+  if (Array.isArray(value)) {
+    return value[0]?.trim() ?? "";
+  }
+
+  return value?.trim() ?? "";
+}
+
+export default async function ThreadDetailPage({ params, searchParams }: ThreadDetailPageProps) {
+  const resolvedParams = await params;
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const replyErrorCode = getParamValue(resolvedSearchParams.replyErrorCode);
+  const threadReportErrorCode = getParamValue(resolvedSearchParams.threadReportErrorCode);
+  const replyReportErrorCode = getParamValue(resolvedSearchParams.replyReportErrorCode);
+  const replyErrorMessage = isWriteErrorCode(replyErrorCode) ? getWriteErrorMessage(replyErrorCode) : null;
+  const threadReportErrorMessage = isWriteErrorCode(threadReportErrorCode)
+    ? getWriteErrorMessage(threadReportErrorCode)
+    : null;
+  const replyReportErrorMessage = isWriteErrorCode(replyReportErrorCode) ? getWriteErrorMessage(replyReportErrorCode) : null;
+  const { threadId } = resolvedParams;
   const thread = await getThreadById(threadId);
 
   if (!thread) {
@@ -93,10 +117,13 @@ export default async function ThreadDetailPage({ params }: ThreadDetailPageProps
       await createReply({ threadId: tid, body });
     } catch (error) {
       console.error("createReplyAction failed", error);
+      const normalized = normalizeWriteError(error);
+      redirect(`/forum/${encodeURIComponent(tid)}?replyErrorCode=${encodeURIComponent(normalized.code)}`);
     }
 
     revalidatePath(`/forum/${tid}`);
     revalidatePath("/forum");
+    redirect(`/forum/${encodeURIComponent(tid)}`);
   }
 
   async function createThreadReportAction(formData: FormData) {
@@ -118,9 +145,12 @@ export default async function ThreadDetailPage({ params }: ThreadDetailPageProps
       });
     } catch (error) {
       console.error("createThreadReportAction failed", error);
+      const normalized = normalizeWriteError(error);
+      redirect(`/forum/${encodeURIComponent(tid)}?threadReportErrorCode=${encodeURIComponent(normalized.code)}`);
     }
 
     revalidatePath(`/forum/${tid}`);
+    redirect(`/forum/${encodeURIComponent(tid)}`);
   }
 
   async function createReplyReportAction(formData: FormData) {
@@ -142,9 +172,12 @@ export default async function ThreadDetailPage({ params }: ThreadDetailPageProps
       });
     } catch (error) {
       console.error("createReplyReportAction failed", error);
+      const normalized = normalizeWriteError(error);
+      redirect(`/forum/${encodeURIComponent(threadIdValue)}?replyReportErrorCode=${encodeURIComponent(normalized.code)}`);
     }
 
     revalidatePath(`/forum/${threadIdValue}`);
+    redirect(`/forum/${encodeURIComponent(threadIdValue)}`);
   }
 
   async function lockThreadAction(formData: FormData) {
@@ -216,6 +249,7 @@ export default async function ThreadDetailPage({ params }: ThreadDetailPageProps
         {user ? (
           <form action={createThreadReportAction} className="stack">
             <input type="hidden" name="threadId" value={thread.id} />
+            {threadReportErrorMessage ? <p className="thread-status locked">{threadReportErrorMessage}</p> : null}
             <div className="field">
               <label htmlFor={`report-thread-reason-${thread.id}`}>Report thread reason</label>
               <input
@@ -302,6 +336,7 @@ export default async function ThreadDetailPage({ params }: ThreadDetailPageProps
 
       <section className="card stack">
         <h2>Replies</h2>
+        {replyReportErrorMessage ? <p className="thread-status locked">{replyReportErrorMessage}</p> : null}
         {replies.length === 0 ? <p className="empty-note">No replies yet.</p> : null}
         <div className="stack">
           {replies.map((reply) => (
@@ -349,6 +384,7 @@ export default async function ThreadDetailPage({ params }: ThreadDetailPageProps
         {user && !thread.is_locked ? (
           <form action={createReplyAction} className="stack">
             <input type="hidden" name="threadId" value={thread.id} />
+            {replyErrorMessage ? <p className="thread-status locked">{replyErrorMessage}</p> : null}
             <div className="field">
               <label htmlFor={`reply-${thread.id}`}>Add reply</label>
               <textarea id={`reply-${thread.id}`} name="body" required minLength={1} maxLength={5000} rows={4} />

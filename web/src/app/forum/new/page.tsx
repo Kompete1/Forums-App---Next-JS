@@ -4,6 +4,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { listCategories } from "@/lib/db/categories";
 import { createThread } from "@/lib/db/posts";
+import { getWriteErrorMessage, isWriteErrorCode, normalizeWriteError } from "@/lib/db/write-errors";
 import { CreateThreadForm } from "@/components/create-thread-form";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 type NewThreadPageProps = {
   searchParams?: Promise<{
     category?: string | string[];
-    error?: string | string[];
+    errorCode?: string | string[];
   }>;
 };
 
@@ -36,7 +37,8 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
 
   const categories = await listCategories();
   const requestedSlug = getParamValue(resolvedParams.category);
-  const hasSubmitError = getParamValue(resolvedParams.error) === "1";
+  const rawErrorCode = getParamValue(resolvedParams.errorCode);
+  const submitErrorMessage = isWriteErrorCode(rawErrorCode) ? getWriteErrorMessage(rawErrorCode) : null;
   const selectedCategory =
     categories.find((category) => category.slug === requestedSlug) ??
     categories.find((category) => category.slug === "general-paddock") ??
@@ -57,8 +59,9 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
       newThreadId = await createThread({ title, body, categoryId });
     } catch (error) {
       console.error("createThreadAction failed", error);
+      const normalized = normalizeWriteError(error);
       const fallbackSlug = category?.slug ?? selectedCategory?.slug ?? "general-paddock";
-      redirect(`/forum/new?category=${encodeURIComponent(fallbackSlug)}&error=1`);
+      redirect(`/forum/new?category=${encodeURIComponent(fallbackSlug)}&errorCode=${encodeURIComponent(normalized.code)}`);
     }
 
     revalidatePath("/forum");
@@ -91,7 +94,7 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
       <CreateThreadForm
         categories={categories}
         defaultCategoryId={defaultCategoryId}
-        hasError={hasSubmitError}
+        errorMessage={submitErrorMessage}
         action={createThreadAction}
       />
     </main>

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { toWriteActionError } from "@/lib/db/write-errors";
 
 export type ForumReply = {
   id: string;
@@ -121,7 +122,7 @@ export async function createReply(input: ReplyInput) {
   });
 
   if (error) {
-    throw new Error(error.message);
+    throw toWriteActionError(error);
   }
 }
 

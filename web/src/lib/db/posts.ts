@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { toWriteActionError } from "@/lib/db/write-errors";
 
 export type ForumThread = {
   id: string;
@@ -257,7 +258,7 @@ export async function createThread(input: ThreadInput) {
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    throw toWriteActionError(error);
   }
 
   return data.id as string;
