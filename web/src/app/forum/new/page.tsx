@@ -6,6 +6,13 @@ import { listCategories } from "@/lib/db/categories";
 import { createThread } from "@/lib/db/posts";
 import { getNewsletterById } from "@/lib/db/newsletters";
 import { normalizeWriteError } from "@/lib/db/write-errors";
+import {
+  AttachmentActionError,
+  getAttachmentErrorMessage,
+  getAttachmentFiles,
+  saveThreadAttachments,
+  validateAttachmentFiles,
+} from "@/lib/db/attachments";
 import { appendQueryParams, getSingleSearchParam, getWriteErrorMessageFromSearchParams } from "@/lib/ui/flash-message";
 import { CreateThreadForm } from "@/components/create-thread-form";
 
@@ -16,6 +23,7 @@ type NewThreadPageProps = {
     category?: string | string[];
     fromNewsletter?: string | string[];
     errorCode?: string | string[];
+    attachmentErrorCode?: string | string[];
   }>;
 };
 
@@ -35,6 +43,7 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
   const fromNewsletterId = getSingleSearchParam(resolvedParams, "fromNewsletter");
   const sourceNewsletter = fromNewsletterId ? await getNewsletterById(fromNewsletterId).catch(() => null) : null;
   const submitErrorMessage = getWriteErrorMessageFromSearchParams(resolvedParams, "errorCode");
+  const attachmentErrorMessage = getAttachmentErrorMessage(getSingleSearchParam(resolvedParams, "attachmentErrorCode"));
   const fallbackCategorySlug = sourceNewsletter ? "general-paddock" : requestedSlug;
   const selectedCategory =
     categories.find((category) => category.slug === fallbackCategorySlug) ??
@@ -54,13 +63,39 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
     const body = String(formData.get("body") ?? "");
     const categoryId = String(formData.get("categoryId") ?? "");
     const sourceNewsletterId = String(formData.get("sourceNewsletterId") ?? "");
+    const attachments = getAttachmentFiles(formData, "attachments");
     const category = categories.find((item) => item.id === categoryId) ?? null;
+
+    try {
+      validateAttachmentFiles(attachments);
+    } catch (error) {
+      if (error instanceof AttachmentActionError) {
+        const fallbackSlug = category?.slug ?? selectedCategory?.slug ?? "general-paddock";
+        redirect(
+          appendQueryParams("/forum/new", {
+            category: fallbackSlug,
+            fromNewsletter: sourceNewsletter?.id ?? null,
+            attachmentErrorCode: error.code,
+          }),
+        );
+      }
+    }
 
     let newThreadId = "";
     try {
       newThreadId = await createThread({ title, body, categoryId, sourceNewsletterId });
+      await saveThreadAttachments(newThreadId, attachments);
     } catch (error) {
       console.error("createThreadAction failed", error);
+      if (error instanceof AttachmentActionError) {
+        redirect(
+          appendQueryParams("/forum/new", {
+            category: category?.slug ?? selectedCategory?.slug ?? "general-paddock",
+            fromNewsletter: sourceNewsletter?.id ?? null,
+            attachmentErrorCode: error.code,
+          }),
+        );
+      }
       const normalized = normalizeWriteError(error);
       const fallbackSlug = category?.slug ?? selectedCategory?.slug ?? "general-paddock";
       redirect(
@@ -109,7 +144,7 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
         defaultTitle={defaultTitle}
         defaultBody={defaultBody}
         sourceNewsletterId={sourceNewsletter?.id ?? null}
-        errorMessage={submitErrorMessage}
+        errorMessage={attachmentErrorMessage ?? submitErrorMessage}
         action={createThreadAction}
       />
     </main>

@@ -12,14 +12,15 @@ Current scope includes:
 - V3 PR17 notifications (completed): schema + event triggers + inbox + realtime refresh
 - V3 PR19 forum UX polish (completed)
 - V3 PR20 newsletter discussion bridge (completed)
-- V3 PR21 (in progress): Supabase test fixtures and reproducible role setup
+- V3 PR21 test fixtures and role setup (completed)
+- V3 PR22 (in progress): attachments/images with Supabase Storage
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
-- Active build: V3 PR21 test fixtures and role setup.
+- Active build: V3 PR22 attachments and storage.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Planned sequence after PR21: PR22 attachments, PR23 admin dashboard, PR24 production hardening.
+- Planned sequence after PR22: PR23 admin dashboard, PR24 production hardening.
 
 ## Documentation Sync Contract
 
@@ -167,9 +168,10 @@ Apply in this exact order:
 - `web/supabase/migrations/20260208_pr15_v2_anti_spam_rate_limit.sql`
 - `web/supabase/migrations/20260208_pr17_v3_notifications.sql`
 - `web/supabase/migrations/20260208_pr20_v3_newsletter_discussion_bridge.sql`
+- `web/supabase/migrations/20260208_pr22_v3_attachments_storage.sql`
 
 Planned upcoming migration checkpoints:
-- PR22: add attachments/storage schema and policy objects.
+- PR23: add admin dashboard support schema only if required.
 
 ## Apply SQL (Dashboard-first)
 
@@ -327,6 +329,14 @@ Expected for non-mod: only own reports are returned (or none).
 5. Open `/newsletter` again and click `View discussions` for that newsletter.
 6. Confirm `/forum?newsletter=<id>` shows linked threads for that newsletter topic.
 7. Open linked thread and confirm source newsletter backlink metadata is visible.
+
+### L) Attachments and storage (V3 PR22)
+1. Apply `web/supabase/migrations/20260208_pr22_v3_attachments_storage.sql` in Supabase SQL Editor.
+2. Open `/forum/new` as signed-in user and attach 1-3 valid images (JPG/PNG/WEBP/GIF, each <=5MB).
+3. Publish thread and confirm images render on the thread detail page.
+4. Post a reply with image attachment and confirm it renders under that reply.
+5. Attempt upload of invalid type or oversize file and confirm inline rejection message appears.
+6. Run `web/supabase/verification/pr22_attachments_checks.sql` and confirm table/indexes/policies/bucket are present.
 
 ## Manual-Only Checks After E2E
 
