@@ -16,22 +16,44 @@ export async function SiteHeader() {
   return (
     <header className="site-header">
       <div className="site-header-inner">
-        <Link href="/" className="site-brand">
+        <Link href="/" className="site-brand" prefetch={false}>
           SA Racing Forum
         </Link>
         <nav className="site-nav" aria-label="Primary">
-          <Link href="/forum">Forum</Link>
-          <Link href="/categories">Categories</Link>
-          <Link href="/newsletter">Newsletter</Link>
+          <Link href="/forum" prefetch={false}>
+            Forum
+          </Link>
+          <Link href="/categories" prefetch={false}>
+            Categories
+          </Link>
+          <Link href="/newsletter" prefetch={false}>
+            Newsletter
+          </Link>
           {user ? (
-            <Link href="/notifications" className="notifications-link">
+            <Link href="/notifications" className="notifications-link" prefetch={false}>
               Notifications
               {unreadCount > 0 ? <span className="unread-badge">{unreadLabel}</span> : null}
             </Link>
           ) : null}
-          {canModerate ? <Link href="/admin">Admin</Link> : null}
-          {canModerate ? <Link href="/moderation/reports">Moderation</Link> : null}
-          {user ? <Link href="/profile">Profile</Link> : <Link href="/auth/login">Login</Link>}
+          {canModerate ? (
+            <Link href="/admin" prefetch={false}>
+              Admin
+            </Link>
+          ) : null}
+          {canModerate ? (
+            <Link href="/moderation/reports" prefetch={false}>
+              Moderation
+            </Link>
+          ) : null}
+          {user ? (
+            <Link href="/profile" prefetch={false}>
+              Profile
+            </Link>
+          ) : (
+            <Link href="/auth/login" prefetch={false}>
+              Login
+            </Link>
+          )}
         </nav>
       </div>
     </header>

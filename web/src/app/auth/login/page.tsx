@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 
 function getSafeNextPath(value: string | null) {
@@ -16,8 +15,6 @@ function getSafeNextPath(value: string | null) {
 }
 
 export default function LoginPage() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -44,8 +41,8 @@ export default function LoginPage() {
 
     const currentUrl = new URL(window.location.href);
     const nextPath = getSafeNextPath(currentUrl.searchParams.get("next")) ?? "/profile";
-    router.push(nextPath);
-    router.refresh();
+    // Force a full navigation after auth state change to avoid stale prefetched payloads.
+    window.location.assign(nextPath);
   }
 
   return (

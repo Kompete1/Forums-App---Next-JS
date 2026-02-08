@@ -20,15 +20,15 @@ export function CategoryHeader({ category, threadCount, isSignedIn }: CategoryHe
       </div>
       <p className="meta">{category.description ?? "Motorsport discussions in this category."}</p>
       <div className="inline-actions">
-        <Link href="/categories" className="btn-link focus-link">
+        <Link href="/categories" className="btn-link focus-link" prefetch={false}>
           Back to categories
         </Link>
         {isSignedIn ? (
-          <Link href={createThreadPath} className="btn btn-primary">
+          <Link href={createThreadPath} className="btn btn-primary" prefetch={false}>
             Create thread in this category
           </Link>
         ) : (
-          <Link href={loginToCreatePath} className="btn btn-secondary">
+          <Link href={loginToCreatePath} className="btn btn-secondary" prefetch={false}>
             Login to create thread
           </Link>
         )}
