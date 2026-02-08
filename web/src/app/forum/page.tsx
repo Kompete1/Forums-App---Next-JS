@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import { listCategories } from "@/lib/db/categories";
 import { listThreadsPage, type ThreadSort } from "@/lib/db/posts";
 import { getNewsletterById } from "@/lib/db/newsletters";
 import { listRepliesByThreadIds } from "@/lib/db/replies";
+import { getCurrentUser } from "@/lib/supabase/auth";
 import { ForumFilterPanel } from "@/components/forum-filter-panel";
 import { ThreadFeedList } from "@/components/thread-feed-list";
 
@@ -60,10 +60,7 @@ function forumHref(input: { category?: string; q?: string; newsletter?: string; 
 
 export default async function ForumPage({ searchParams }: ForumPageProps) {
   const resolvedParams = (await searchParams) ?? {};
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const categories = await listCategories();
   const selectedCategorySlug = getParamValue(resolvedParams.category);

@@ -1,16 +1,13 @@
 /* eslint-disable @next/next/no-html-link-for-pages */
-import { createClient } from "@/lib/supabase/server";
-import { canCurrentUserModerateThreads } from "@/lib/db/moderation";
-import { getUnreadNotificationCount } from "@/lib/db/notifications";
+import { getCurrentUser } from "@/lib/supabase/auth";
+import { getUnreadNotificationCountForUser } from "@/lib/db/notifications";
+import { listRolesByUserId } from "@/lib/db/roles";
 
 export async function SiteHeader() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const canModerate = user ? await canCurrentUserModerateThreads().catch(() => false) : false;
-  const unreadCount = user ? await getUnreadNotificationCount().catch(() => 0) : 0;
+  const user = await getCurrentUser();
+  const roles = user ? await listRolesByUserId(user.id).catch(() => []) : [];
+  const canModerate = roles.includes("admin") || roles.includes("mod");
+  const unreadCount = user ? await getUnreadNotificationCountForUser(user.id).catch(() => 0) : 0;
   const unreadLabel = unreadCount > 99 ? "99+" : String(unreadCount);
 
   return (

@@ -50,3 +50,13 @@ test("signed-in user category create CTA opens /forum/new without login bounce",
   await expect(page).toHaveURL(new RegExp(`/forum/new\\?category=${categorySlug}`), { timeout: 15_000 });
   await expect(page.getByRole("heading", { name: "Create a discussion" })).toBeVisible();
 });
+
+test("direct login then profile back-to-forum stays signed in", async ({ page }) => {
+  await loginDirect(page);
+
+  await page.getByRole("link", { name: "Back to forum" }).click();
+
+  await expect(page).toHaveURL(/\/forum$/, { timeout: 15_000 });
+  await expect(page.getByText("Browsing as guest. Sign in to post and reply.")).toHaveCount(0);
+  await expect(page.getByText(/^Signed in as /)).toBeVisible();
+});

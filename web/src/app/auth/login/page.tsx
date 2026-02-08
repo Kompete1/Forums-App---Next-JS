@@ -1,10 +1,16 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/browser";
+import { redirect } from "next/navigation";
+import { appendQueryParams, getSingleSearchParam } from "@/lib/ui/flash-message";
+import { createClient } from "@/lib/supabase/server";
 
-function getSafeNextPath(value: string | null) {
+type LoginPageProps = {
+  searchParams?: Promise<{
+    next?: string | string[];
+    error?: string | string[];
+  }>;
+};
+
+function getSafeNextPath(value: string | null | undefined) {
   const candidate = value?.trim() ?? "";
 
   if (!candidate.startsWith("/") || candidate.startsWith("//")) {
@@ -14,35 +20,30 @@ function getSafeNextPath(value: string | null) {
   return candidate;
 }
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const resolvedParams = (await searchParams) ?? {};
+  const nextPath = getSafeNextPath(getSingleSearchParam(resolvedParams, "next"));
+  const errorMessage = getSingleSearchParam(resolvedParams, "error");
 
-  async function handleSignIn(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const supabase = createClient();
+  async function signInAction(formData: FormData) {
+    "use server";
 
-    setIsSubmitting(true);
-    setError(null);
+    const email = String(formData.get("email") ?? "");
+    const password = String(formData.get("password") ?? "");
+    const requestedNextPath = getSafeNextPath(String(formData.get("next") ?? ""));
+    const supabase = await createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setIsSubmitting(false);
-
-    if (signInError) {
-      setError(signInError.message);
-      return;
+    if (error) {
+      redirect(
+        appendQueryParams("/auth/login", {
+          next: requestedNextPath,
+          error: error.message,
+        }),
+      );
     }
 
-    const currentUrl = new URL(window.location.href);
-    const nextPath = getSafeNextPath(currentUrl.searchParams.get("next")) ?? "/profile";
-    const transitionPath = nextPath !== "/profile" ? `/profile?next=${encodeURIComponent(nextPath)}` : "/profile";
-    window.location.assign(transitionPath);
+    redirect(requestedNextPath ?? "/profile");
   }
 
   return (
@@ -50,14 +51,14 @@ export default function LoginPage() {
       <section className="auth-wrap card stack">
       <h1>Login</h1>
       <p className="meta">Sign in with your email and password.</p>
-      <form onSubmit={handleSignIn} className="stack">
+      <form action={signInAction} className="stack">
+        <input type="hidden" name="next" value={nextPath ?? ""} />
         <div className="field">
           <label htmlFor="email">Email</label>
           <input
             id="email"
+            name="email"
             type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
             required
           />
         </div>
@@ -65,18 +66,17 @@ export default function LoginPage() {
           <label htmlFor="password">Password</label>
           <input
             id="password"
+            name="password"
             type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
             required
             minLength={6}
           />
         </div>
-        <button type="submit" disabled={isSubmitting} className="btn btn-primary">
+        <button type="submit" className="btn btn-primary">
           Sign in
         </button>
       </form>
-      {error ? <p className="thread-status locked">{error}</p> : null}
+      {errorMessage ? <p className="thread-status locked">{errorMessage}</p> : null}
       <p className="inline-actions">
         <Link href="/auth/signup" className="btn-link focus-link">
           Sign up

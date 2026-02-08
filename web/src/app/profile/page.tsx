@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { getMyProfile, updateMyDisplayName } from "@/lib/db/profiles";
+import { getCurrentUser } from "@/lib/supabase/auth";
 import { logServerError } from "@/lib/server/logging";
 
 export const dynamic = "force-dynamic";
@@ -27,10 +27,7 @@ function getSafeNextPath(value: string | string[] | undefined) {
 
 export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const resolvedSearchParams = (await searchParams) ?? {};
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     redirect("/auth/login");

@@ -93,6 +93,26 @@ export async function getUnreadNotificationCount() {
   return count ?? 0;
 }
 
+export async function getUnreadNotificationCountForUser(userIdInput: string) {
+  const userId = normalizeText(userIdInput);
+  if (!userId) {
+    return 0;
+  }
+
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("notifications")
+    .select("id", { head: true, count: "exact" })
+    .eq("recipient_id", userId)
+    .eq("is_read", false);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return count ?? 0;
+}
+
 export async function listMyNotifications(params: ListMyNotificationsParams = {}) {
   const pageSize = normalizePositiveInt(params.pageSize, 20, 100);
   const page = normalizePositiveInt(params.page, 1, 10000);

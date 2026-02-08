@@ -19,6 +19,22 @@ async function requireUserId() {
   return { supabase, userId: user.id };
 }
 
+export async function listRolesByUserId(userIdInput: string) {
+  const userId = userIdInput.trim();
+  if (!userId) {
+    return [] as AppRole[];
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data ?? []) as UserRoleRow[]).map((row) => row.role);
+}
+
 export async function listMyRoles() {
   const { supabase, userId } = await requireUserId();
 

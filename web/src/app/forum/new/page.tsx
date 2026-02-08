@@ -1,7 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import { listCategories } from "@/lib/db/categories";
 import { createThread } from "@/lib/db/posts";
 import { getNewsletterById } from "@/lib/db/newsletters";
@@ -13,6 +12,7 @@ import {
   saveThreadAttachments,
   validateAttachmentFiles,
 } from "@/lib/db/attachments";
+import { getCurrentUser } from "@/lib/supabase/auth";
 import { appendQueryParams, getSingleSearchParam, getWriteErrorMessageFromSearchParams } from "@/lib/ui/flash-message";
 import { logServerError } from "@/lib/server/logging";
 import { CreateThreadForm } from "@/components/create-thread-form";
@@ -36,10 +36,7 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
     category: requestedSlug,
     fromNewsletter: fromNewsletterId,
   });
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     redirect(appendQueryParams("/auth/login", { next: redirectBackTo }));
