@@ -3,7 +3,7 @@
 Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase Auth + Postgres.
 
 ## Status
-- Current milestone: `V2 PR15` anti-spam/rate-limit baseline implemented.
+- Current milestone: `V2 PR16` hardening bundle (e2e baseline + verification assets) implemented.
 
 ## Repository Role
 - This repository contains the dynamic forums application.
@@ -17,7 +17,7 @@ Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase A
 ## Workflow
 1. Read `SPEC.md` for scoped requirements.
 2. Read `PLANS.md` for planning standards.
-3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr15-v2-anti-spam-execplan.md`).
+3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr16-v2-hardening-playwright-execplan.md`).
 4. Ship one logical chunk per PR.
 
 ## Local Run

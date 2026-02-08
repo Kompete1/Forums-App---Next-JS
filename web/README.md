@@ -7,10 +7,12 @@ Current scope includes:
 - V2 PR2 thread locking: moderator/admin lock control and locked-reply guard
 - V2 PR3 reports pipeline: report thread/reply and moderator report review
 - V2 PR4 UI/UX redesign: SA motorsport branding, landing hero, forum discovery + detail IA
+- V2 PR5 anti-spam baseline: DB cooldowns/burst limits with inline rate-limit feedback
+- V2 PR6 hardening: Playwright e2e baseline + shared flash-message parsing + verification assets
 
 ## Roadmap Status Note
 
-- Completed through V2 PR5: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline.
+- Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
 - Next V2 focus is optional QoL tuning and deferred-scope re-evaluation.
 
@@ -69,7 +71,27 @@ From `web/`:
 ```bash
 npm run lint
 npm run build
+npm run test:e2e
 ```
+
+## Playwright E2E Setup
+
+From `web/`:
+
+```bash
+npx playwright install chromium
+```
+
+Optional auth test credentials in `web/.env.local`:
+
+```bash
+E2E_TEST_EMAIL=your_test_user_email
+E2E_TEST_PASSWORD=your_test_user_password
+```
+
+Notes:
+- Guest e2e tests run without these credentials.
+- Auth e2e tests are skipped automatically if credentials are missing.
 
 ## Migration Files
 
@@ -216,6 +238,16 @@ Expected for non-mod: only own reports are returned (or none).
 4. Submit a thread or reply report, then immediately submit another and confirm report cooldown message appears (about 30s window).
 5. Submit more than 10 reports within 15 minutes and confirm burst-limit message appears.
 6. Confirm duplicate same-target report is still rejected by the existing unique constraint.
+
+## Manual-Only Checks After E2E
+
+Run these manually even when Playwright passes:
+- Moderator-only access and lock/unlock flows.
+- Report burst window validation (`>10` in 15 minutes).
+- Cross-user owner-boundary checks.
+- SQL object verification using `web/supabase/verification/pr15_rate_limit_checks.sql`.
+
+Detailed click-by-click steps are in `web/docs/testing-manual.md`.
 
 ## RLS Policy Summary
 

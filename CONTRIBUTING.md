@@ -14,6 +14,13 @@
 - No secrets or environment values committed.
 - Docs updated when behavior or process changes.
 
+## PR Description Addendum (Required)
+Include a section named `What I Could Not Test Locally` with:
+- The exact check not completed.
+- Why it could not be completed locally.
+- Exact manual click path and expected result.
+- Any SQL snippet needed to validate behavior.
+
 ## Local Validation
 - Run project checks for the current stage (build/lint/tests when configured).
 - Manually test auth and protected flows for security-sensitive changes.

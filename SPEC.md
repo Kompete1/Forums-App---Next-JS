@@ -44,6 +44,7 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
   - Thread locking (mod/admin lock/unlock + locked-reply guard)
   - Reports pipeline (report thread/reply + moderator review list)
   - Anti-spam/rate-limit basics (DB-enforced cooldowns for thread/reply/report + report burst cap)
+  - Hardening baseline (Playwright e2e smoke coverage + standardized write feedback parsing + verification assets)
   - South African motorsport UI/UX refresh foundations:
     - Landing-first IA (`/`, `/forum`, `/forum/[threadId]`)
     - Readability-first design system and navigation shell
