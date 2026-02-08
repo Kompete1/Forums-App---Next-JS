@@ -9,12 +9,12 @@ Current scope includes:
 - V2 PR4 UI/UX redesign: SA motorsport branding, landing hero, forum discovery + detail IA
 - V2 PR5 anti-spam baseline: DB cooldowns/burst limits with inline rate-limit feedback
 - V2 PR6 hardening: Playwright e2e baseline + shared flash-message parsing + verification assets
-- V3 PR17 notifications (in progress): schema + event triggers + inbox + realtime refresh
+- V3 PR17 notifications (completed): schema + event triggers + inbox + realtime refresh
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
-- Active build: V3 PR17 notifications bundle.
+- Active build: V3 PR18 closeout and lint reliability.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
 - V3 next focus after PR17: attachments/storage and admin dashboard slices.
 
