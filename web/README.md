@@ -13,14 +13,15 @@ Current scope includes:
 - V3 PR19 forum UX polish (completed)
 - V3 PR20 newsletter discussion bridge (completed)
 - V3 PR21 test fixtures and role setup (completed)
-- V3 PR22 (in progress): attachments/images with Supabase Storage
+- V3 PR22 attachments/images with Supabase Storage (completed)
+- V3 PR23 (in progress): admin dashboard
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
-- Active build: V3 PR22 attachments and storage.
+- Active build: V3 PR23 admin dashboard.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Planned sequence after PR22: PR23 admin dashboard, PR24 production hardening.
+- Planned next after PR23: PR24 production hardening.
 
 ## Documentation Sync Contract
 
@@ -80,6 +81,7 @@ Open:
 - `http://localhost:3000/profile`
 - `http://localhost:3000/newsletter`
 - `http://localhost:3000/notifications`
+- `http://localhost:3000/admin` (mod/admin only)
 - `http://localhost:3000/auth/login`
 - `http://localhost:3000/auth/signup`
 
@@ -171,7 +173,7 @@ Apply in this exact order:
 - `web/supabase/migrations/20260208_pr22_v3_attachments_storage.sql`
 
 Planned upcoming migration checkpoints:
-- PR23: add admin dashboard support schema only if required.
+- PR24: production hardening config/docs checkpoint.
 
 ## Apply SQL (Dashboard-first)
 
@@ -338,6 +340,11 @@ Expected for non-mod: only own reports are returned (or none).
 5. Attempt upload of invalid type or oversize file and confirm inline rejection message appears.
 6. Run `web/supabase/verification/pr22_attachments_checks.sql` and confirm table/indexes/policies/bucket are present.
 
+### M) Admin dashboard (V3 PR23)
+1. Sign in as mod/admin and open `/admin`; confirm dashboard totals and recent panels render.
+2. Confirm quick links route correctly to `/moderation/reports`, `/newsletter`, `/forum`, and `/notifications`.
+3. Sign in as non-mod and open `/admin`; confirm access denied.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -348,6 +355,7 @@ Run these manually even when Playwright passes:
 - Notifications SQL object verification using `web/supabase/verification/pr17_notifications_checks.sql`.
 - Newsletter discussion-link verification using `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql`.
 - Attachments verification using `web/supabase/verification/pr22_attachments_checks.sql` (after PR22 migration).
+- Admin dashboard role-gate and quick-link checks (`/admin` as mod/admin and non-mod).
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.
 

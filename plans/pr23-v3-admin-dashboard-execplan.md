@@ -15,6 +15,7 @@ Introduce a role-gated admin/mod dashboard to centralize moderation and operatio
 ## Assumptions and open questions
 - Assumption: reuse existing role checks from `user_roles`.
 - Assumption: dashboard can aggregate existing data helpers in server components.
+- Assumption: role summary panel uses current-user role snapshot in first slice because `user_roles` is own-read under RLS.
 - Open question: none blocking.
 
 ## User journeys
@@ -25,6 +26,7 @@ Introduce a role-gated admin/mod dashboard to centralize moderation and operatio
 ## Interfaces and data model
 - New route: `web/src/app/admin/page.tsx`.
 - Reuse existing report/role/newsletter interfaces first.
+- Add read-only server helper for dashboard aggregates (no privileged role lookup mutation path).
 - No schema changes expected in initial slice.
 
 ## Authorization/RLS policy plan

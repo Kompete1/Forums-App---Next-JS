@@ -29,6 +29,7 @@ export async function SiteHeader() {
               {unreadCount > 0 ? <span className="unread-badge">{unreadLabel}</span> : null}
             </Link>
           ) : null}
+          {canModerate ? <Link href="/admin">Admin</Link> : null}
           {canModerate ? <Link href="/moderation/reports">Moderation</Link> : null}
           {user ? <Link href="/profile">Profile</Link> : <Link href="/auth/login">Login</Link>}
         </nav>

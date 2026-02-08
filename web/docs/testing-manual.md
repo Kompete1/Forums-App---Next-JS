@@ -69,16 +69,16 @@ This file lists checks that are still manual (not fully automated in e2e).
 6. Optional e2e check: set `E2E_TEST_*` + `E2E_ALT_*` in `web/.env.local` and run `npm run test:e2e`; dual-user notifications test should run (not skip).
 7. Run `web/supabase/testing/reset_dummy_content_template.sql` and verify only `[SEED]` rows are removed.
 
-### 9) Attachments checks (PR22 active)
+### 9) Attachments checks (PR22 completed)
 1. Upload allowed image type/size during thread or reply creation.
 2. Confirm uploaded attachment renders for authorized viewers.
 3. Attempt oversize/invalid MIME upload and confirm rejection message.
 4. Attempt cross-user unauthorized attachment access and confirm denial.
 
-### 10) Admin dashboard checks (PR23)
+### 10) Admin dashboard checks (PR23 active)
 1. Sign in as mod/admin and open `/admin`; confirm dashboard is visible.
 2. Sign in as non-mod user and open `/admin`; confirm access denied.
-3. Verify dashboard links route correctly to moderation/newsletter workflows.
+3. Verify dashboard links route correctly to moderation/newsletter/forum/notifications workflows.
 
 ### 11) Production hardening checks (PR24)
 1. Verify response security headers in preview deployment.
