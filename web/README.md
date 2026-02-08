@@ -15,14 +15,15 @@ Current scope includes:
 - V3 PR21 test fixtures and role setup (completed)
 - V3 PR22 attachments/images with Supabase Storage (completed)
 - V3 PR23 admin dashboard (completed)
-- V4 PR24 (in progress): production hardening pack
+- V4 PR24 production hardening pack (completed)
+- V4 PR26 (in progress): auth session consistency hotfix (logout prefetch)
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
-- Active build: V4 PR24 production hardening pack.
+- Active build: V4 PR26 auth session consistency hotfix.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Planned next after PR24: V4 follow-up hardening refinements as needed.
+- Planned next after PR26: V4 follow-up hardening refinements as needed.
 
 ## Documentation Sync Contract
 
@@ -370,6 +371,14 @@ Expected for non-mod: only own reports are returned (or none).
 3. Sign in and confirm you land on `/forum/new?category=general-paddock`.
 4. While signed in, click `Create thread in this category` and confirm no login bounce occurs.
 
+### P) Auth session consistency and explicit logout (V4 PR26)
+1. Open `/auth/login` in a new private/incognito session and sign in with a valid test user.
+2. Confirm you land on `/profile`, then wait at least 4 seconds without clicking logout.
+3. Click `Back to forum` and confirm `/forum` shows `Signed in as ...` and does not show `Browsing as guest. Sign in to post and reply.`.
+4. Return to `/profile`, click `Logout`, and confirm redirect to `/auth/login`.
+5. Open `/forum` and confirm guest messaging is shown after explicit logout.
+6. Open `/auth/logout` directly and confirm it redirects to `/auth/login` without destructive side effects.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -382,6 +391,7 @@ Run these manually even when Playwright passes:
 - Attachments verification using `web/supabase/verification/pr22_attachments_checks.sql` (after PR22 migration).
 - Admin dashboard role-gate and quick-link checks (`/admin` as mod/admin and non-mod).
 - Security headers and sanitized server-action logging checks (PR24).
+- Auth session consistency checks (PR26).
 - Backup/restore and release checklists from `web/docs/operations-runbook.md`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.

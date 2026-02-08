@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-html-link-for-pages */
-import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getProfileByUserId, updateDisplayNameByUserId } from "@/lib/db/profiles";
@@ -87,9 +86,11 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       <section className="card stack">
         <h2>Session</h2>
         <div className="inline-actions">
-          <Link href="/auth/logout" className="btn btn-secondary">
-            Logout
-          </Link>
+          <form action="/auth/logout" method="post">
+            <button type="submit" className="btn btn-secondary">
+              Logout
+            </button>
+          </form>
           <a href="/forum" className="btn-link focus-link">
             Back to forum
           </a>

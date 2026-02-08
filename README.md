@@ -3,7 +3,7 @@
 Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase Auth + Postgres.
 
 ## Status
-- Current milestone: `V4 PR24` production hardening pack.
+- Current milestone: `V4 PR26` auth session consistency hotfix.
 
 ## Repository Role
 - This repository contains the dynamic forums application.
@@ -17,7 +17,7 @@ Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase A
 ## Workflow
 1. Read `SPEC.md` for scoped requirements.
 2. Read `PLANS.md` for planning standards.
-3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr24-v4-production-hardening-pack-execplan.md`).
+3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr26-v4-auth-session-consistency-execplan.md`).
 4. Ship one logical chunk per PR.
 
 ## Local Run

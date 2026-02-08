@@ -93,6 +93,14 @@ This file lists checks that are still manual (not fully automated in e2e).
 4. Sign in and confirm redirect to `/forum/new?category=general-paddock`.
 5. Repeat while already signed in and confirm CTA label is `Create thread in this category` with direct navigation to `/forum/new`.
 
+### 13) Auth session consistency + explicit logout checks (PR26)
+1. Open `/auth/login` and sign in with a valid user.
+2. Confirm landing on `/profile`, then wait at least 4 seconds.
+3. Click `Back to forum` and confirm forum still shows signed-in state (`Signed in as ...`) with no guest banner.
+4. Navigate back to `/profile`, click `Logout`, and confirm redirect to `/auth/login`.
+5. Open `/forum` and confirm guest state is shown after logout.
+6. Open `GET /auth/logout` directly and confirm it redirects to `/auth/login` without changing session unless logout is explicitly clicked.
+
 ## SQL verification (Supabase Dashboard)
 1. Open `SQL Editor`.
 2. Run `web/supabase/verification/pr15_rate_limit_checks.sql`.

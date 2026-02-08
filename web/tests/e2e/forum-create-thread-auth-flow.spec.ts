@@ -53,10 +53,23 @@ test("signed-in user category create CTA opens /forum/new without login bounce",
 
 test("direct login then profile back-to-forum stays signed in", async ({ page }) => {
   await loginDirect(page);
+  await page.waitForTimeout(4_000);
+  await expect(page).toHaveURL(/\/profile$/, { timeout: 15_000 });
 
   await page.getByRole("link", { name: "Back to forum" }).click();
 
   await expect(page).toHaveURL(/\/forum$/, { timeout: 15_000 });
   await expect(page.getByText("Browsing as guest. Sign in to post and reply.")).toHaveCount(0);
   await expect(page.getByText(/^Signed in as /)).toBeVisible();
+});
+
+test("explicit profile logout signs out and forum renders guest state", async ({ page }) => {
+  await loginDirect(page);
+
+  await page.getByRole("button", { name: "Logout" }).click();
+  await expect(page).toHaveURL(/\/auth\/login$/, { timeout: 15_000 });
+
+  await page.goto("/forum");
+  await expect(page.getByText("Browsing as guest. Sign in to post and reply.")).toBeVisible();
+  await expect(page.getByText(/^Signed in as /)).toHaveCount(0);
 });
