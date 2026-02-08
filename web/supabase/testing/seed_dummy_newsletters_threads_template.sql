@@ -33,6 +33,17 @@ cross join (
 on conflict do nothing;
 
 -- Optional seed threads (uses whichever regular test user exists)
+with chosen_users as (
+  select id, email
+  from auth.users
+  where email in ('test-user-a@example.com')
+),
+default_category as (
+  select id
+  from public.categories
+  where slug = 'general-paddock'
+  limit 1
+)
 insert into public.posts (author_id, category_id, title, body)
 select
   u.id,

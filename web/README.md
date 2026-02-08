@@ -11,14 +11,15 @@ Current scope includes:
 - V2 PR6 hardening: Playwright e2e baseline + shared flash-message parsing + verification assets
 - V3 PR17 notifications (completed): schema + event triggers + inbox + realtime refresh
 - V3 PR19 forum UX polish (completed)
-- V3 PR20 (in progress): newsletter discussion bridge (`Start discussion`, linked thread filter)
+- V3 PR20 newsletter discussion bridge (completed)
+- V3 PR21 (in progress): Supabase test fixtures and reproducible role setup
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
-- Active build: V3 PR20 newsletter discussion bridge.
+- Active build: V3 PR21 test fixtures and role setup.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Planned sequence after PR20: PR21 test fixtures, PR22 attachments, PR23 admin dashboard, PR24 production hardening.
+- Planned sequence after PR21: PR22 attachments, PR23 admin dashboard, PR24 production hardening.
 
 ## Documentation Sync Contract
 
@@ -117,6 +118,41 @@ Fixture setup templates (PR21):
 - `web/supabase/testing/assign_test_roles_template.sql`
 - `web/supabase/testing/seed_dummy_newsletters_threads_template.sql`
 - `web/supabase/testing/reset_dummy_content_template.sql`
+
+## PR21 Test Fixtures Quickstart
+
+Use this order in Supabase SQL Editor after creating test users in Auth:
+1. `web/supabase/testing/assign_test_roles_template.sql`
+2. `web/supabase/testing/seed_dummy_newsletters_threads_template.sql`
+3. Optional cleanup: `web/supabase/testing/reset_dummy_content_template.sql`
+
+Recommended test users and roles:
+- `test-admin@example.com` -> `admin`
+- `test-mod@example.com` -> `mod`
+- `test-user-a@example.com` -> `user`
+- `test-user-b@example.com` -> `user`
+
+Verify role assignments:
+```sql
+select u.email, ur.role, ur.created_at
+from public.user_roles ur
+join auth.users u on u.id = ur.user_id
+where u.email in (
+  'test-admin@example.com',
+  'test-mod@example.com',
+  'test-user-a@example.com',
+  'test-user-b@example.com'
+)
+order by u.email, ur.role;
+```
+
+Verify seeded content:
+```sql
+select id, title, created_at
+from public.newsletters
+where title like '[SEED]%'
+order by created_at desc;
+```
 
 ## Migration Files
 
