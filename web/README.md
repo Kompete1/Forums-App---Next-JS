@@ -64,6 +64,12 @@ In Supabase Dashboard -> Authentication -> URL Configuration:
   - `https://forums-app-next-js.vercel.app/*`
   - `https://*.vercel.app/*` (or exact preview domain pattern)
 
+## Auth Session Consistency (SSR)
+
+- `web/middleware.ts` keeps Supabase auth cookies in sync for server-rendered routes.
+- Protected routes such as `/forum/new` redirect to login with `next=<return-path>`.
+- After sign-in, login returns users to a safe internal `next` path when present.
+
 ## Run Locally
 
 From `web/`:
@@ -357,6 +363,12 @@ Expected for non-mod: only own reports are returned (or none).
    - `cross-origin-opener-policy: same-origin`
 2. Trigger a known write failure (for example rate-limit path) and confirm logs include sanitized action context without raw token values.
 3. Follow `web/docs/operations-runbook.md` backup/restore dry-run checklist and record results.
+
+### O) Auth redirect-back flow for create thread (PR25)
+1. Open `/forum/category/general-paddock` while signed out.
+2. Click `Login to create thread` and confirm URL includes `/auth/login?next=...`.
+3. Sign in and confirm you land on `/forum/new?category=general-paddock`.
+4. While signed in, click `Create thread in this category` and confirm no login bounce occurs.
 
 ## Manual-Only Checks After E2E
 

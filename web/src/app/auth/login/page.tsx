@@ -5,6 +5,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 
+function getSafeNextPath(value: string | null) {
+  const candidate = value?.trim() ?? "";
+
+  if (!candidate.startsWith("/") || candidate.startsWith("//")) {
+    return null;
+  }
+
+  return candidate;
+}
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -32,7 +42,9 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/profile");
+    const currentUrl = new URL(window.location.href);
+    const nextPath = getSafeNextPath(currentUrl.searchParams.get("next")) ?? "/profile";
+    router.push(nextPath);
     router.refresh();
   }
 

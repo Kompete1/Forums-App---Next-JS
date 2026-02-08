@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { listCategories } from "@/lib/db/categories";
 import { listThreadsPage, type ThreadSort } from "@/lib/db/posts";
 import { listRepliesByThreadIds } from "@/lib/db/replies";
+import { createClient } from "@/lib/supabase/server";
 import { CategoryHeader } from "@/components/category-header";
 import { ForumFilterPanel } from "@/components/forum-filter-panel";
 import { ThreadFeedList } from "@/components/thread-feed-list";
@@ -56,6 +57,10 @@ function categoryHref(slug: string, input: { q?: string; sort?: string; page?: n
 export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
   const { slug } = await params;
   const resolvedParams = (await searchParams) ?? {};
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const categories = await listCategories();
   const category = categories.find((item) => item.slug === slug) ?? null;
 
@@ -83,7 +88,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
   return (
     <main className="page-wrap stack">
-      <CategoryHeader category={category} threadCount={threadsPage.total} />
+      <CategoryHeader category={category} threadCount={threadsPage.total} isSignedIn={Boolean(user)} />
       {hasPostedNotice ? <section className="card"><p className="success-note">Thread published successfully.</p></section> : null}
 
       <section className="forum-layout">
