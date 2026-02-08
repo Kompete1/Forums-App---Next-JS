@@ -67,10 +67,10 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
     - trigger-driven notification events for replies/reports
     - `/notifications` inbox + read-state controls
     - header unread badge + realtime inbox refresh
-- In progress:
   - PR19 forum UX polish and layout refinements
-- Planned next:
+- In progress:
   - PR20 newsletter -> forum discussion bridge
+- Planned next:
   - PR21 dummy users/mods + test fixture SQL templates
   - PR22 attachments/images (Supabase Storage)
   - PR23 admin dashboard

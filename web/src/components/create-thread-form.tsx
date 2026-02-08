@@ -6,6 +6,9 @@ import type { ForumCategory } from "@/lib/db/categories";
 type CreateThreadFormProps = {
   categories: ForumCategory[];
   defaultCategoryId: string;
+  defaultTitle?: string;
+  defaultBody?: string;
+  sourceNewsletterId?: string | null;
   errorMessage?: string | null;
   action: (formData: FormData) => Promise<void>;
 };
@@ -19,10 +22,19 @@ function SubmitButton() {
   );
 }
 
-export function CreateThreadForm({ categories, defaultCategoryId, errorMessage = null, action }: CreateThreadFormProps) {
+export function CreateThreadForm({
+  categories,
+  defaultCategoryId,
+  defaultTitle = "",
+  defaultBody = "",
+  sourceNewsletterId = null,
+  errorMessage = null,
+  action,
+}: CreateThreadFormProps) {
   return (
     <form action={action} className="card stack">
       <h2>Create thread</h2>
+      {sourceNewsletterId ? <input type="hidden" name="sourceNewsletterId" value={sourceNewsletterId} /> : null}
       {errorMessage ? <p className="thread-status locked">{errorMessage}</p> : null}
       <div className="field">
         <label htmlFor="thread-category">Category</label>
@@ -36,11 +48,11 @@ export function CreateThreadForm({ categories, defaultCategoryId, errorMessage =
       </div>
       <div className="field">
         <label htmlFor="thread-title">Title</label>
-        <input id="thread-title" name="title" type="text" required minLength={1} maxLength={120} />
+        <input id="thread-title" name="title" type="text" defaultValue={defaultTitle} required minLength={1} maxLength={120} />
       </div>
       <div className="field">
         <label htmlFor="thread-body">Body</label>
-        <textarea id="thread-body" name="body" required minLength={1} maxLength={5000} rows={7} />
+        <textarea id="thread-body" name="body" defaultValue={defaultBody} required minLength={1} maxLength={5000} rows={7} />
       </div>
       <SubmitButton />
     </form>

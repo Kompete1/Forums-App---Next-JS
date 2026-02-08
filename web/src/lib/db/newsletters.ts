@@ -89,6 +89,40 @@ export async function listNewsletters() {
   })) as Newsletter[];
 }
 
+export async function getNewsletterById(id: string) {
+  const newsletterId = normalizeText(id);
+  if (!newsletterId) {
+    return null;
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("newsletters")
+    .select("id, author_id, title, body, created_at, updated_at, profiles:author_id(display_name)")
+    .eq("id", newsletterId)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const row = data as NewsletterRow;
+  return {
+    id: row.id,
+    author_id: row.author_id,
+    title: row.title,
+    body: row.body,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    author_display_name: toDisplayName(row.profiles),
+  } as Newsletter;
+}
+
 export async function createNewsletter(input: { title: string; body: string }) {
   const { title, body } = validateNewsletterInput(input.title, input.body);
   const { supabase, userId } = await requireUserId();

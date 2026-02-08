@@ -67,6 +67,20 @@ export default async function NewsletterPage() {
               <p className="meta">
                 By {item.author_display_name ?? item.author_id} on {new Date(item.created_at).toLocaleString()}
               </p>
+              <div className="inline-actions">
+                {user ? (
+                  <Link href={`/forum/new?fromNewsletter=${encodeURIComponent(item.id)}`} className="btn btn-primary">
+                    Start discussion
+                  </Link>
+                ) : (
+                  <Link href="/auth/login" className="btn btn-secondary">
+                    Login to discuss
+                  </Link>
+                )}
+                <Link href={`/forum?newsletter=${encodeURIComponent(item.id)}`} className="btn btn-secondary">
+                  View discussions
+                </Link>
+              </div>
             </article>
           ))}
         </div>

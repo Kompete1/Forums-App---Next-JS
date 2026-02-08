@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { listCategories } from "@/lib/db/categories";
 import { listThreadsPage, type ThreadSort } from "@/lib/db/posts";
+import { getNewsletterById } from "@/lib/db/newsletters";
 import { listRepliesByThreadIds } from "@/lib/db/replies";
 import { ForumFilterPanel } from "@/components/forum-filter-panel";
 import { ThreadFeedList } from "@/components/thread-feed-list";
@@ -12,6 +13,7 @@ type ForumPageProps = {
   searchParams?: Promise<{
     category?: string | string[];
     q?: string | string[];
+    newsletter?: string | string[];
     sort?: string | string[];
     page?: string | string[];
   }>;
@@ -33,7 +35,7 @@ function toPositiveInt(value: string, fallback: number) {
   return parsed;
 }
 
-function forumHref(input: { category?: string; q?: string; sort?: string; page?: number }) {
+function forumHref(input: { category?: string; q?: string; newsletter?: string; sort?: string; page?: number }) {
   const search = new URLSearchParams();
 
   if (input.category) {
@@ -41,6 +43,9 @@ function forumHref(input: { category?: string; q?: string; sort?: string; page?:
   }
   if (input.q) {
     search.set("q", input.q);
+  }
+  if (input.newsletter) {
+    search.set("newsletter", input.newsletter);
   }
   if (input.sort && input.sort !== "newest") {
     search.set("sort", input.sort);
@@ -66,10 +71,15 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
   const hasInvalidCategoryFilter = Boolean(selectedCategorySlug) && !selectedCategory;
   const sort = getParamValue(resolvedParams.sort) === "oldest" ? ("oldest" as ThreadSort) : ("newest" as ThreadSort);
   const query = getParamValue(resolvedParams.q);
+  const newsletterId = getParamValue(resolvedParams.newsletter);
   const page = toPositiveInt(getParamValue(resolvedParams.page), 1);
+  const linkedNewsletter = newsletterId ? await getNewsletterById(newsletterId).catch(() => null) : null;
+  const activeNewsletterId = linkedNewsletter?.id ?? "";
+  const filterApplyPath = linkedNewsletter ? `/forum?newsletter=${encodeURIComponent(linkedNewsletter.id)}` : "/forum";
 
   const threadsPage = await listThreadsPage({
     categoryId: selectedCategory?.id,
+    newsletterId: activeNewsletterId,
     query,
     sort,
     page,
@@ -88,6 +98,7 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
         <p className="kicker">Forum Discovery</p>
         <h1>South African Motorsport Forum</h1>
         <p className="meta">{user ? `Signed in as ${user.email}` : "Browsing as guest. Sign in to post and reply."}</p>
+        {linkedNewsletter ? <p className="filter-chip">Newsletter filter: {linkedNewsletter.title}</p> : null}
       </section>
 
       <section className="forum-layout">
@@ -97,8 +108,8 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
             selectedCategorySlug={selectedCategory?.slug}
             query={query}
             sort={sort}
-            applyPath="/forum"
-            clearHref="/forum"
+            applyPath={filterApplyPath}
+            clearHref={linkedNewsletter ? `/forum?newsletter=${encodeURIComponent(linkedNewsletter.id)}` : "/forum"}
             showCategorySelect
             selectedLabel={selectedCategory?.name ?? "All categories"}
           />
@@ -143,12 +154,17 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
             page={threadsPage.page}
             totalPages={totalPages}
             noResultsText="No threads found for this filter."
-            subtitleChip={`Showing: ${selectedCategory?.name ?? "All categories"}`}
+            subtitleChip={
+              linkedNewsletter
+                ? `Showing: ${selectedCategory?.name ?? "All categories"} | Linked to: ${linkedNewsletter.title}`
+                : `Showing: ${selectedCategory?.name ?? "All categories"}`
+            }
             prevHref={
               threadsPage.page > 1
                 ? forumHref({
                     category: selectedCategory?.slug,
                     q: query,
+                    newsletter: linkedNewsletter?.id,
                     sort,
                     page: threadsPage.page - 1,
                   })
@@ -159,6 +175,7 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
                 ? forumHref({
                     category: selectedCategory?.slug,
                     q: query,
+                    newsletter: linkedNewsletter?.id,
                     sort,
                     page: threadsPage.page + 1,
                   })
