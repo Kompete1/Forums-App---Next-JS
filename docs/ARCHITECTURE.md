@@ -54,6 +54,6 @@ Repo A points users into Repo B using an iframe and/or direct link.
   - Completed: PR20 newsletter discussion bridge.
   - Completed: PR21 test fixtures.
   - Completed: PR22 attachments and storage.
-  - Active: PR23 admin dashboard.
+  - Completed: PR23 admin dashboard.
 - V4:
-  - Planned: PR24 production hardening pack (headers, logging hygiene, retention/runbook docs).
+  - Active: PR24 production hardening pack (headers, logging hygiene, retention/runbook docs).

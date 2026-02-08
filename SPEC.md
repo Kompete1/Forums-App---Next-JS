@@ -71,16 +71,13 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
   - PR20 newsletter -> forum discussion bridge
   - PR21 dummy users/mods + test fixture SQL templates
   - PR22 attachments/images (Supabase Storage)
-- In progress:
   - PR23 admin dashboard
-- Planned next:
-  - PR24 production hardening pack
 
 ## V4: Production Hardening
 - Backup/restore habit.
 - Logging/monitoring practice.
 - Data retention/privacy notes.
-- Planned execution slice:
+- Active execution slice:
   - PR24 production hardening pack
 
 ## Non-Goals (Current)

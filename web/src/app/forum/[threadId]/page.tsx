@@ -18,6 +18,7 @@ import {
   saveReplyAttachments,
   validateAttachmentFiles,
 } from "@/lib/db/attachments";
+import { logServerError } from "@/lib/server/logging";
 
 export const dynamic = "force-dynamic";
 
@@ -80,7 +81,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
     try {
       await updateThread(id, { title, body, categoryId });
     } catch (error) {
-      console.error("updateThreadAction failed", error);
+      logServerError("updateThreadAction", error);
     }
 
     revalidatePath(`/forum/${id}`);
@@ -99,7 +100,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
     try {
       await deleteThread(id);
     } catch (error) {
-      console.error("deleteThreadAction failed", error);
+      logServerError("deleteThreadAction", error);
       return;
     }
 
@@ -127,7 +128,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
       if (error instanceof AttachmentActionError) {
         redirect(appendQueryParams(`/forum/${encodeURIComponent(tid)}`, { replyAttachmentErrorCode: error.code }));
       }
-      console.error("createReplyAction failed", error);
+      logServerError("createReplyAction", error);
       const normalized = normalizeWriteError(error);
       redirect(appendWriteErrorCode(`/forum/${encodeURIComponent(tid)}`, "replyErrorCode", normalized.code));
     }
@@ -155,7 +156,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
         notes,
       });
     } catch (error) {
-      console.error("createThreadReportAction failed", error);
+      logServerError("createThreadReportAction", error);
       const normalized = normalizeWriteError(error);
       redirect(appendWriteErrorCode(`/forum/${encodeURIComponent(tid)}`, "threadReportErrorCode", normalized.code));
     }
@@ -182,7 +183,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
         notes,
       });
     } catch (error) {
-      console.error("createReplyReportAction failed", error);
+      logServerError("createReplyReportAction", error);
       const normalized = normalizeWriteError(error);
       redirect(appendWriteErrorCode(`/forum/${encodeURIComponent(threadIdValue)}`, "replyReportErrorCode", normalized.code));
     }
@@ -202,7 +203,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
     try {
       await setThreadLockState(tid, true);
     } catch (error) {
-      console.error("lockThreadAction failed", error);
+      logServerError("lockThreadAction", error);
     }
 
     revalidatePath(`/forum/${tid}`);
@@ -220,7 +221,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
     try {
       await setThreadLockState(tid, false);
     } catch (error) {
-      console.error("unlockThreadAction failed", error);
+      logServerError("unlockThreadAction", error);
     }
 
     revalidatePath(`/forum/${tid}`);

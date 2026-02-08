@@ -35,11 +35,11 @@
 - Never reuse production passwords for fixture accounts.
 - Rotate fixture account passwords if they are shared across contributors.
 
-## Upcoming Hardening Checklist (PR24 Scope)
-- Add and verify baseline security headers in Next.js config.
-- Standardize server-side error logging boundaries to avoid sensitive token/session leakage.
-- Document backup/restore habit and incident response steps in reproducible checklists.
-- Document table-level data retention and privacy handling notes.
+## Hardening Baseline (Implemented in PR24)
+- Baseline security headers configured in `web/next.config.ts`.
+- Server-action error logging standardized with token/message redaction.
+- Reproducible release and backup/restore checklists documented in `web/docs/operations-runbook.md`.
+- Current retention/privacy baseline documented (with fixture-cleanup workflow).
 
 ## Attachments Security Notes (PR22)
 - Restrict uploads to image MIME types only (JPEG, PNG, WEBP, GIF).

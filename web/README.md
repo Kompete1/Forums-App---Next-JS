@@ -14,14 +14,15 @@ Current scope includes:
 - V3 PR20 newsletter discussion bridge (completed)
 - V3 PR21 test fixtures and role setup (completed)
 - V3 PR22 attachments/images with Supabase Storage (completed)
-- V3 PR23 (in progress): admin dashboard
+- V3 PR23 admin dashboard (completed)
+- V4 PR24 (in progress): production hardening pack
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
-- Active build: V3 PR23 admin dashboard.
+- Active build: V4 PR24 production hardening pack.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Planned next after PR23: PR24 production hardening.
+- Planned next after PR24: V4 follow-up hardening refinements as needed.
 
 ## Documentation Sync Contract
 
@@ -94,6 +95,8 @@ npm run lint
 npm run build
 npm run test:e2e
 ```
+
+Security header smoke check is covered in e2e (`tests/e2e/security-headers.spec.ts`).
 
 ## Playwright E2E Setup
 
@@ -345,6 +348,16 @@ Expected for non-mod: only own reports are returned (or none).
 2. Confirm quick links route correctly to `/moderation/reports`, `/newsletter`, `/forum`, and `/notifications`.
 3. Sign in as non-mod and open `/admin`; confirm access denied.
 
+### N) Production hardening pack (V4 PR24)
+1. Open `/health` or any app route and verify headers:
+   - `x-content-type-options: nosniff`
+   - `referrer-policy: strict-origin-when-cross-origin`
+   - `permissions-policy` includes `camera=(), microphone=(), geolocation=()`
+   - `x-dns-prefetch-control: off`
+   - `cross-origin-opener-policy: same-origin`
+2. Trigger a known write failure (for example rate-limit path) and confirm logs include sanitized action context without raw token values.
+3. Follow `web/docs/operations-runbook.md` backup/restore dry-run checklist and record results.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -356,6 +369,8 @@ Run these manually even when Playwright passes:
 - Newsletter discussion-link verification using `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql`.
 - Attachments verification using `web/supabase/verification/pr22_attachments_checks.sql` (after PR22 migration).
 - Admin dashboard role-gate and quick-link checks (`/admin` as mod/admin and non-mod).
+- Security headers and sanitized server-action logging checks (PR24).
+- Backup/restore and release checklists from `web/docs/operations-runbook.md`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.
 

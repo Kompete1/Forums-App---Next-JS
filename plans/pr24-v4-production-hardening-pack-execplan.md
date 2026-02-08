@@ -15,6 +15,7 @@ Deliver a focused hardening slice: operational checks, security headers, logging
 ## Assumptions and open questions
 - Assumption: hardening can be phased without downtime.
 - Assumption: existing feature flows remain unchanged.
+- Assumption: frame-restriction headers are deferred to keep Repo A iframe compatibility viable.
 - Open question: none blocking.
 
 ## User journeys

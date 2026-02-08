@@ -14,6 +14,7 @@ import {
   validateAttachmentFiles,
 } from "@/lib/db/attachments";
 import { appendQueryParams, getSingleSearchParam, getWriteErrorMessageFromSearchParams } from "@/lib/ui/flash-message";
+import { logServerError } from "@/lib/server/logging";
 import { CreateThreadForm } from "@/components/create-thread-form";
 
 export const dynamic = "force-dynamic";
@@ -86,7 +87,7 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
       newThreadId = await createThread({ title, body, categoryId, sourceNewsletterId });
       await saveThreadAttachments(newThreadId, attachments);
     } catch (error) {
-      console.error("createThreadAction failed", error);
+      logServerError("createThreadAction", error);
       if (error instanceof AttachmentActionError) {
         redirect(
           appendQueryParams("/forum/new", {
