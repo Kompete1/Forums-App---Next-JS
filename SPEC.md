@@ -67,14 +67,20 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
     - trigger-driven notification events for replies/reports
     - `/notifications` inbox + read-state controls
     - header unread badge + realtime inbox refresh
-- Pending next:
-  - Attachments/images (Supabase Storage)
-  - Admin dashboard
+- In progress:
+  - PR19 forum UX polish and layout refinements
+- Planned next:
+  - PR20 newsletter -> forum discussion bridge
+  - PR21 dummy users/mods + test fixture SQL templates
+  - PR22 attachments/images (Supabase Storage)
+  - PR23 admin dashboard
 
 ## V4: Production Hardening
 - Backup/restore habit.
 - Logging/monitoring practice.
 - Data retention/privacy notes.
+- Planned execution slice:
+  - PR24 production hardening pack
 
 ## Non-Goals (Current)
 - Complex rich-text editor.
@@ -94,6 +100,17 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
 ## Acceptance Criteria Source of Truth
 - Version-specific acceptance criteria are defined in `plans/*.md`.
 - V0 criteria are in `plans/v0-execplan.md`.
+
+## Documentation Sync Contract
+- Every feature PR must include:
+  - one new `plans/<pr>-execplan.md`
+  - a `SPEC.md` status update
+  - at least one verification-doc update (`web/README.md` or `web/docs/testing-manual.md`)
+- No PR is done until docs explicitly cover:
+  - what changed
+  - how it was verified
+  - what remains pending
+- Root `README.md` milestone pointer must match the active PR.
 
 ## Out of Scope Repo Boundary
 - Repo A changes are tracked separately, except for documented integration instructions.

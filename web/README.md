@@ -10,13 +10,26 @@ Current scope includes:
 - V2 PR5 anti-spam baseline: DB cooldowns/burst limits with inline rate-limit feedback
 - V2 PR6 hardening: Playwright e2e baseline + shared flash-message parsing + verification assets
 - V3 PR17 notifications (completed): schema + event triggers + inbox + realtime refresh
+- V3 PR19 (in progress): forum UX polish and layout refinements
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
-- Active build: V3 PR18 closeout and lint reliability.
+- Active build: V3 PR19 forum UX polish.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- V3 next focus after PR17: attachments/storage and admin dashboard slices.
+- Planned sequence after PR19: PR20 newsletter discussion bridge, PR21 test fixtures, PR22 attachments, PR23 admin dashboard, PR24 production hardening.
+
+## Documentation Sync Contract
+
+Every feature PR must include:
+- one new `plans/<pr>-execplan.md`
+- a `SPEC.md` status update
+- at least one verification-doc update (`web/README.md` or `web/docs/testing-manual.md`)
+
+A PR is not done until docs clearly capture:
+- what changed
+- how it was verified
+- what remains pending
 
 ## Prerequisites
 
@@ -99,6 +112,11 @@ Notes:
 - Auth e2e tests are skipped automatically if credentials are missing.
 - Dual-user notifications e2e tests are skipped if `E2E_ALT_*` credentials are missing.
 
+Fixture setup templates (PR21):
+- `web/supabase/testing/assign_test_roles_template.sql`
+- `web/supabase/testing/seed_dummy_newsletters_threads_template.sql`
+- `web/supabase/testing/reset_dummy_content_template.sql`
+
 ## Migration Files
 
 Apply in this exact order:
@@ -111,6 +129,10 @@ Apply in this exact order:
 - `web/supabase/migrations/20260207_pr13_v2_sa_forum_categories.sql`
 - `web/supabase/migrations/20260208_pr15_v2_anti_spam_rate_limit.sql`
 - `web/supabase/migrations/20260208_pr17_v3_notifications.sql`
+
+Planned upcoming migration checkpoints:
+- PR20: add `posts.source_newsletter_id` (newsletter discussion bridge).
+- PR22: add attachments/storage schema and policy objects.
 
 ## Apply SQL (Dashboard-first)
 
@@ -128,6 +150,10 @@ Apply in this exact order:
    - `set_replies_updated_at`
    - `set_newsletters_updated_at`
    - `on_profile_created_set_default_role`
+
+Planned verification scripts for upcoming slices:
+- `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql`
+- `web/supabase/verification/pr22_attachments_checks.sql`
 
 ## Bootstrap Moderator/Admin Roles
 
@@ -264,6 +290,8 @@ Run these manually even when Playwright passes:
 - Cross-user owner-boundary checks.
 - SQL object verification using `web/supabase/verification/pr15_rate_limit_checks.sql`.
 - Notifications SQL object verification using `web/supabase/verification/pr17_notifications_checks.sql`.
+- Newsletter discussion-link verification using `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql` (after PR20 migration).
+- Attachments verification using `web/supabase/verification/pr22_attachments_checks.sql` (after PR22 migration).
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.
 
