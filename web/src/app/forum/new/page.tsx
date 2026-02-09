@@ -39,7 +39,7 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect(appendQueryParams("/auth/login", { next: redirectBackTo }));
+    redirect(appendQueryParams("/auth/login", { returnTo: redirectBackTo }));
   }
 
   const categories = await listCategories();

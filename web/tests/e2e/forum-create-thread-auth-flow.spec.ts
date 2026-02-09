@@ -27,14 +27,14 @@ async function loginDirect(page: Page) {
   await page.getByLabel("Email").fill(email!);
   await page.getByLabel("Password").fill(password!);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/profile$/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/forum$/, { timeout: 15_000 });
 }
 
 test("guest category create CTA redirects to login then back to /forum/new", async ({ page }) => {
   await page.goto(`/forum/category/${categorySlug}`);
   await page.getByRole("link", { name: "Login to create thread" }).click();
 
-  await expect(page).toHaveURL(/\/auth\/login\?next=/);
+  await expect(page).toHaveURL(/\/auth\/login\?returnTo=/);
   await loginFromCurrentPage(page);
 
   await expect(page).toHaveURL(new RegExp(`/forum/new\\?category=${categorySlug}`), { timeout: 15_000 });
@@ -51,20 +51,15 @@ test("signed-in user category create CTA opens /forum/new without login bounce",
   await expect(page.getByRole("heading", { name: "Create a discussion" })).toBeVisible();
 });
 
-test("direct login then profile back-to-forum stays signed in", async ({ page }) => {
+test("direct login lands on forum signed-in state", async ({ page }) => {
   await loginDirect(page);
-  await page.waitForTimeout(4_000);
-  await expect(page).toHaveURL(/\/profile$/, { timeout: 15_000 });
-
-  await page.getByRole("link", { name: "Back to forum" }).click();
-
-  await expect(page).toHaveURL(/\/forum$/, { timeout: 15_000 });
   await expect(page.getByText("Browsing as guest. Sign in to post and reply.")).toHaveCount(0);
   await expect(page.getByText(/^Signed in as /)).toBeVisible();
 });
 
 test("explicit profile logout signs out and forum renders guest state", async ({ page }) => {
   await loginDirect(page);
+  await page.goto("/profile");
 
   await page.getByRole("button", { name: "Logout" }).click();
   await expect(page).toHaveURL(/\/auth\/login$/, { timeout: 15_000 });
@@ -72,4 +67,24 @@ test("explicit profile logout signs out and forum renders guest state", async ({
   await page.goto("/forum");
   await expect(page.getByText("Browsing as guest. Sign in to post and reply.")).toBeVisible();
   await expect(page.getByText(/^Signed in as /)).toHaveCount(0);
+});
+
+test("guest reply CTA redirects to login then back to the same thread", async ({ page }) => {
+  await page.goto("/forum");
+  const threadLinks = page.getByRole("link", { name: "Open thread" });
+  const threadCount = await threadLinks.count();
+  test.skip(threadCount === 0, "No thread available for reply redirect test.");
+
+  await threadLinks.first().click();
+  const loginToReply = page.getByRole("link", { name: "Login to reply" });
+  const hasReplyLogin = await loginToReply.isVisible().catch(() => false);
+  test.skip(!hasReplyLogin, "Selected thread is locked or reply CTA unavailable.");
+
+  const targetUrl = page.url();
+  await loginToReply.click();
+  await expect(page).toHaveURL(/\/auth\/login\?returnTo=/);
+  await loginFromCurrentPage(page);
+
+  await expect(page).toHaveURL(new RegExp(targetUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), { timeout: 15_000 });
+  await expect(page.getByLabel("Add reply")).toBeVisible();
 });

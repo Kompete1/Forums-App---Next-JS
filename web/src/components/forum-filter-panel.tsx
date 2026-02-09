@@ -50,6 +50,7 @@ export function ForumFilterPanel({
         <div className="field">
           <label htmlFor="sort">Sort</label>
           <select id="sort" name="sort" defaultValue={sort}>
+            <option value="activity">Most recent activity</option>
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
           </select>

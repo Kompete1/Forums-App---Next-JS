@@ -2,13 +2,14 @@
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { getUnreadNotificationCountForUser } from "@/lib/db/notifications";
 import { listRolesByUserId } from "@/lib/db/roles";
+import { HeaderUserMenu } from "@/components/header-user-menu";
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
   const roles = user ? await listRolesByUserId(user.id).catch(() => []) : [];
   const canModerate = roles.includes("admin") || roles.includes("mod");
   const unreadCount = user ? await getUnreadNotificationCountForUser(user.id).catch(() => 0) : 0;
-  const unreadLabel = unreadCount > 99 ? "99+" : String(unreadCount);
+  const createThreadPath = user ? "/forum/new" : "/auth/login?returnTo=%2Fforum%2Fnew";
 
   return (
     <header className="site-header">
@@ -27,30 +28,16 @@ export async function SiteHeader() {
           <a href="/newsletter">
             Newsletter
           </a>
+          <a href={createThreadPath} className="btn btn-primary site-nav-cta">
+            New thread
+          </a>
           {user ? (
-            <a href="/notifications" className="notifications-link">
-              Notifications
-              {unreadCount > 0 ? <span className="unread-badge">{unreadLabel}</span> : null}
-            </a>
-          ) : null}
-          {canModerate ? (
-            <a href="/admin">
-              Admin
-            </a>
-          ) : null}
-          {canModerate ? (
-            <a href="/moderation/reports">
-              Moderation
-            </a>
-          ) : null}
-          {user ? (
-            <a href="/profile">
-              Profile
-            </a>
+            <HeaderUserMenu email={user.email ?? null} unreadCount={unreadCount} showAdminLinks={canModerate} />
           ) : (
-            <a href="/auth/login">
-              Login
-            </a>
+            <span className="inline-actions">
+              <a href="/auth/login">Login</a>
+              <a href="/auth/signup">Sign up</a>
+            </span>
           )}
         </nav>
       </div>

@@ -45,19 +45,22 @@ export function ThreadFeedList({
             <article key={thread.id} className="card thread-item">
               {showRecentBadgeOnFirst && index === 0 ? <p className="filter-chip">Recently posted</p> : null}
               <h3>{thread.title}</h3>
-              <p>
+              <p className="thread-snippet">
                 {thread.body.slice(0, 220)}
                 {thread.body.length > 220 ? "..." : ""}
               </p>
-              <p className="meta">
-                {thread.category_name ?? "Unknown"} | By {thread.author_display_name ?? thread.author_id} on{" "}
-                {new Date(thread.created_at).toLocaleString()}
+              <p className="meta thread-meta-row">
+                <span>{thread.category_name ?? "Unknown"}</span>
+                <span>By {thread.author_display_name ?? thread.author_id}</span>
+                <span>Created {new Date(thread.created_at).toLocaleString()}</span>
               </p>
               {thread.source_newsletter_id ? (
                 <p className="meta">Linked newsletter: {thread.source_newsletter_title ?? "Newsletter topic"}</p>
               ) : null}
-              <p className={thread.is_locked ? "thread-status locked" : "thread-status open"}>
-                {thread.is_locked ? "Locked" : "Open"} | {repliesCount} replies
+              <p className={`thread-activity-row ${thread.is_locked ? "thread-status locked" : "thread-status open"}`}>
+                <span>{thread.is_locked ? "Locked" : "Open"}</span>
+                <span>{repliesCount} replies</span>
+                <span>Last activity {new Date(thread.last_activity_at).toLocaleString()}</span>
               </p>
               <Link href={`/forum/${thread.id}`} className="btn-link focus-link">
                 Open thread

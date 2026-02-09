@@ -86,6 +86,33 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
 - Advanced email pipeline.
 - Multi-tenant forum architecture.
 
+## UX Redesign Slice (Active)
+- Objective: modernize signed-in and signed-out forum UX flows without changing authorization policy intent.
+- Core requirements:
+  1. Post-login redirects:
+     - Direct `/auth/login` sign-in lands on `/forum`.
+     - Auth interruptions from create/reply actions preserve destination using `returnTo`.
+  2. Header signed-in state:
+     - Replace plain `Profile` nav with avatar/user menu containing profile and logout actions.
+  3. Category and discovery readability:
+     - Improve thread card hierarchy, metadata consistency, and spacing for scanability.
+  4. Thread detail hierarchy:
+     - Prioritize reading and reply composer.
+     - Reporting is secondary (modal/secondary UI), not dominant inline forms.
+  5. Activity ordering:
+     - Thread discovery defaults to last activity and bumps on new replies.
+
+## UX Route Behavior Contract
+- `/auth/login`:
+  - Accepts `returnTo` query and `next` as temporary backwards-compatible fallback.
+  - Redirect destination must be a safe internal path only.
+- `/forum/new`, `/forum/[threadId]`, `/notifications`:
+  - Unauthenticated users are redirected to `/auth/login?returnTo=<intended-path>`.
+- `/forum` and `/forum/category/[slug]`:
+  - Discovery order defaults to latest activity.
+- `/forum/[threadId]`:
+  - Report actions open modal/secondary UX; reply action remains first-class.
+
 ## Functional Requirements (Current Baseline)
 - Authenticated identity and session visibility in UI.
 - Persisted minimal user profile linked to auth user.

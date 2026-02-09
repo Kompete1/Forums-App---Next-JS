@@ -14,6 +14,7 @@ export type ForumThread = {
   locked_by: string | null;
   created_at: string;
   updated_at: string;
+  last_activity_at: string;
   author_display_name: string | null;
   category_slug: string | null;
   category_name: string | null;
@@ -31,6 +32,7 @@ type ThreadRow = {
   locked_by: string | null;
   created_at: string;
   updated_at: string;
+  last_activity_at?: string;
   profiles: { display_name: string | null } | { display_name: string | null }[] | null;
   categories: { slug: string; name: string } | { slug: string; name: string }[] | null;
   newsletters?: { title: string } | { title: string }[] | null;
@@ -43,7 +45,7 @@ type ThreadInput = {
   sourceNewsletterId?: string;
 };
 
-export type ThreadSort = "newest" | "oldest";
+export type ThreadSort = "activity" | "newest" | "oldest";
 
 export type ListThreadsParams = {
   categoryId?: string;
@@ -160,21 +162,23 @@ export async function listThreadsPage(params: ListThreadsParams = {}) {
   const categoryId = normalizeText(params.categoryId ?? "");
   const newsletterId = normalizeText(params.newsletterId ?? "");
   const query = normalizeText(params.query ?? "");
-  const sort = params.sort === "oldest" ? "oldest" : "newest";
+  const sort = params.sort === "oldest" ? "oldest" : params.sort === "newest" ? "newest" : "activity";
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
   const supabase = await createClient();
   const selectWithNewsletter =
-    "id, author_id, title, body, category_id, source_newsletter_id, is_locked, locked_at, locked_by, created_at, updated_at, profiles:author_id(display_name), categories:category_id(slug, name), newsletters:source_newsletter_id(title)";
+    "id, author_id, title, body, category_id, source_newsletter_id, is_locked, locked_at, locked_by, created_at, updated_at, last_activity_at, profiles:author_id(display_name), categories:category_id(slug, name), newsletters:source_newsletter_id(title)";
   const selectLegacy =
     "id, author_id, title, body, category_id, is_locked, locked_at, locked_by, created_at, updated_at, profiles:author_id(display_name), categories:category_id(slug, name)";
 
-  let request = supabase
-    .from("posts")
-    .select(selectWithNewsletter, { count: "exact" })
-    .order("created_at", { ascending: sort === "oldest" })
-    .range(from, to);
+  let request = supabase.from("posts").select(selectWithNewsletter, { count: "exact" });
+  if (sort === "activity") {
+    request = request.order("last_activity_at", { ascending: false }).order("created_at", { ascending: false });
+  } else {
+    request = request.order("created_at", { ascending: sort === "oldest" });
+  }
+  request = request.range(from, to);
   if (categoryId) {
     request = request.eq("category_id", categoryId);
   }
@@ -191,7 +195,8 @@ export async function listThreadsPage(params: ListThreadsParams = {}) {
   let count = primary.count;
   const missingNewsletterColumn =
     error?.message.includes("source_newsletter_id") || error?.message.includes("schema cache");
-  if (error && missingNewsletterColumn && !newsletterId) {
+  const missingActivityColumn = error?.message.includes("last_activity_at") || error?.message.includes("schema cache");
+  if (error && (missingNewsletterColumn || missingActivityColumn) && !newsletterId) {
     let fallbackRequest = supabase
       .from("posts")
       .select(selectLegacy, { count: "exact" })
@@ -230,6 +235,7 @@ export async function listThreadsPage(params: ListThreadsParams = {}) {
       locked_by: row.locked_by,
       created_at: row.created_at,
       updated_at: row.updated_at,
+      last_activity_at: row.last_activity_at ?? row.created_at,
       author_display_name: toDisplayName(row.profiles),
       category_slug: category.slug,
       category_name: category.name,
@@ -253,7 +259,7 @@ export async function getThreadById(id: string) {
 
   const supabase = await createClient();
   const selectWithNewsletter =
-    "id, author_id, title, body, category_id, source_newsletter_id, is_locked, locked_at, locked_by, created_at, updated_at, profiles:author_id(display_name), categories:category_id(slug, name), newsletters:source_newsletter_id(title)";
+    "id, author_id, title, body, category_id, source_newsletter_id, is_locked, locked_at, locked_by, created_at, updated_at, last_activity_at, profiles:author_id(display_name), categories:category_id(slug, name), newsletters:source_newsletter_id(title)";
   const selectLegacy =
     "id, author_id, title, body, category_id, is_locked, locked_at, locked_by, created_at, updated_at, profiles:author_id(display_name), categories:category_id(slug, name)";
 
@@ -262,7 +268,8 @@ export async function getThreadById(id: string) {
   let error = primary.error;
   const missingNewsletterColumn =
     error?.message.includes("source_newsletter_id") || error?.message.includes("schema cache");
-  if (error && missingNewsletterColumn) {
+  const missingActivityColumn = error?.message.includes("last_activity_at") || error?.message.includes("schema cache");
+  if (error && (missingNewsletterColumn || missingActivityColumn)) {
     const fallback = await supabase.from("posts").select(selectLegacy).eq("id", threadId).limit(1).maybeSingle();
     data = (fallback.data ?? null) as ThreadRow | null;
     error = fallback.error;
@@ -292,6 +299,7 @@ export async function getThreadById(id: string) {
     locked_by: row.locked_by,
     created_at: row.created_at,
     updated_at: row.updated_at,
+    last_activity_at: row.last_activity_at ?? row.created_at,
     author_display_name: toDisplayName(row.profiles),
     category_slug: category.slug,
     category_name: category.name,

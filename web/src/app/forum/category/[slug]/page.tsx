@@ -43,7 +43,7 @@ function categoryHref(slug: string, input: { q?: string; sort?: string; page?: n
   if (input.q) {
     search.set("q", input.q);
   }
-  if (input.sort && input.sort !== "newest") {
+  if (input.sort && input.sort !== "activity") {
     search.set("sort", input.sort);
   }
   if (input.page && input.page > 1) {
@@ -66,7 +66,8 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   }
 
   const query = getParamValue(resolvedParams.q);
-  const sort = getParamValue(resolvedParams.sort) === "oldest" ? ("oldest" as ThreadSort) : ("newest" as ThreadSort);
+  const rawSort = getParamValue(resolvedParams.sort);
+  const sort = rawSort === "oldest" ? ("oldest" as ThreadSort) : rawSort === "newest" ? ("newest" as ThreadSort) : ("activity" as ThreadSort);
   const page = toPositiveInt(getParamValue(resolvedParams.page), 1);
   const hasPostedNotice = getParamValue(resolvedParams.posted) === "1";
 

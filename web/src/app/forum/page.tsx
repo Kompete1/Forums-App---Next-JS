@@ -47,7 +47,7 @@ function forumHref(input: { category?: string; q?: string; newsletter?: string; 
   if (input.newsletter) {
     search.set("newsletter", input.newsletter);
   }
-  if (input.sort && input.sort !== "newest") {
+  if (input.sort && input.sort !== "activity") {
     search.set("sort", input.sort);
   }
   if (input.page && input.page > 1) {
@@ -66,7 +66,8 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
   const selectedCategorySlug = getParamValue(resolvedParams.category);
   const selectedCategory = categories.find((category) => category.slug === selectedCategorySlug) ?? null;
   const hasInvalidCategoryFilter = Boolean(selectedCategorySlug) && !selectedCategory;
-  const sort = getParamValue(resolvedParams.sort) === "oldest" ? ("oldest" as ThreadSort) : ("newest" as ThreadSort);
+  const rawSort = getParamValue(resolvedParams.sort);
+  const sort = rawSort === "oldest" ? ("oldest" as ThreadSort) : rawSort === "newest" ? ("newest" as ThreadSort) : ("activity" as ThreadSort);
   const query = getParamValue(resolvedParams.q);
   const newsletterId = getParamValue(resolvedParams.newsletter);
   const page = toPositiveInt(getParamValue(resolvedParams.page), 1);
@@ -136,7 +137,14 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
                 Create thread
               </Link>
             ) : (
-              <Link href="/auth/login" className="btn btn-secondary">
+              <Link
+                href={
+                  selectedCategory?.slug
+                    ? `/auth/login?returnTo=${encodeURIComponent(`/forum/new?category=${selectedCategory.slug}`)}`
+                    : "/auth/login?returnTo=%2Fforum%2Fnew"
+                }
+                className="btn btn-secondary"
+              >
                 Login to create thread
               </Link>
             )}

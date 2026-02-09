@@ -17,10 +17,10 @@ export default async function CategoriesPage() {
       <section className="category-grid">
         {categories.map((category) => (
           <article key={category.id} className="card stack">
-            <h2>{category.name}</h2>
-            <p className="meta">{category.description ?? "Community category"}</p>
-            <Link href={`/forum/category/${encodeURIComponent(category.slug)}`} className="btn-link focus-link">
-              Browse threads
+            <Link href={`/forum/category/${encodeURIComponent(category.slug)}`} className="category-card-link focus-link">
+              <h2>{category.name}</h2>
+              <p className="meta">{category.description ?? "Community category"}</p>
+              <span className="btn-link">Browse threads</span>
             </Link>
           </article>
         ))}

@@ -8,7 +8,7 @@ type CategoryHeaderProps = {
 
 export function CategoryHeader({ category, threadCount, isSignedIn }: CategoryHeaderProps) {
   const createThreadPath = `/forum/new?category=${encodeURIComponent(category.slug)}`;
-  const loginToCreatePath = `/auth/login?next=${encodeURIComponent(createThreadPath)}`;
+  const loginToCreatePath = `/auth/login?returnTo=${encodeURIComponent(createThreadPath)}`;
 
   return (
     <section className="card stack">

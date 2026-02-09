@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getProfileByUserId, updateDisplayNameByUserId } from "@/lib/db/profiles";
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { logServerError } from "@/lib/server/logging";
+import { appendQueryParams } from "@/lib/ui/flash-message";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect("/auth/login");
+    redirect(appendQueryParams("/auth/login", { returnTo: "/profile" }));
   }
   const userId = user.id;
 
