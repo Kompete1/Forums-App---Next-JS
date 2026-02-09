@@ -17,6 +17,12 @@ Current scope includes:
 - V3 PR23 admin dashboard (completed)
 - V4 PR24 production hardening pack (completed)
 - V4 PR26 (in progress): auth session consistency hotfix (logout prefetch)
+- V5 PR27 UX redesign execution wave (active):
+  - auth `returnTo` redirect consistency
+  - avatar/user menu signed-in nav
+  - thread/category readability refresh
+  - thread reporting modal UX
+  - last-activity sorting bump on reply
 
 ## Roadmap Status Note
 
@@ -70,6 +76,13 @@ In Supabase Dashboard -> Authentication -> URL Configuration:
 - `web/middleware.ts` keeps Supabase auth cookies in sync for server-rendered routes.
 - Protected routes such as `/forum/new` redirect to login with `next=<return-path>`.
 - After sign-in, login returns users to a safe internal `next` path when present.
+
+## Auth Return-To Contract (V5)
+
+- Login accepts `returnTo` as primary redirect query.
+- Legacy `next` remains temporarily supported for backwards compatibility.
+- `returnTo` is validated to safe internal paths only (no external redirects).
+- Direct login without return destination redirects to `/forum`.
 
 ## Run Locally
 
@@ -181,6 +194,7 @@ Apply in this exact order:
 - `web/supabase/migrations/20260208_pr17_v3_notifications.sql`
 - `web/supabase/migrations/20260208_pr20_v3_newsletter_discussion_bridge.sql`
 - `web/supabase/migrations/20260208_pr22_v3_attachments_storage.sql`
+- `web/supabase/migrations/20260209_pr27_v5_thread_last_activity.sql`
 
 Planned upcoming migration checkpoints:
 - PR24: production hardening config/docs checkpoint.
@@ -205,6 +219,7 @@ Planned upcoming migration checkpoints:
 Planned verification scripts for upcoming slices:
 - `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql`
 - `web/supabase/verification/pr22_attachments_checks.sql`
+- `web/supabase/verification/pr27_thread_last_activity_checks.sql`
 
 ## Bootstrap Moderator/Admin Roles
 
@@ -379,6 +394,19 @@ Expected for non-mod: only own reports are returned (or none).
 5. Open `/forum` and confirm guest messaging is shown after explicit logout.
 6. Open `/auth/logout` directly and confirm it redirects to `/auth/login` without destructive side effects.
 
+### Q) UX redirect and returnTo flow (V5 PR27)
+1. Open `/auth/login` and sign in; confirm landing on `/forum`.
+2. While signed out, open `/forum/category/general-paddock` and click `Login to create thread`.
+3. Sign in and confirm landing on `/forum/new?category=general-paddock`.
+4. While signed out, open any unlocked thread and click `Login to reply`.
+5. Sign in and confirm returning to the same `/forum/<threadId>` and seeing `Add reply`.
+
+### R) Activity sort bump-on-reply (V5 PR27)
+1. Open `/forum?sort=activity` and note first two thread titles.
+2. Open the second thread and post a reply as a signed-in user.
+3. Return to `/forum?sort=activity` and confirm that replied thread now appears first.
+4. Run `web/supabase/verification/pr27_thread_last_activity_checks.sql` and verify column/index/trigger objects.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -392,6 +420,7 @@ Run these manually even when Playwright passes:
 - Admin dashboard role-gate and quick-link checks (`/admin` as mod/admin and non-mod).
 - Security headers and sanitized server-action logging checks (PR24).
 - Auth session consistency checks (PR26).
+- UX returnTo and activity sorting checks (PR27).
 - Backup/restore and release checklists from `web/docs/operations-runbook.md`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.

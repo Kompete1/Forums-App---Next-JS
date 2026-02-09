@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Rajdhani, Source_Sans_3 } from "next/font/google";
+import { AppToaster } from "@/components/app-toaster";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable}`}>
         <SiteHeader />
         <div className="app-shell">{children}</div>
+        <AppToaster />
       </body>
     </html>
   );

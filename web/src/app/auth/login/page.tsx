@@ -2,27 +2,22 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { appendQueryParams, getSingleSearchParam } from "@/lib/ui/flash-message";
 import { createClient } from "@/lib/supabase/server";
+import { getSafeInternalPath, getSafeReturnToPath } from "@/lib/ui/auth-return-to";
 
 type LoginPageProps = {
   searchParams?: Promise<{
+    returnTo?: string | string[];
     next?: string | string[];
     error?: string | string[];
   }>;
 };
 
-function getSafeNextPath(value: string | null | undefined) {
-  const candidate = value?.trim() ?? "";
-
-  if (!candidate.startsWith("/") || candidate.startsWith("//")) {
-    return null;
-  }
-
-  return candidate;
-}
-
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const resolvedParams = (await searchParams) ?? {};
-  const nextPath = getSafeNextPath(getSingleSearchParam(resolvedParams, "next"));
+  const returnToPath = getSafeReturnToPath({
+    returnTo: getSingleSearchParam(resolvedParams, "returnTo"),
+    next: getSingleSearchParam(resolvedParams, "next"),
+  });
   const errorMessage = getSingleSearchParam(resolvedParams, "error");
 
   async function signInAction(formData: FormData) {
@@ -30,20 +25,20 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
     const email = String(formData.get("email") ?? "");
     const password = String(formData.get("password") ?? "");
-    const requestedNextPath = getSafeNextPath(String(formData.get("next") ?? ""));
+    const requestedReturnToPath = getSafeInternalPath(String(formData.get("returnTo") ?? ""));
     const supabase = await createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       redirect(
         appendQueryParams("/auth/login", {
-          next: requestedNextPath,
+          returnTo: requestedReturnToPath,
           error: error.message,
         }),
       );
     }
 
-    redirect(requestedNextPath ?? "/profile");
+    redirect(requestedReturnToPath ?? "/forum");
   }
 
   return (
@@ -52,7 +47,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <h1>Login</h1>
       <p className="meta">Sign in with your email and password.</p>
       <form action={signInAction} className="stack">
-        <input type="hidden" name="next" value={nextPath ?? ""} />
+        <input type="hidden" name="returnTo" value={returnToPath ?? ""} />
         <div className="field">
           <label htmlFor="email">Email</label>
           <input

@@ -19,6 +19,7 @@ import {
   validateAttachmentFiles,
 } from "@/lib/db/attachments";
 import { logServerError } from "@/lib/server/logging";
+import { ReportActionDialog } from "@/components/report-action-dialog";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
 
   const threadIdValue = thread.id;
   const backToFeedHref = thread.category_slug ? `/forum/category/${encodeURIComponent(thread.category_slug)}` : "/forum";
+  const loginToReplyHref = appendQueryParams("/auth/login", { returnTo: `/forum/${thread.id}` });
   const [categories, repliesMap] = await Promise.all([listCategories(), listRepliesByThreadIds([thread.id])]);
   const replies = repliesMap[thread.id] ?? [];
   const attachments = await listAttachmentsForThreadAndReplies({ threadId: thread.id, replyIds: replies.map((reply) => reply.id) }).catch(
@@ -273,6 +275,23 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
         <p className={thread.is_locked ? "thread-status locked" : "thread-status open"}>
           Status: {thread.is_locked ? "Locked" : "Open"}
         </p>
+        <div className="inline-actions">
+          {user ? (
+            <ReportActionDialog
+              targetId={thread.id}
+              targetType="thread"
+              triggerLabel="Report thread"
+              dialogTitle="Report thread"
+              dialogDescription="Tell moderators why this thread should be reviewed."
+              errorMessage={threadReportErrorMessage}
+              action={createThreadReportAction}
+            />
+          ) : (
+            <Link href={loginToReplyHref} className="btn btn-secondary">
+              Login to report
+            </Link>
+          )}
+        </div>
 
         {canModerateThreads ? (
           <form action={thread.is_locked ? unlockThreadAction : lockThreadAction}>
@@ -282,39 +301,84 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
             </button>
           </form>
         ) : null}
+      </article>
 
-        {user ? (
-          <form action={createThreadReportAction} className="stack">
+      <section className="card stack">
+        <h2>Replies</h2>
+        {replyReportErrorMessage ? <p className="thread-status locked">{replyReportErrorMessage}</p> : null}
+        {replies.length === 0 ? <p className="empty-note">No replies yet.</p> : null}
+        <div className="stack">
+          {replies.map((reply) => (
+            <article key={reply.id} className="card">
+              <p style={{ whiteSpace: "pre-wrap" }}>{reply.body}</p>
+              {(attachments.replyAttachmentsById[reply.id] ?? []).length > 0 ? (
+                <div className="attachments-grid">
+                  {(attachments.replyAttachmentsById[reply.id] ?? []).map((attachment) => (
+                    <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="attachment-card">
+                      <Image
+                        src={attachment.url}
+                        alt={attachment.file_name}
+                        className="attachment-image"
+                        width={320}
+                        height={240}
+                        unoptimized
+                      />
+                      <span className="meta">{attachment.file_name}</span>
+                    </a>
+                  ))}
+                </div>
+              ) : null}
+              <p className="meta">
+                By {reply.author_display_name ?? reply.author_id} on {new Date(reply.created_at).toLocaleString()}
+              </p>
+              {user ? (
+                <ReportActionDialog
+                  targetId={reply.id}
+                  targetType="reply"
+                  triggerLabel="Report reply"
+                  dialogTitle="Report reply"
+                  dialogDescription="Tell moderators why this reply should be reviewed."
+                  errorMessage={replyReportErrorMessage}
+                  action={createReplyReportAction}
+                />
+              ) : null}
+            </article>
+          ))}
+        </div>
+
+        {thread.is_locked ? <p className="thread-status locked">Thread is locked.</p> : null}
+
+        {user && !thread.is_locked ? (
+          <form action={createReplyAction} className="stack" id="reply-composer">
             <input type="hidden" name="threadId" value={thread.id} />
-            {threadReportErrorMessage ? <p className="thread-status locked">{threadReportErrorMessage}</p> : null}
+            {replyAttachmentErrorMessage ? <p className="thread-status locked">{replyAttachmentErrorMessage}</p> : null}
+            {replyErrorMessage ? <p className="thread-status locked">{replyErrorMessage}</p> : null}
             <div className="field">
-              <label htmlFor={`report-thread-reason-${thread.id}`}>Report thread reason</label>
+              <label htmlFor={`reply-${thread.id}`}>Add reply</label>
+              <textarea id={`reply-${thread.id}`} name="body" required minLength={1} maxLength={5000} rows={4} />
+            </div>
+            <div className="field">
+              <label htmlFor={`reply-attachments-${thread.id}`}>Images (optional, up to 3)</label>
               <input
-                id={`report-thread-reason-${thread.id}`}
-                name="reason"
-                type="text"
-                required
-                minLength={1}
-                maxLength={500}
-                placeholder="Reason for report"
+                id={`reply-attachments-${thread.id}`}
+                name="replyAttachments"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                multiple
               />
+              <p className="meta">Allowed: JPG, PNG, WEBP, GIF. Max 5MB each.</p>
             </div>
-            <div className="field">
-              <label htmlFor={`report-thread-notes-${thread.id}`}>Notes (optional)</label>
-              <textarea
-                id={`report-thread-notes-${thread.id}`}
-                name="notes"
-                maxLength={2000}
-                rows={2}
-                placeholder="Extra context"
-              />
-            </div>
-            <button type="submit" className="btn btn-secondary">
-              Report thread
+            <button type="submit" className="btn btn-primary">
+              Post reply
             </button>
           </form>
         ) : null}
-      </article>
+        {!user && !thread.is_locked ? (
+          <Link href={loginToReplyHref} className="btn btn-secondary">
+            Login to reply
+          </Link>
+        ) : null}
+      </section>
 
       {isOwner ? (
         <section className="card stack">
@@ -370,97 +434,6 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
           </form>
         </section>
       ) : null}
-
-      <section className="card stack">
-        <h2>Replies</h2>
-        {replyReportErrorMessage ? <p className="thread-status locked">{replyReportErrorMessage}</p> : null}
-        {replies.length === 0 ? <p className="empty-note">No replies yet.</p> : null}
-        <div className="stack">
-          {replies.map((reply) => (
-            <article key={reply.id} className="card">
-              <p style={{ whiteSpace: "pre-wrap" }}>{reply.body}</p>
-              {(attachments.replyAttachmentsById[reply.id] ?? []).length > 0 ? (
-                <div className="attachments-grid">
-                  {(attachments.replyAttachmentsById[reply.id] ?? []).map((attachment) => (
-                    <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="attachment-card">
-                      <Image
-                        src={attachment.url}
-                        alt={attachment.file_name}
-                        className="attachment-image"
-                        width={320}
-                        height={240}
-                        unoptimized
-                      />
-                      <span className="meta">{attachment.file_name}</span>
-                    </a>
-                  ))}
-                </div>
-              ) : null}
-              <p className="meta">
-                By {reply.author_display_name ?? reply.author_id} on {new Date(reply.created_at).toLocaleString()}
-              </p>
-              {user ? (
-                <form action={createReplyReportAction} className="stack">
-                  <input type="hidden" name="replyId" value={reply.id} />
-                  <div className="field">
-                    <label htmlFor={`report-reply-reason-${reply.id}`}>Report reply reason</label>
-                    <input
-                      id={`report-reply-reason-${reply.id}`}
-                      name="reason"
-                      type="text"
-                      required
-                      minLength={1}
-                      maxLength={500}
-                      placeholder="Reason for report"
-                    />
-                  </div>
-                  <div className="field">
-                    <label htmlFor={`report-reply-notes-${reply.id}`}>Notes (optional)</label>
-                    <textarea
-                      id={`report-reply-notes-${reply.id}`}
-                      name="notes"
-                      maxLength={2000}
-                      rows={2}
-                      placeholder="Extra context"
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-secondary">
-                    Report reply
-                  </button>
-                </form>
-              ) : null}
-            </article>
-          ))}
-        </div>
-
-        {thread.is_locked ? <p className="thread-status locked">Thread is locked.</p> : null}
-
-        {user && !thread.is_locked ? (
-          <form action={createReplyAction} className="stack">
-            <input type="hidden" name="threadId" value={thread.id} />
-            {replyAttachmentErrorMessage ? <p className="thread-status locked">{replyAttachmentErrorMessage}</p> : null}
-            {replyErrorMessage ? <p className="thread-status locked">{replyErrorMessage}</p> : null}
-            <div className="field">
-              <label htmlFor={`reply-${thread.id}`}>Add reply</label>
-              <textarea id={`reply-${thread.id}`} name="body" required minLength={1} maxLength={5000} rows={4} />
-            </div>
-            <div className="field">
-              <label htmlFor={`reply-attachments-${thread.id}`}>Images (optional, up to 3)</label>
-              <input
-                id={`reply-attachments-${thread.id}`}
-                name="replyAttachments"
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                multiple
-              />
-              <p className="meta">Allowed: JPG, PNG, WEBP, GIF. Max 5MB each.</p>
-            </div>
-            <button type="submit" className="btn btn-primary">
-              Post reply
-            </button>
-          </form>
-        ) : null}
-      </section>
     </main>
   );
 }

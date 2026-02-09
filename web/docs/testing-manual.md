@@ -101,6 +101,20 @@ This file lists checks that are still manual (not fully automated in e2e).
 5. Open `/forum` and confirm guest state is shown after logout.
 6. Open `GET /auth/logout` directly and confirm it redirects to `/auth/login` without changing session unless logout is explicitly clicked.
 
+### 14) UX returnTo checks (PR27)
+1. Open `/auth/login` and sign in; confirm redirect to `/forum`.
+2. While signed out, open `/forum/category/general-paddock` and click `Login to create thread`.
+3. Sign in and confirm redirect to `/forum/new?category=general-paddock`.
+4. While signed out, open an unlocked thread and click `Login to reply`.
+5. Sign in and confirm redirect back to the same thread with visible `Add reply` composer.
+
+### 15) Thread activity sorting checks (PR27)
+1. Open `/forum?sort=activity` and note top two thread titles.
+2. Open second thread and post a reply.
+3. Return to `/forum?sort=activity` and confirm replied thread moved to top.
+4. In Supabase SQL Editor, run `web/supabase/verification/pr27_thread_last_activity_checks.sql`.
+5. Confirm `last_activity_at` column, indexes, and trigger are present.
+
 ## SQL verification (Supabase Dashboard)
 1. Open `SQL Editor`.
 2. Run `web/supabase/verification/pr15_rate_limit_checks.sql`.
@@ -109,3 +123,4 @@ This file lists checks that are still manual (not fully automated in e2e).
 5. Confirm notifications functions, triggers, and indexes are present.
 6. Run `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql` once PR20 migration is applied.
 7. After PR22 migration, run `web/supabase/verification/pr22_attachments_checks.sql`.
+8. After PR27 migration, run `web/supabase/verification/pr27_thread_last_activity_checks.sql`.

@@ -5,6 +5,7 @@ import { NotificationsRealtimeSync } from "@/components/notifications-realtime-s
 import { listMyNotifications, markAllNotificationsRead, markNotificationRead } from "@/lib/db/notifications";
 import { createClient } from "@/lib/supabase/server";
 import { logServerError } from "@/lib/server/logging";
+import { appendQueryParams } from "@/lib/ui/flash-message";
 
 export const dynamic = "force-dynamic";
 
@@ -70,7 +71,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/auth/login");
+    redirect(appendQueryParams("/auth/login", { returnTo: notificationsHref(page) }));
   }
 
   const notificationsPage = await listMyNotifications({ page, pageSize: 20 });

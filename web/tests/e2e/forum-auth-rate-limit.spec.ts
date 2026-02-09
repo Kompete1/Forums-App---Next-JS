@@ -14,7 +14,7 @@ async function login(page: Page) {
   await page.getByLabel("Email").fill(email!);
   await page.getByLabel("Password").fill(password!);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/profile$/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/forum$/, { timeout: 15_000 });
 }
 
 test("authenticated user create thread and immediate second thread shows cooldown", async ({ page }) => {

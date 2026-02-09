@@ -3,7 +3,7 @@
 Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase Auth + Postgres.
 
 ## Status
-- Current milestone: `V4 PR26` auth session consistency hotfix.
+- Current milestone: `UX Redesign PR1-PR7` implementation wave.
 
 ## Repository Role
 - This repository contains the dynamic forums application.
@@ -17,8 +17,13 @@ Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase A
 ## Workflow
 1. Read `SPEC.md` for scoped requirements.
 2. Read `PLANS.md` for planning standards.
-3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr26-v4-auth-session-consistency-execplan.md`).
+3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr27-v5-ux-redesign-execplan.md`).
 4. Ship one logical chunk per PR.
+
+UX redesign planning baseline:
+- `docs/ux-proposal.md`
+- `docs/ux-implementation-plan.md`
+- `docs/design-tokens.md`
 
 ## Local Run
 1. `cd web`
@@ -37,5 +42,8 @@ Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase A
 - `PLANS.md`: ExecPlan standard
 - `plans/v0-execplan.md`: detailed V0 implementation plan
 - `docs/ARCHITECTURE.md`: system architecture and boundaries
+- `docs/ux-proposal.md`: imported UX redesign proposal
+- `docs/ux-implementation-plan.md`: PR-sized UX implementation roadmap
+- `docs/design-tokens.md`: visual token decisions for the redesign
 - `SECURITY.md`: secrets, auth, and RLS safety guidance
 - `CONTRIBUTING.md`: contribution workflow

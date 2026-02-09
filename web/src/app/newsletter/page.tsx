@@ -74,7 +74,10 @@ export default async function NewsletterPage() {
                     Start discussion
                   </Link>
                 ) : (
-                  <Link href="/auth/login" className="btn btn-secondary">
+                  <Link
+                    href={`/auth/login?returnTo=${encodeURIComponent(`/forum/new?fromNewsletter=${item.id}`)}`}
+                    className="btn btn-secondary"
+                  >
                     Login to discuss
                   </Link>
                 )}
