@@ -5,6 +5,9 @@ import { useFormStatus } from "react-dom";
 import type { ForumCategory } from "@/lib/db/categories";
 import { AttachmentPreviewList } from "@/components/attachment-preview-list";
 import { MarkdownLitePreview } from "@/components/ui/markdown-lite-preview";
+import { MarkdownToolbar } from "@/components/ui/markdown-toolbar";
+import { useDraftAutosave } from "@/hooks/use-draft-autosave";
+import { makeThreadDraftKey, setPendingClearNewThreadDraft } from "@/lib/ui/drafts";
 
 type CreateThreadFormProps = {
   categories: ForumCategory[];
@@ -48,11 +51,22 @@ export function CreateThreadForm({
   errorMessage = null,
   action,
 }: CreateThreadFormProps) {
+  const bodyInputRef = useRef<HTMLTextAreaElement | null>(null);
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
+  const [categoryId, setCategoryId] = useState(defaultCategoryId);
   const [title, setTitle] = useState(defaultTitle);
   const [body, setBody] = useState(defaultBody);
   const [files, setFiles] = useState<File[]>([]);
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
+  const draftKey = makeThreadDraftKey(defaultCategoryId || "default");
+  const draft = useDraftAutosave({
+    draftKey,
+    values: { title, body },
+  });
+
+  function onSubmit() {
+    setPendingClearNewThreadDraft(draftKey);
+  }
 
   function onAttachmentChange(event: ChangeEvent<HTMLInputElement>) {
     setFiles(Array.from(event.target.files ?? []));
@@ -64,8 +78,27 @@ export function CreateThreadForm({
     syncInputFiles(attachmentInputRef.current, nextFiles);
   }
 
+  function restoreDraft() {
+    const restored = draft.restoreDraft();
+    if (!restored) {
+      return;
+    }
+    setTitle(restored.title ?? "");
+    setBody(restored.body);
+  }
+
+  function discardDraft() {
+    draft.discardDraft();
+  }
+
+  function onFormInput() {
+    if (activeTab === "preview") {
+      setActiveTab("write");
+    }
+  }
+
   return (
-    <form action={action} className="card stack composer-card">
+    <form action={action} className="card stack composer-card" onSubmit={onSubmit} onInput={onFormInput}>
       <div className="inline-actions composer-header-row">
         <h2>Create thread</h2>
         {markdownPreviewEnabled ? (
@@ -92,11 +125,26 @@ export function CreateThreadForm({
         ) : null}
       </div>
       <p className="meta">Use clear titles and include concrete details so others can help quickly.</p>
+      {draft.hasRestorableDraft ? (
+        <div className="draft-banner">
+          <p className="meta">
+            Draft found from {draft.restorableUpdatedAt ? new Date(draft.restorableUpdatedAt).toLocaleString() : "earlier"}.
+          </p>
+          <div className="inline-actions">
+            <button type="button" className="btn btn-secondary" onClick={restoreDraft}>
+              Restore draft
+            </button>
+            <button type="button" className="btn btn-ghost" onClick={discardDraft}>
+              Discard
+            </button>
+          </div>
+        </div>
+      ) : null}
       {sourceNewsletterId ? <input type="hidden" name="sourceNewsletterId" value={sourceNewsletterId} /> : null}
       {errorMessage ? <p className="thread-status locked">{errorMessage}</p> : null}
       <div className="field">
         <label htmlFor="thread-category">Category</label>
-        <select id="thread-category" name="categoryId" defaultValue={defaultCategoryId} required>
+        <select id="thread-category" name="categoryId" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} required>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
@@ -121,8 +169,10 @@ export function CreateThreadForm({
       </div>
       <div className="field">
         <label htmlFor="thread-body">Body</label>
+        <MarkdownToolbar textareaRef={bodyInputRef} value={body} onChange={setBody} />
         {activeTab === "write" ? (
           <textarea
+            ref={bodyInputRef}
             id="thread-body"
             name="body"
             value={body}
@@ -157,6 +207,7 @@ export function CreateThreadForm({
         <p className="meta">Allowed: JPG, PNG, WEBP, GIF. Max 5MB each.</p>
       </div>
       <AttachmentPreviewList files={files} onRemove={removeAttachment} />
+      {draft.dirty ? <p className="meta">Unsaved changes will be restored if you reload this page.</p> : null}
       <div className="sticky-submit-row">
         <SubmitButton />
       </div>

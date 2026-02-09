@@ -125,6 +125,16 @@ This file lists checks that are still manual (not fully automated in e2e).
 7. Open `/profile?tab=activity` and confirm recent threads/replies/notifications are visible.
 8. Toggle theme control in header and confirm light/dark token changes apply consistently.
 
+### 17) Writer experience checks (PR31)
+1. Open `/forum/new` while signed in and verify markdown toolbar buttons (`H2`, `H3`, `Bold`, `List`, `Quote`, `Code`, `Link`) insert syntax at cursor.
+2. Set `NEXT_PUBLIC_ENABLE_MARKDOWN_PREVIEW=1`, switch to preview tab, and confirm links and fenced code blocks render.
+3. Open `/forum/[threadId]`, click `Quote` on an existing reply, and confirm composer receives quoted markdown and focus.
+4. Type draft text in thread composer, refresh, and confirm restore/discard prompt appears.
+5. Discard draft, refresh, and confirm discarded content stays cleared.
+6. Type draft text in reply composer, refresh, and confirm restore/discard prompt appears.
+7. Submit successful reply/thread and confirm stale draft is cleared on follow-up visit.
+8. Trigger rate-limit error path and confirm draft remains available.
+
 ## SQL verification (Supabase Dashboard)
 1. Open `SQL Editor`.
 2. Run `web/supabase/verification/pr15_rate_limit_checks.sql`.

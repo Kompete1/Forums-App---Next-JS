@@ -1,9 +1,12 @@
 "use client";
 
-import { useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useFormStatus } from "react-dom";
 import { AttachmentPreviewList } from "@/components/attachment-preview-list";
 import { MarkdownLitePreview } from "@/components/ui/markdown-lite-preview";
+import { MarkdownToolbar } from "@/components/ui/markdown-toolbar";
+import { useDraftAutosave } from "@/hooks/use-draft-autosave";
+import { makeReplyDraftKey, setPendingClearReplyDraft } from "@/lib/ui/drafts";
 
 type ReplyComposerProps = {
   threadId: string;
@@ -41,11 +44,43 @@ export function ReplyComposer({
   errorMessage = null,
   attachmentErrorMessage = null,
 }: ReplyComposerProps) {
+  const bodyInputRef = useRef<HTMLTextAreaElement | null>(null);
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
   const [body, setBody] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
   const bodyMax = 5000;
+  const draftKey = makeReplyDraftKey(threadId);
+  const draft = useDraftAutosave({
+    draftKey,
+    values: { body },
+  });
+
+  useEffect(() => {
+    const onQuote = (event: Event) => {
+      const custom = event as CustomEvent<{ threadId: string; snippet: string }>;
+      if (!custom.detail || custom.detail.threadId !== threadId) {
+        return;
+      }
+
+      const snippet = custom.detail.snippet;
+      setBody((current) => {
+        if (!current.trim()) {
+          return snippet;
+        }
+        return `${current.trimEnd()}\n\n${snippet}`;
+      });
+      setActiveTab("write");
+      requestAnimationFrame(() => {
+        bodyInputRef.current?.focus();
+      });
+    };
+
+    window.addEventListener("forum:quote-reply", onQuote);
+    return () => {
+      window.removeEventListener("forum:quote-reply", onQuote);
+    };
+  }, [threadId]);
 
   function onAttachmentChange(event: ChangeEvent<HTMLInputElement>) {
     const nextFiles = Array.from(event.target.files ?? []);
@@ -58,8 +93,30 @@ export function ReplyComposer({
     syncInputFiles(attachmentInputRef.current, nextFiles);
   }
 
+  function restoreDraft() {
+    const restored = draft.restoreDraft();
+    if (!restored) {
+      return;
+    }
+    setBody(restored.body);
+    setActiveTab("write");
+  }
+
+  function onSubmit() {
+    setPendingClearReplyDraft({
+      threadId,
+      draftKey,
+    });
+  }
+
+  function onFormInput() {
+    if (activeTab === "preview") {
+      setActiveTab("write");
+    }
+  }
+
   return (
-    <form action={action} className="stack composer-card" id="reply-composer">
+    <form action={action} className="stack composer-card" id="reply-composer" onSubmit={onSubmit} onInput={onFormInput}>
       <input type="hidden" name="threadId" value={threadId} />
       {attachmentErrorMessage ? <p className="thread-status locked">{attachmentErrorMessage}</p> : null}
       {errorMessage ? <p className="thread-status locked">{errorMessage}</p> : null}
@@ -89,11 +146,28 @@ export function ReplyComposer({
         ) : null}
       </div>
       <p className="meta">Be specific, include context, and keep discussion respectful.</p>
+      {draft.hasRestorableDraft ? (
+        <div className="draft-banner">
+          <p className="meta">
+            Draft found from {draft.restorableUpdatedAt ? new Date(draft.restorableUpdatedAt).toLocaleString() : "earlier"}.
+          </p>
+          <div className="inline-actions">
+            <button type="button" className="btn btn-secondary" onClick={restoreDraft}>
+              Restore draft
+            </button>
+            <button type="button" className="btn btn-ghost" onClick={draft.discardDraft}>
+              Discard
+            </button>
+          </div>
+        </div>
+      ) : null}
       <div className="field">
-        <label htmlFor={`reply-${threadId}`}>Add reply</label>
+        <label htmlFor="reply-composer-body">Add reply</label>
+        <MarkdownToolbar textareaRef={bodyInputRef} value={body} onChange={setBody} />
         {activeTab === "write" ? (
           <textarea
-            id={`reply-${threadId}`}
+            ref={bodyInputRef}
+            id="reply-composer-body"
             name="body"
             required
             minLength={1}
@@ -126,6 +200,7 @@ export function ReplyComposer({
         <p className="meta">Allowed: JPG, PNG, WEBP, GIF. Max 5MB each.</p>
       </div>
       <AttachmentPreviewList files={files} onRemove={removeAttachment} />
+      {draft.dirty ? <p className="meta">Unsaved changes will be restored if you reload this page.</p> : null}
       <div className="sticky-submit-row">
         <SubmitButton />
       </div>

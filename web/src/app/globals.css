@@ -932,14 +932,62 @@ h4 {
   gap: 0.7rem;
 }
 
+.markdown-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.toolbar-btn {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-strong);
+  border-radius: 8px;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toolbar-btn:hover,
+.toolbar-btn:focus-visible {
+  background: var(--bg-elevated);
+}
+
 .markdown-list {
   padding-left: 1.2rem;
   display: grid;
   gap: 0.25rem;
 }
 
+.markdown-quote {
+  border-left: 3px solid var(--brand-primary);
+  padding-left: 0.7rem;
+  color: var(--text-muted);
+  margin: 0.2rem 0;
+}
+
+.markdown-code-block {
+  border: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-elevated) 70%, var(--bg-surface));
+  border-radius: 10px;
+  padding: 0.7rem;
+  overflow-x: auto;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.86rem;
+}
+
 .markdown-paragraph {
   line-height: 1.7;
+}
+
+.draft-banner {
+  border: 1px dashed var(--border-subtle);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg-elevated) 55%, var(--bg-surface));
+  padding: 0.55rem 0.65rem;
+  display: grid;
+  gap: 0.45rem;
 }
 
 .sticky-submit-row {
@@ -978,6 +1026,7 @@ h4 {
 .btn:focus-visible,
 .user-menu-trigger:focus-visible,
 .user-menu-item:focus-visible,
+.toolbar-btn:focus-visible,
 .theme-toggle-btn:focus-visible,
 .notification-trigger:focus-visible,
 input:focus-visible,

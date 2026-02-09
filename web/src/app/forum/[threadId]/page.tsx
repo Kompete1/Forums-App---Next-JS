@@ -20,6 +20,7 @@ import {
 } from "@/lib/db/attachments";
 import { logServerError } from "@/lib/server/logging";
 import { ReportActionDialog } from "@/components/report-action-dialog";
+import { ReplyQuoteButton } from "@/components/reply-quote-button";
 import { ReplyComposer } from "@/components/reply-composer";
 
 export const dynamic = "force-dynamic";
@@ -348,19 +349,22 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
                 <article key={reply.id} className="reply-unit">
                   <div className="reply-unit-head">
                     <p className="meta">
-                      {reply.author_display_name ?? reply.author_id} • {new Date(reply.created_at).toLocaleString()}
+                      {reply.author_display_name ?? reply.author_id} | {new Date(reply.created_at).toLocaleString()}
                     </p>
-                    {user ? (
-                      <ReportActionDialog
-                        targetId={reply.id}
-                        targetType="reply"
-                        triggerLabel="Report"
-                        dialogTitle="Report reply"
-                        dialogDescription="Tell moderators why this reply should be reviewed."
-                        errorMessage={replyReportErrorMessage}
-                        action={createReplyReportAction}
-                      />
-                    ) : null}
+                    <div className="inline-actions">
+                      {user ? <ReplyQuoteButton threadId={thread.id} replyBody={reply.body} /> : null}
+                      {user ? (
+                        <ReportActionDialog
+                          targetId={reply.id}
+                          targetType="reply"
+                          triggerLabel="Report"
+                          dialogTitle="Report reply"
+                          dialogDescription="Tell moderators why this reply should be reviewed."
+                          errorMessage={replyReportErrorMessage}
+                          action={createReplyReportAction}
+                        />
+                      ) : null}
+                    </div>
                   </div>
                   <p style={{ whiteSpace: "pre-wrap" }}>{reply.body}</p>
                   {(attachments.replyAttachmentsById[reply.id] ?? []).length > 0 ? (
