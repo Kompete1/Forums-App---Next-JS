@@ -89,7 +89,7 @@ This file lists checks that are still manual (not fully automated in e2e).
 ### 12) Create-thread auth redirect checks (PR25)
 1. Open `/forum/category/general-paddock` while signed out.
 2. Confirm CTA label is `Login to create thread`.
-3. Click it and verify `/auth/login?next=...` is used.
+3. Click it and verify `/auth/login?returnTo=...` is used.
 4. Sign in and confirm redirect to `/forum/new?category=general-paddock`.
 5. Repeat while already signed in and confirm CTA label is `Create thread in this category` with direct navigation to `/forum/new`.
 
@@ -114,6 +114,16 @@ This file lists checks that are still manual (not fully automated in e2e).
 3. Return to `/forum?sort=activity` and confirm replied thread moved to top.
 4. In Supabase SQL Editor, run `web/supabase/verification/pr27_thread_last_activity_checks.sql`.
 5. Confirm `last_activity_at` column, indexes, and trigger are present.
+
+### 16) UX modernization checks (PR28-PR30)
+1. Open `/forum` on desktop and mobile widths and confirm dense rows remain readable.
+2. Open `/forum/[threadId]` and confirm breadcrumb trail and readable reply stream hierarchy.
+3. While signed out on an unlocked thread, click `Login to reply`, sign in, and verify return URL ends with `#reply-composer`.
+4. In `/forum/new` and reply composer, confirm counters update while typing.
+5. Upload 1-3 images and confirm preview thumbnails render and individual removal works before submit.
+6. While signed in, open header bell dropdown and confirm recent notifications preview plus `Mark all read`.
+7. Open `/profile?tab=activity` and confirm recent threads/replies/notifications are visible.
+8. Toggle theme control in header and confirm light/dark token changes apply consistently.
 
 ## SQL verification (Supabase Dashboard)
 1. Open `SQL Editor`.

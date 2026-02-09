@@ -86,20 +86,26 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
 - Advanced email pipeline.
 - Multi-tenant forum architecture.
 
-## UX Redesign Slice (Active)
-- Objective: modernize signed-in and signed-out forum UX flows without changing authorization policy intent.
-- Core requirements:
+## UX Modernization Slice (PR28-PR30 Active)
+- Objective: improve readability, contribution flow, and engagement surfaces while preserving authorization and route boundaries.
+- Delivered baseline:
   1. Post-login redirects:
      - Direct `/auth/login` sign-in lands on `/forum`.
-     - Auth interruptions from create/reply actions preserve destination using `returnTo`.
-  2. Header signed-in state:
-     - Replace plain `Profile` nav with avatar/user menu containing profile and logout actions.
-  3. Category and discovery readability:
-     - Improve thread card hierarchy, metadata consistency, and spacing for scanability.
+     - Reply interruption now returns to `/forum/[threadId]#reply-composer`.
+  2. Header signed-in state and engagement surfaces:
+     - Avatar menu retained and expanded.
+     - Header notification bell dropdown with unread preview and quick `Mark all read`.
+     - Theme toggle (light/dark tokenized styles).
+  3. Discovery readability:
+     - Denser thread row presentation with clearer metadata and activity cues.
+     - Mobile-collapsible filter panel.
   4. Thread detail hierarchy:
-     - Prioritize reading and reply composer.
-     - Reporting is secondary (modal/secondary UI), not dominant inline forms.
-  5. Activity ordering:
+     - Breadcrumb trail and two-column read-first layout.
+     - Reporting remains modal/secondary controls.
+     - Reply composer elevated with guidance, counters, preview tab (feature-flagged), and attachment previews.
+  5. Profile activity:
+     - `/profile?tab=activity` includes recent threads, replies, and notifications.
+  6. Activity ordering:
      - Thread discovery defaults to last activity and bumps on new replies.
 
 ## UX Route Behavior Contract
@@ -112,6 +118,7 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
   - Discovery order defaults to latest activity.
 - `/forum/[threadId]`:
   - Report actions open modal/secondary UX; reply action remains first-class.
+  - Reply interruption flow should return to `#reply-composer` anchor.
 
 ## Functional Requirements (Current Baseline)
 - Authenticated identity and session visibility in UI.

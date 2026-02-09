@@ -2,18 +2,14 @@
 
 import { useRef, useState, type ChangeEvent } from "react";
 import { useFormStatus } from "react-dom";
-import type { ForumCategory } from "@/lib/db/categories";
 import { AttachmentPreviewList } from "@/components/attachment-preview-list";
 import { MarkdownLitePreview } from "@/components/ui/markdown-lite-preview";
 
-type CreateThreadFormProps = {
-  categories: ForumCategory[];
-  defaultCategoryId: string;
-  defaultTitle?: string;
-  defaultBody?: string;
-  sourceNewsletterId?: string | null;
-  errorMessage?: string | null;
+type ReplyComposerProps = {
+  threadId: string;
   action: (formData: FormData) => Promise<void>;
+  errorMessage?: string | null;
+  attachmentErrorMessage?: string | null;
 };
 
 const markdownPreviewEnabled = process.env.NEXT_PUBLIC_ENABLE_MARKDOWN_PREVIEW === "1";
@@ -22,7 +18,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <button type="submit" className="btn btn-primary" disabled={pending}>
-      {pending ? "Publishing..." : "Publish thread"}
+      {pending ? "Posting..." : "Post reply"}
     </button>
   );
 }
@@ -39,23 +35,21 @@ function syncInputFiles(input: HTMLInputElement | null, files: File[]) {
   input.files = dataTransfer.files;
 }
 
-export function CreateThreadForm({
-  categories,
-  defaultCategoryId,
-  defaultTitle = "",
-  defaultBody = "",
-  sourceNewsletterId = null,
-  errorMessage = null,
+export function ReplyComposer({
+  threadId,
   action,
-}: CreateThreadFormProps) {
+  errorMessage = null,
+  attachmentErrorMessage = null,
+}: ReplyComposerProps) {
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
-  const [title, setTitle] = useState(defaultTitle);
-  const [body, setBody] = useState(defaultBody);
+  const [body, setBody] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
+  const bodyMax = 5000;
 
   function onAttachmentChange(event: ChangeEvent<HTMLInputElement>) {
-    setFiles(Array.from(event.target.files ?? []));
+    const nextFiles = Array.from(event.target.files ?? []);
+    setFiles(nextFiles);
   }
 
   function removeAttachment(index: number) {
@@ -65,11 +59,14 @@ export function CreateThreadForm({
   }
 
   return (
-    <form action={action} className="card stack composer-card">
+    <form action={action} className="stack composer-card" id="reply-composer">
+      <input type="hidden" name="threadId" value={threadId} />
+      {attachmentErrorMessage ? <p className="thread-status locked">{attachmentErrorMessage}</p> : null}
+      {errorMessage ? <p className="thread-status locked">{errorMessage}</p> : null}
       <div className="inline-actions composer-header-row">
-        <h2>Create thread</h2>
+        <h3>Add reply</h3>
         {markdownPreviewEnabled ? (
-          <div className="tab-switch" role="tablist" aria-label="Thread editor tabs">
+          <div className="tab-switch" role="tablist" aria-label="Reply editor tabs">
             <button
               type="button"
               className={`tab-btn ${activeTab === "write" ? "active" : ""}`}
@@ -91,47 +88,19 @@ export function CreateThreadForm({
           </div>
         ) : null}
       </div>
-      <p className="meta">Use clear titles and include concrete details so others can help quickly.</p>
-      {sourceNewsletterId ? <input type="hidden" name="sourceNewsletterId" value={sourceNewsletterId} /> : null}
-      {errorMessage ? <p className="thread-status locked">{errorMessage}</p> : null}
+      <p className="meta">Be specific, include context, and keep discussion respectful.</p>
       <div className="field">
-        <label htmlFor="thread-category">Category</label>
-        <select id="thread-category" name="categoryId" defaultValue={defaultCategoryId} required>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="field">
-        <label htmlFor="thread-title">Title</label>
-        <input
-          id="thread-title"
-          name="title"
-          type="text"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          required
-          minLength={1}
-          maxLength={120}
-          placeholder="Example: Killarney season schedule update"
-        />
-        <p className="meta">{title.length} / 120 characters</p>
-      </div>
-      <div className="field">
-        <label htmlFor="thread-body">Body</label>
+        <label htmlFor={`reply-${threadId}`}>Add reply</label>
         {activeTab === "write" ? (
           <textarea
-            id="thread-body"
+            id={`reply-${threadId}`}
             name="body"
-            value={body}
-            onChange={(event) => setBody(event.target.value)}
             required
             minLength={1}
-            maxLength={5000}
-            rows={9}
-            placeholder="Share context, what you tried, and what answer you need."
+            maxLength={bodyMax}
+            rows={5}
+            value={body}
+            onChange={(event) => setBody(event.target.value)}
           />
         ) : (
           <>
@@ -144,11 +113,11 @@ export function CreateThreadForm({
         <p className="meta">{body.length} / 5000 characters</p>
       </div>
       <div className="field">
-        <label htmlFor="thread-attachments">Images (optional, up to 3)</label>
+        <label htmlFor={`reply-attachments-${threadId}`}>Images (optional, up to 3)</label>
         <input
           ref={attachmentInputRef}
-          id="thread-attachments"
-          name="attachments"
+          id={`reply-attachments-${threadId}`}
+          name="replyAttachments"
           type="file"
           accept="image/jpeg,image/png,image/webp,image/gif"
           multiple

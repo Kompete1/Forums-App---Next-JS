@@ -24,7 +24,8 @@ export function ForumFilterPanel({
   selectedLabel,
 }: ForumFilterPanelProps) {
   return (
-    <section className="card stack">
+    <details className="card stack filter-collapsible" open>
+      <summary className="filter-summary">Filters</summary>
       <div className="inline-actions">
         <h2>Filters</h2>
         <p className="filter-chip">{selectedLabel}</p>
@@ -64,6 +65,6 @@ export function ForumFilterPanel({
           </Link>
         </div>
       </form>
-    </section>
+    </details>
   );
 }

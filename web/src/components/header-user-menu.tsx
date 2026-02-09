@@ -15,19 +15,15 @@ import { AvatarBadge } from "@/components/ui/avatar-badge";
 type HeaderUserMenuProps = {
   email: string | null;
   showAdminLinks: boolean;
-  unreadCount: number;
 };
 
-export function HeaderUserMenu({ email, showAdminLinks, unreadCount }: HeaderUserMenuProps) {
-  const unreadLabel = unreadCount > 99 ? "99+" : String(unreadCount);
-
+export function HeaderUserMenu({ email, showAdminLinks }: HeaderUserMenuProps) {
   return (
     <DropdownRoot>
       <DropdownTrigger asChild>
         <button type="button" className="user-menu-trigger" aria-label="Open user menu">
           <AvatarBadge email={email} />
           <span className="user-menu-text">Account</span>
-          {unreadCount > 0 ? <span className="unread-badge">{unreadLabel}</span> : null}
         </button>
       </DropdownTrigger>
       <DropdownPortal>
@@ -40,8 +36,23 @@ export function HeaderUserMenu({ email, showAdminLinks, unreadCount }: HeaderUse
             </Link>
           </DropdownItem>
           <DropdownItem asChild>
+            <Link href="/profile?tab=activity" className="user-menu-item">
+              My threads
+            </Link>
+          </DropdownItem>
+          <DropdownItem asChild>
+            <Link href="/profile?tab=activity" className="user-menu-item">
+              Activity
+            </Link>
+          </DropdownItem>
+          <DropdownItem asChild>
+            <Link href="/profile" className="user-menu-item">
+              Settings
+            </Link>
+          </DropdownItem>
+          <DropdownItem asChild>
             <Link href="/notifications" className="user-menu-item">
-              Notifications
+              Notifications archive
             </Link>
           </DropdownItem>
           {showAdminLinks ? (

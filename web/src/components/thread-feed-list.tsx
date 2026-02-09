@@ -15,6 +15,15 @@ type ThreadFeedListProps = {
   showRecentBadgeOnFirst?: boolean;
 };
 
+function authorInitial(value: string | null) {
+  const source = (value ?? "").trim();
+  if (!source) {
+    return "U";
+  }
+
+  return source.slice(0, 1).toUpperCase();
+}
+
 export function ThreadFeedList({
   threads,
   repliesCountByThreadId,
@@ -38,33 +47,50 @@ export function ThreadFeedList({
         </p>
       </div>
       {threads.length === 0 ? <p className="empty-note">{noResultsText}</p> : null}
-      <div className="thread-grid">
+      <div className="thread-list">
         {threads.map((thread, index) => {
           const repliesCount = repliesCountByThreadId[thread.id] ?? 0;
+          const authorLabel = thread.author_display_name ?? thread.author_id;
           return (
-            <article key={thread.id} className="card thread-item">
-              {showRecentBadgeOnFirst && index === 0 ? <p className="filter-chip">Recently posted</p> : null}
-              <h3>{thread.title}</h3>
-              <p className="thread-snippet">
-                {thread.body.slice(0, 220)}
-                {thread.body.length > 220 ? "..." : ""}
-              </p>
-              <p className="meta thread-meta-row">
-                <span>{thread.category_name ?? "Unknown"}</span>
-                <span>By {thread.author_display_name ?? thread.author_id}</span>
-                <span>Created {new Date(thread.created_at).toLocaleString()}</span>
-              </p>
-              {thread.source_newsletter_id ? (
-                <p className="meta">Linked newsletter: {thread.source_newsletter_title ?? "Newsletter topic"}</p>
-              ) : null}
-              <p className={`thread-activity-row ${thread.is_locked ? "thread-status locked" : "thread-status open"}`}>
-                <span>{thread.is_locked ? "Locked" : "Open"}</span>
-                <span>{repliesCount} replies</span>
-                <span>Last activity {new Date(thread.last_activity_at).toLocaleString()}</span>
-              </p>
-              <Link href={`/forum/${thread.id}`} className="btn-link focus-link">
-                Open thread
-              </Link>
+            <article key={thread.id} className="thread-row">
+              <div className="thread-row-main">
+                <div className="inline-actions thread-row-head">
+                  <h3 className="thread-row-title">
+                    <Link href={`/forum/${thread.id}`} className="focus-link">
+                      {thread.title}
+                    </Link>
+                  </h3>
+                  {showRecentBadgeOnFirst && index === 0 ? <p className="filter-chip">Recently posted</p> : null}
+                </div>
+                <p className="thread-snippet">
+                  {thread.body.slice(0, 220)}
+                  {thread.body.length > 220 ? "..." : ""}
+                </p>
+                <div className="thread-meta-row">
+                  <span>{thread.category_name ?? "Unknown category"}</span>
+                  <span>Started by {authorLabel}</span>
+                  <span>{new Date(thread.created_at).toLocaleString()}</span>
+                </div>
+                <div className="thread-pills-row">
+                  <span className={`thread-status-pill ${thread.is_locked ? "locked" : "open"}`}>
+                    {thread.is_locked ? "Locked" : "Open"}
+                  </span>
+                  <span className="thread-info-pill">{repliesCount} replies</span>
+                  <span className="thread-info-pill">Last activity {new Date(thread.last_activity_at).toLocaleString()}</span>
+                  {thread.source_newsletter_id ? (
+                    <span className="thread-info-pill">Linked newsletter: {thread.source_newsletter_title ?? "Newsletter topic"}</span>
+                  ) : null}
+                </div>
+              </div>
+              <div className="thread-row-aside">
+                <div className="thread-author-badge" aria-hidden>
+                  {authorInitial(authorLabel)}
+                </div>
+                <p className="meta thread-aside-author">{authorLabel}</p>
+                <Link href={`/forum/${thread.id}`} className="btn-link focus-link">
+                  Open thread
+                </Link>
+              </div>
             </article>
           );
         })}

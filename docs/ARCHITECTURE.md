@@ -32,6 +32,8 @@ Repo A points users into Repo B using an iframe and/or direct link.
 - `/forum?newsletter=<newsletter-id>`: linked-discussion filtering for newsletter topics.
 - `/notifications`: signed-in inbox for reply/report notifications with read-state controls.
 - `/admin`: moderator/admin operational dashboard with read-only operational summaries.
+- Header shell: signed-in avatar menu + notification bell dropdown + theme toggle (light/dark tokens).
+- `/profile?tab=activity`: signed-in activity view (recent threads/replies/notifications).
 
 ## Security Boundary Notes
 - Secrets remain in `.env.local` and Vercel env vars.

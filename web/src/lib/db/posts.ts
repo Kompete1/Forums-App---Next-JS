@@ -63,6 +63,15 @@ export type ListThreadsPage = {
   pageSize: number;
 };
 
+export type AuthorThreadItem = {
+  id: string;
+  title: string;
+  created_at: string;
+  last_activity_at: string;
+  is_locked: boolean;
+  category_name: string | null;
+};
+
 function normalizeText(value: string) {
   return value.trim();
 }
@@ -337,6 +346,47 @@ export async function createThread(input: ThreadInput) {
   }
 
   return data.id as string;
+}
+
+export async function listThreadsByAuthor(authorIdInput: string, limitInput = 8) {
+  const authorId = normalizeText(authorIdInput);
+  if (!authorId) {
+    return [] as AuthorThreadItem[];
+  }
+
+  const limit = normalizePositiveInt(limitInput, 8, 30);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("posts")
+    .select("id, title, created_at, last_activity_at, is_locked, categories:category_id(name)")
+    .eq("author_id", authorId)
+    .order("last_activity_at", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  type Row = {
+    id: string;
+    title: string;
+    created_at: string;
+    last_activity_at: string | null;
+    is_locked: boolean;
+    categories: { name: string } | { name: string }[] | null;
+  };
+
+  const rows = (data ?? []) as Row[];
+
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    created_at: row.created_at,
+    last_activity_at: row.last_activity_at ?? row.created_at,
+    is_locked: row.is_locked,
+    category_name: Array.isArray(row.categories) ? row.categories[0]?.name ?? null : row.categories?.name ?? null,
+  })) as AuthorThreadItem[];
 }
 
 export async function updateThread(id: string, input: ThreadInput) {

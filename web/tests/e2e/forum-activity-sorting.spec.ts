@@ -23,7 +23,7 @@ test("reply bumps thread ordering to top on activity sort", async ({ page }) => 
   const threadCount = await openThreadLinks.count();
   test.skip(threadCount < 2, "Need at least two threads to verify activity ordering.");
 
-  const titleNodes = page.locator(".thread-item h3");
+  const titleNodes = page.locator(".thread-row-title");
   const initialFirstTitle = (await titleNodes.nth(0).textContent())?.trim() ?? "";
   const secondTitle = (await titleNodes.nth(1).textContent())?.trim() ?? "";
   test.skip(!initialFirstTitle || !secondTitle, "Could not read thread titles for ordering assertion.");
@@ -42,6 +42,6 @@ test("reply bumps thread ordering to top on activity sort", async ({ page }) => 
   }
 
   await page.goto("/forum?sort=activity");
-  const bumpedFirstTitle = (await page.locator(".thread-item h3").nth(0).textContent())?.trim() ?? "";
+  const bumpedFirstTitle = (await page.locator(".thread-row-title").nth(0).textContent())?.trim() ?? "";
   expect(bumpedFirstTitle).toBe(secondTitle);
 });

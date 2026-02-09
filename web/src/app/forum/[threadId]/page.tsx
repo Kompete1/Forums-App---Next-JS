@@ -20,6 +20,7 @@ import {
 } from "@/lib/db/attachments";
 import { logServerError } from "@/lib/server/logging";
 import { ReportActionDialog } from "@/components/report-action-dialog";
+import { ReplyComposer } from "@/components/reply-composer";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +52,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
 
   const threadIdValue = thread.id;
   const backToFeedHref = thread.category_slug ? `/forum/category/${encodeURIComponent(thread.category_slug)}` : "/forum";
-  const loginToReplyHref = appendQueryParams("/auth/login", { returnTo: `/forum/${thread.id}` });
+  const loginToReplyHref = appendQueryParams("/auth/login", { returnTo: `/forum/${thread.id}#reply-composer` });
   const [categories, repliesMap] = await Promise.all([listCategories(), listRepliesByThreadIds([thread.id])]);
   const replies = repliesMap[thread.id] ?? [];
   const attachments = await listAttachmentsForThreadAndReplies({ threadId: thread.id, replyIds: replies.map((reply) => reply.id) }).catch(
@@ -232,208 +233,230 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
 
   return (
     <main className="page-wrap stack">
-      <section className="inline-actions">
-        <Link href={backToFeedHref} className="btn-link focus-link">
-          Back to forum
+      <nav className="breadcrumbs" aria-label="Breadcrumb">
+        <Link href="/" className="focus-link">
+          Home
         </Link>
-      </section>
+        <span className="meta">/</span>
+        <Link href="/forum" className="focus-link">
+          Forum
+        </Link>
+        <span className="meta">/</span>
+        {thread.category_slug ? (
+          <>
+            <Link href={backToFeedHref} className="focus-link">
+              {thread.category_name ?? "Category"}
+            </Link>
+            <span className="meta">/</span>
+          </>
+        ) : null}
+        <span className="meta">{thread.title}</span>
+      </nav>
 
-      <article className="card stack">
-        <div>
-          <p className="kicker">{thread.category_name ?? "Forum Thread"}</p>
-          <h1>{thread.title}</h1>
-        </div>
-        <p style={{ whiteSpace: "pre-wrap" }}>{thread.body}</p>
-        {attachments.threadAttachments.length > 0 ? (
-          <div className="attachments-grid">
-            {attachments.threadAttachments.map((attachment) => (
-              <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="attachment-card">
-                <Image
-                  src={attachment.url}
-                  alt={attachment.file_name}
-                  className="attachment-image"
-                  width={320}
-                  height={240}
-                  unoptimized
-                />
-                <span className="meta">{attachment.file_name}</span>
+      <section className="thread-detail-layout">
+        <aside className="thread-side-rail stack">
+          <article className="card stack">
+            <p className="kicker">{thread.category_name ?? "Forum Thread"}</p>
+            <h1>{thread.title}</h1>
+            <p className="meta">By {thread.author_display_name ?? thread.author_id}</p>
+            <p className="meta">{new Date(thread.created_at).toLocaleString()}</p>
+            <p className={`thread-status ${thread.is_locked ? "locked" : "open"}`}>{thread.is_locked ? "Locked" : "Open"}</p>
+            <div className="stack-tight">
+              <Link href={backToFeedHref} className="btn-link focus-link">
+                Back to forum
+              </Link>
+              <a href="#reply-composer" className="btn-link focus-link">
+                Jump to reply
               </a>
-            ))}
-          </div>
-        ) : null}
-        <p className="meta">
-          By {thread.author_display_name ?? thread.author_id} on {new Date(thread.created_at).toLocaleString()}
-        </p>
-        {thread.source_newsletter_id ? (
-          <p className="meta">
-            Source newsletter: {thread.source_newsletter_title ?? "Newsletter topic"} |{" "}
-            <Link href="/newsletter" className="btn-link focus-link">
-              Open newsletter feed
-            </Link>
-          </p>
-        ) : null}
-        <p className={thread.is_locked ? "thread-status locked" : "thread-status open"}>
-          Status: {thread.is_locked ? "Locked" : "Open"}
-        </p>
-        <div className="inline-actions">
-          {user ? (
-            <ReportActionDialog
-              targetId={thread.id}
-              targetType="thread"
-              triggerLabel="Report thread"
-              dialogTitle="Report thread"
-              dialogDescription="Tell moderators why this thread should be reviewed."
-              errorMessage={threadReportErrorMessage}
-              action={createThreadReportAction}
-            />
-          ) : (
-            <Link href={loginToReplyHref} className="btn btn-secondary">
-              Login to report
-            </Link>
-          )}
-        </div>
+            </div>
+          </article>
 
-        {canModerateThreads ? (
-          <form action={thread.is_locked ? unlockThreadAction : lockThreadAction}>
-            <input type="hidden" name="threadId" value={thread.id} />
-            <button type="submit" className="btn btn-secondary">
-              {thread.is_locked ? "Unlock thread" : "Lock thread"}
-            </button>
-          </form>
-        ) : null}
-      </article>
-
-      <section className="card stack">
-        <h2>Replies</h2>
-        {replyReportErrorMessage ? <p className="thread-status locked">{replyReportErrorMessage}</p> : null}
-        {replies.length === 0 ? <p className="empty-note">No replies yet.</p> : null}
-        <div className="stack">
-          {replies.map((reply) => (
-            <article key={reply.id} className="card">
-              <p style={{ whiteSpace: "pre-wrap" }}>{reply.body}</p>
-              {(attachments.replyAttachmentsById[reply.id] ?? []).length > 0 ? (
-                <div className="attachments-grid">
-                  {(attachments.replyAttachmentsById[reply.id] ?? []).map((attachment) => (
-                    <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="attachment-card">
-                      <Image
-                        src={attachment.url}
-                        alt={attachment.file_name}
-                        className="attachment-image"
-                        width={320}
-                        height={240}
-                        unoptimized
-                      />
-                      <span className="meta">{attachment.file_name}</span>
-                    </a>
-                  ))}
-                </div>
-              ) : null}
-              <p className="meta">
-                By {reply.author_display_name ?? reply.author_id} on {new Date(reply.created_at).toLocaleString()}
-              </p>
+          <article className="card stack">
+            <h3>Thread actions</h3>
+            <div className="inline-actions">
               {user ? (
                 <ReportActionDialog
-                  targetId={reply.id}
-                  targetType="reply"
-                  triggerLabel="Report reply"
-                  dialogTitle="Report reply"
-                  dialogDescription="Tell moderators why this reply should be reviewed."
-                  errorMessage={replyReportErrorMessage}
-                  action={createReplyReportAction}
+                  targetId={thread.id}
+                  targetType="thread"
+                  triggerLabel="Report"
+                  dialogTitle="Report thread"
+                  dialogDescription="Tell moderators why this thread should be reviewed."
+                  errorMessage={threadReportErrorMessage}
+                  action={createThreadReportAction}
                 />
+              ) : (
+                <Link href={loginToReplyHref} className="btn-link focus-link">
+                  Login to report
+                </Link>
+              )}
+              {canModerateThreads ? (
+                <form action={thread.is_locked ? unlockThreadAction : lockThreadAction}>
+                  <input type="hidden" name="threadId" value={thread.id} />
+                  <button type="submit" className="btn btn-secondary">
+                    {thread.is_locked ? "Unlock" : "Lock"}
+                  </button>
+                </form>
               ) : null}
-            </article>
-          ))}
-        </div>
-
-        {thread.is_locked ? <p className="thread-status locked">Thread is locked.</p> : null}
-
-        {user && !thread.is_locked ? (
-          <form action={createReplyAction} className="stack" id="reply-composer">
-            <input type="hidden" name="threadId" value={thread.id} />
-            {replyAttachmentErrorMessage ? <p className="thread-status locked">{replyAttachmentErrorMessage}</p> : null}
-            {replyErrorMessage ? <p className="thread-status locked">{replyErrorMessage}</p> : null}
-            <div className="field">
-              <label htmlFor={`reply-${thread.id}`}>Add reply</label>
-              <textarea id={`reply-${thread.id}`} name="body" required minLength={1} maxLength={5000} rows={4} />
             </div>
-            <div className="field">
-              <label htmlFor={`reply-attachments-${thread.id}`}>Images (optional, up to 3)</label>
-              <input
-                id={`reply-attachments-${thread.id}`}
-                name="replyAttachments"
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                multiple
-              />
-              <p className="meta">Allowed: JPG, PNG, WEBP, GIF. Max 5MB each.</p>
-            </div>
-            <button type="submit" className="btn btn-primary">
-              Post reply
-            </button>
-          </form>
-        ) : null}
-        {!user && !thread.is_locked ? (
-          <Link href={loginToReplyHref} className="btn btn-secondary">
-            Login to reply
-          </Link>
-        ) : null}
-      </section>
+          </article>
+        </aside>
 
-      {isOwner ? (
-        <section className="card stack">
-          <h2>Edit your thread</h2>
-          <form action={updateThreadAction} className="stack">
-            <input type="hidden" name="id" value={thread.id} />
-            <div className="field">
-              <label htmlFor={`thread-category-${thread.id}`}>Category</label>
-              <select id={`thread-category-${thread.id}`} name="categoryId" defaultValue={thread.category_id} required>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
+        <div className="thread-main-column stack">
+          <article className="card stack thread-post-unit">
+            <header className="post-unit-head">
+              <p className="meta">Thread starter</p>
+            </header>
+            <div className="thread-body-content" style={{ whiteSpace: "pre-wrap" }}>
+              {thread.body}
+            </div>
+            {attachments.threadAttachments.length > 0 ? (
+              <div className="attachments-grid">
+                {attachments.threadAttachments.map((attachment) => (
+                  <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="attachment-card">
+                    <Image
+                      src={attachment.url}
+                      alt={attachment.file_name}
+                      className="attachment-image"
+                      width={320}
+                      height={240}
+                      unoptimized
+                    />
+                    <span className="meta">{attachment.file_name}</span>
+                  </a>
                 ))}
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor={`thread-title-${thread.id}`}>Title</label>
-              <input
-                id={`thread-title-${thread.id}`}
-                name="title"
-                type="text"
-                defaultValue={thread.title}
-                required
-                minLength={1}
-                maxLength={120}
-              />
-            </div>
-            <div className="field">
-              <label htmlFor={`thread-body-${thread.id}`}>Body</label>
-              <textarea
-                id={`thread-body-${thread.id}`}
-                name="body"
-                defaultValue={thread.body}
-                required
-                minLength={1}
-                maxLength={5000}
-                rows={6}
-              />
-            </div>
-            <div className="inline-actions">
-              <button type="submit" className="btn btn-primary">
-                Update thread
-              </button>
-            </div>
-          </form>
+              </div>
+            ) : null}
+            {thread.source_newsletter_id ? (
+              <p className="meta">
+                Source newsletter: {thread.source_newsletter_title ?? "Newsletter topic"} |{" "}
+                <Link href="/newsletter" className="btn-link focus-link">
+                  Open newsletter feed
+                </Link>
+              </p>
+            ) : null}
+          </article>
 
-          <form action={deleteThreadAction}>
-            <input type="hidden" name="id" value={thread.id} />
-            <button type="submit" className="btn btn-danger">
-              Delete thread
-            </button>
-          </form>
-        </section>
-      ) : null}
+          <section className="card stack">
+            <div className="inline-actions">
+              <h2>Replies</h2>
+              <p className="meta">{replies.length} total</p>
+            </div>
+            {replyReportErrorMessage ? <p className="thread-status locked">{replyReportErrorMessage}</p> : null}
+            {replies.length === 0 ? <p className="empty-note">No replies yet. Start the discussion below.</p> : null}
+            <div className="stack">
+              {replies.map((reply) => (
+                <article key={reply.id} className="reply-unit">
+                  <div className="reply-unit-head">
+                    <p className="meta">
+                      {reply.author_display_name ?? reply.author_id} • {new Date(reply.created_at).toLocaleString()}
+                    </p>
+                    {user ? (
+                      <ReportActionDialog
+                        targetId={reply.id}
+                        targetType="reply"
+                        triggerLabel="Report"
+                        dialogTitle="Report reply"
+                        dialogDescription="Tell moderators why this reply should be reviewed."
+                        errorMessage={replyReportErrorMessage}
+                        action={createReplyReportAction}
+                      />
+                    ) : null}
+                  </div>
+                  <p style={{ whiteSpace: "pre-wrap" }}>{reply.body}</p>
+                  {(attachments.replyAttachmentsById[reply.id] ?? []).length > 0 ? (
+                    <div className="attachments-grid">
+                      {(attachments.replyAttachmentsById[reply.id] ?? []).map((attachment) => (
+                        <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="attachment-card">
+                          <Image
+                            src={attachment.url}
+                            alt={attachment.file_name}
+                            className="attachment-image"
+                            width={320}
+                            height={240}
+                            unoptimized
+                          />
+                          <span className="meta">{attachment.file_name}</span>
+                        </a>
+                      ))}
+                    </div>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          </section>
+
+          {thread.is_locked ? <p className="thread-status locked">Thread is locked. Replies are disabled.</p> : null}
+
+          {user && !thread.is_locked ? (
+            <ReplyComposer
+              threadId={thread.id}
+              action={createReplyAction}
+              attachmentErrorMessage={replyAttachmentErrorMessage}
+              errorMessage={replyErrorMessage}
+            />
+          ) : null}
+          {!user && !thread.is_locked ? (
+            <Link href={loginToReplyHref} className="btn btn-secondary">
+              Login to reply
+            </Link>
+          ) : null}
+
+          {isOwner ? (
+            <details className="card stack manage-thread-panel">
+              <summary>Manage thread</summary>
+              <form action={updateThreadAction} className="stack">
+                <input type="hidden" name="id" value={thread.id} />
+                <div className="field">
+                  <label htmlFor={`thread-category-${thread.id}`}>Category</label>
+                  <select id={`thread-category-${thread.id}`} name="categoryId" defaultValue={thread.category_id} required>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="field">
+                  <label htmlFor={`thread-title-${thread.id}`}>Title</label>
+                  <input
+                    id={`thread-title-${thread.id}`}
+                    name="title"
+                    type="text"
+                    defaultValue={thread.title}
+                    required
+                    minLength={1}
+                    maxLength={120}
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor={`thread-body-${thread.id}`}>Body</label>
+                  <textarea
+                    id={`thread-body-${thread.id}`}
+                    name="body"
+                    defaultValue={thread.body}
+                    required
+                    minLength={1}
+                    maxLength={5000}
+                    rows={6}
+                  />
+                </div>
+                <div className="inline-actions">
+                  <button type="submit" className="btn btn-primary">
+                    Update thread
+                  </button>
+                </div>
+              </form>
+
+              <form action={deleteThreadAction}>
+                <input type="hidden" name="id" value={thread.id} />
+                <button type="submit" className="btn btn-danger">
+                  Delete thread
+                </button>
+              </form>
+            </details>
+          ) : null}
+        </div>
+      </section>
     </main>
   );
 }
