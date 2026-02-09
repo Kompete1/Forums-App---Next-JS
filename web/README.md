@@ -16,20 +16,26 @@ Current scope includes:
 - V3 PR22 attachments/images with Supabase Storage (completed)
 - V3 PR23 admin dashboard (completed)
 - V4 PR24 production hardening pack (completed)
-- V4 PR26 (in progress): auth session consistency hotfix (logout prefetch)
-- V5 PR27 UX redesign execution wave (active):
+- V4 PR26 auth session consistency hotfix (completed)
+- V5 PR27 UX redesign execution wave (completed):
   - auth `returnTo` redirect consistency
   - avatar/user menu signed-in nav
   - thread/category readability refresh
   - thread reporting modal UX
   - last-activity sorting bump on reply
+- V5 PR28-PR30 UX modernization wave (active):
+  - dense discovery/thread layout reflow
+  - notification bell dropdown preview
+  - profile activity tab
+  - contribution composer polish (counters, previews, sticky submit)
+  - theme toggle and tokenized light/dark support
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
-- Active build: V4 PR26 auth session consistency hotfix.
+- Completed through V4 PR26: auth session consistency and explicit logout route behavior.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Planned next after PR26: V4 follow-up hardening refinements as needed.
+- Active build: V5 PR28-PR30 UX modernization refinements.
 
 ## Documentation Sync Contract
 
@@ -55,6 +61,8 @@ Set these values in `web/.env.local` (do not commit):
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+# optional: enable write/preview tabs in thread/reply composers
+NEXT_PUBLIC_ENABLE_MARKDOWN_PREVIEW=0
 ```
 
 Set the same values in Vercel Preview and Production:
@@ -74,8 +82,8 @@ In Supabase Dashboard -> Authentication -> URL Configuration:
 ## Auth Session Consistency (SSR)
 
 - `web/middleware.ts` keeps Supabase auth cookies in sync for server-rendered routes.
-- Protected routes such as `/forum/new` redirect to login with `next=<return-path>`.
-- After sign-in, login returns users to a safe internal `next` path when present.
+- Protected routes such as `/forum/new` redirect to login with `returnTo=<return-path>`.
+- After sign-in, login returns users to a safe internal `returnTo` path when present.
 
 ## Auth Return-To Contract (V5)
 
@@ -382,7 +390,7 @@ Expected for non-mod: only own reports are returned (or none).
 
 ### O) Auth redirect-back flow for create thread (PR25)
 1. Open `/forum/category/general-paddock` while signed out.
-2. Click `Login to create thread` and confirm URL includes `/auth/login?next=...`.
+2. Click `Login to create thread` and confirm URL includes `/auth/login?returnTo=...`.
 3. Sign in and confirm you land on `/forum/new?category=general-paddock`.
 4. While signed in, click `Create thread in this category` and confirm no login bounce occurs.
 
@@ -407,6 +415,15 @@ Expected for non-mod: only own reports are returned (or none).
 3. Return to `/forum?sort=activity` and confirm that replied thread now appears first.
 4. Run `web/supabase/verification/pr27_thread_last_activity_checks.sql` and verify column/index/trigger objects.
 
+### S) UX modernization checks (V5 PR28-PR30)
+1. On `/forum`, confirm thread rows are compact and metadata is easy to scan on desktop and mobile.
+2. On `/forum/[threadId]`, confirm breadcrumb trail is visible and reply composer is easy to find.
+3. While signed out on `/forum/[threadId]`, click `Login to reply`, sign in, and confirm return URL includes `#reply-composer`.
+4. In create-thread and reply composers, confirm counters update and image previews can be removed before submit.
+5. In header signed-in state, open bell dropdown and confirm recent notification preview + `Mark all read`.
+6. Open `/profile?tab=activity` and confirm recent threads/replies/notifications render.
+7. Toggle theme button in header and confirm light/dark tokens apply across discovery and thread pages.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -421,6 +438,7 @@ Run these manually even when Playwright passes:
 - Security headers and sanitized server-action logging checks (PR24).
 - Auth session consistency checks (PR26).
 - UX returnTo and activity sorting checks (PR27).
+- UX modernization checks (PR28-PR30).
 - Backup/restore and release checklists from `web/docs/operations-runbook.md`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.

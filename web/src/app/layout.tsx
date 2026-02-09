@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="light" suppressHydrationWarning>
       <body className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable}`}>
         <SiteHeader />
         <div className="app-shell">{children}</div>

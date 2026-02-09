@@ -85,6 +85,6 @@ test("guest reply CTA redirects to login then back to the same thread", async ({
   await expect(page).toHaveURL(/\/auth\/login\?returnTo=/);
   await loginFromCurrentPage(page);
 
-  await expect(page).toHaveURL(new RegExp(targetUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), { timeout: 15_000 });
+  await expect(page).toHaveURL(new RegExp(`${targetUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}#reply-composer`), { timeout: 15_000 });
   await expect(page.getByLabel("Add reply")).toBeVisible();
 });

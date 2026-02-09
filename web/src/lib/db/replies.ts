@@ -11,6 +11,14 @@ export type ForumReply = {
   author_display_name: string | null;
 };
 
+export type AuthorReplyItem = {
+  id: string;
+  thread_id: string;
+  thread_title: string | null;
+  body: string;
+  created_at: string;
+};
+
 type ReplyRow = {
   id: string;
   thread_id: string;
@@ -181,4 +189,42 @@ export async function deleteReply(id: string) {
   if (!data || data.length === 0) {
     throw new Error("Reply not found or not allowed.");
   }
+}
+
+export async function listRepliesByAuthor(authorIdInput: string, limitInput = 10) {
+  const authorId = normalizeText(authorIdInput);
+  if (!authorId) {
+    return [] as AuthorReplyItem[];
+  }
+
+  const parsedLimit = Number.isFinite(limitInput) ? Math.floor(limitInput) : 10;
+  const limit = Math.max(1, Math.min(50, parsedLimit));
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("replies")
+    .select("id, thread_id, body, created_at, posts:thread_id(title)")
+    .eq("author_id", authorId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  type Row = {
+    id: string;
+    thread_id: string;
+    body: string;
+    created_at: string;
+    posts: { title: string } | { title: string }[] | null;
+  };
+
+  const rows = (data ?? []) as Row[];
+  return rows.map((row) => ({
+    id: row.id,
+    thread_id: row.thread_id,
+    thread_title: Array.isArray(row.posts) ? row.posts[0]?.title ?? null : row.posts?.title ?? null,
+    body: row.body,
+    created_at: row.created_at,
+  })) as AuthorReplyItem[];
 }
