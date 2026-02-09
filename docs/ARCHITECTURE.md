@@ -34,6 +34,7 @@ Repo A points users into Repo B using an iframe and/or direct link.
 - `/admin`: moderator/admin operational dashboard with read-only operational summaries.
 - Header shell: signed-in avatar menu + notification bell dropdown + theme toggle (light/dark tokens).
 - `/profile?tab=activity`: signed-in activity view (recent threads/replies/notifications).
+- Writer UX: markdown toolbar + preview (feature-flagged) + local draft autosave for `/forum/new` and `/forum/[threadId]` reply composer.
 
 ## Security Boundary Notes
 - Secrets remain in `.env.local` and Vercel env vars.

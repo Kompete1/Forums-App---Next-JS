@@ -23,19 +23,23 @@ Current scope includes:
   - thread/category readability refresh
   - thread reporting modal UX
   - last-activity sorting bump on reply
-- V5 PR28-PR30 UX modernization wave (active):
+- V5 PR28-PR30 UX modernization wave (completed):
   - dense discovery/thread layout reflow
   - notification bell dropdown preview
   - profile activity tab
   - contribution composer polish (counters, previews, sticky submit)
   - theme toggle and tokenized light/dark support
+- V5 PR31 writer experience wave (active):
+  - markdown toolbar authoring controls
+  - quote-to-reply shortcuts
+  - local draft autosave/recovery and unload protection
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
 - Completed through V4 PR26: auth session consistency and explicit logout route behavior.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Active build: V5 PR28-PR30 UX modernization refinements.
+- Active build: V5 PR31 writer experience upgrades.
 
 ## Documentation Sync Contract
 
@@ -424,6 +428,15 @@ Expected for non-mod: only own reports are returned (or none).
 6. Open `/profile?tab=activity` and confirm recent threads/replies/notifications render.
 7. Toggle theme button in header and confirm light/dark tokens apply across discovery and thread pages.
 
+### T) Writer experience checks (V5 PR31)
+1. Open `/forum/new`, type content, and use `H2`, `H3`, `Bold`, `List`, `Quote`, `Code`, and `Link` toolbar buttons; confirm insertion at cursor.
+2. Enable `NEXT_PUBLIC_ENABLE_MARKDOWN_PREVIEW=1` and verify preview shows links and fenced code blocks.
+3. Open `/forum/[threadId]` as signed-in user, click `Quote` on a reply, and confirm composer is focused with quoted markdown + `Reply:` suffix.
+4. Type draft text in `/forum/new`, refresh, and confirm restore/discard prompt appears.
+5. Discard draft and confirm old content does not return on next reload.
+6. Post a successful reply and confirm stale draft does not reappear on subsequent visit.
+7. Trigger reply error path (cooldown) and confirm draft remains available.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -439,6 +452,7 @@ Run these manually even when Playwright passes:
 - Auth session consistency checks (PR26).
 - UX returnTo and activity sorting checks (PR27).
 - UX modernization checks (PR28-PR30).
+- Writer experience checks (PR31).
 - Backup/restore and release checklists from `web/docs/operations-runbook.md`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.

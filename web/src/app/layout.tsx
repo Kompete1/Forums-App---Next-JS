@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { JetBrains_Mono, Rajdhani, Source_Sans_3 } from "next/font/google";
 import { AppToaster } from "@/components/app-toaster";
+import { DraftSubmissionCleanup } from "@/components/draft-submission-cleanup";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
@@ -34,6 +36,9 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning>
       <body className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable}`}>
+        <Suspense fallback={null}>
+          <DraftSubmissionCleanup />
+        </Suspense>
         <SiteHeader />
         <div className="app-shell">{children}</div>
         <AppToaster />
