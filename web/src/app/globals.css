@@ -450,6 +450,16 @@ h4 {
   border: 1px solid var(--border-subtle);
 }
 
+.reaction-count-pill {
+  color: var(--text-strong);
+  background: color-mix(in srgb, var(--bg-elevated) 65%, var(--bg-surface));
+}
+
+[data-theme="dark"] .reaction-count-pill {
+  background: rgba(96, 165, 250, 0.12);
+  border-color: #1d4ed8;
+}
+
 .thread-signal-pill {
   display: inline-flex;
   align-items: center;

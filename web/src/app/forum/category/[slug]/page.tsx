@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { listCategories } from "@/lib/db/categories";
 import { listThreadsPage, type ThreadSort } from "@/lib/db/posts";
 import { listRepliesByThreadIds } from "@/lib/db/replies";
+import { getThreadLikeCounts } from "@/lib/db/reactions";
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { CategoryHeader } from "@/components/category-header";
 import { ForumFilterPanel } from "@/components/forum-filter-panel";
@@ -157,7 +158,10 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     page,
     pageSize: 10,
   });
-  const repliesByThreadId = await listRepliesByThreadIds(threadsPage.threads.map((thread) => thread.id));
+  const [repliesByThreadId, threadLikeCountByThreadId] = await Promise.all([
+    listRepliesByThreadIds(threadsPage.threads.map((thread) => thread.id)),
+    getThreadLikeCounts(threadsPage.threads.map((thread) => thread.id)).catch(() => ({} as Record<string, number>)),
+  ]);
   const repliesCountByThreadId = Object.fromEntries(
     Object.entries(repliesByThreadId).map(([threadId, replies]) => [threadId, replies.length]),
   );
@@ -218,6 +222,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             title="Threads in category"
             threads={threadsPage.threads}
             repliesCountByThreadId={repliesCountByThreadId}
+            threadLikeCountByThreadId={threadLikeCountByThreadId}
             total={threadsPage.total}
             page={threadsPage.page}
             totalPages={totalPages}

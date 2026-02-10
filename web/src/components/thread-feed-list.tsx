@@ -5,6 +5,7 @@ import { getThreadSignals, type ThreadSignal } from "@/lib/ui/discovery-signals"
 type ThreadFeedListProps = {
   threads: ForumThread[];
   repliesCountByThreadId: Record<string, number>;
+  threadLikeCountByThreadId?: Record<string, number>;
   total: number;
   page: number;
   totalPages: number;
@@ -39,6 +40,7 @@ function signalLabel(signal: ThreadSignal) {
 export function ThreadFeedList({
   threads,
   repliesCountByThreadId,
+  threadLikeCountByThreadId = {},
   total,
   page,
   totalPages,
@@ -64,6 +66,7 @@ export function ThreadFeedList({
       <div className="thread-list">
         {threads.map((thread, index) => {
           const repliesCount = repliesCountByThreadId[thread.id] ?? 0;
+          const likeCount = threadLikeCountByThreadId[thread.id] ?? 0;
           const authorLabel = thread.author_display_name ?? thread.author_id;
           const signals = getThreadSignals({
             repliesCount,
@@ -99,6 +102,7 @@ export function ThreadFeedList({
                     </span>
                   ))}
                   <span className="thread-info-pill">{repliesCount} replies</span>
+                  <span className="thread-info-pill reaction-count-pill">{likeCount} likes</span>
                   <span className="thread-info-pill">Last activity {new Date(thread.last_activity_at).toLocaleString()}</span>
                   {thread.source_newsletter_id ? (
                     <span className="thread-info-pill">Linked newsletter: {thread.source_newsletter_title ?? "Newsletter topic"}</span>

@@ -37,17 +37,21 @@ Current scope includes:
   - computed thread signal chips (`Unanswered`, `Active`, `Popular`) in discovery rows
   - explicit sort/filter context line on `/forum` and `/forum/category/[slug]`
   - no schema/policy/route changes
-- V5 PR33 discovery quick filters wave (active):
+- V5 PR33 discovery quick filters wave (completed):
   - quick filter chips (`All`, `Unanswered`, `Active`, `Popular`) for discovery lists
   - URL `signal` param support on `/forum` and `/forum/category/[slug]`
   - server-side signal filtering in discovery page loaders
+- V5 PR34 engagement reactions wave (active):
+  - one-way likes for thread starter posts and replies
+  - DB-backed reaction table with RLS and self-like guard
+  - discovery rows show thread like counts
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
 - Completed through V4 PR26: auth session consistency and explicit logout route behavior.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Active build: V5 PR33 discovery quick-filter upgrades.
+- Active build: V5 PR34 engagement reactions upgrades.
 
 ## Documentation Sync Contract
 
@@ -134,6 +138,7 @@ From `web/`:
 npm run lint
 npm run build
 npm run test:e2e
+npm run test:e2e -- tests/e2e/reactions.spec.ts
 npm run test:e2e -- tests/e2e/discovery-quick-filters.spec.ts
 npm run test:e2e -- tests/e2e/discovery-signals.spec.ts
 ```
@@ -217,6 +222,7 @@ Apply in this exact order:
 - `web/supabase/migrations/20260208_pr20_v3_newsletter_discussion_bridge.sql`
 - `web/supabase/migrations/20260208_pr22_v3_attachments_storage.sql`
 - `web/supabase/migrations/20260209_pr27_v5_thread_last_activity.sql`
+- `web/supabase/migrations/20260210_pr34_v5_engagement_reactions.sql`
 
 Planned upcoming migration checkpoints:
 - PR24: production hardening config/docs checkpoint.
@@ -228,7 +234,7 @@ Planned upcoming migration checkpoints:
 3. Open `SQL Editor`.
 4. Run each migration file above in order (new query tab per file).
 5. Verify tables exist in `Table Editor`:
-   - `profiles`, `posts`, `categories`, `replies`, `newsletter_admins`, `newsletters`, `user_roles`, `reports`.
+   - `profiles`, `posts`, `categories`, `replies`, `newsletter_admins`, `newsletters`, `user_roles`, `reports`, `reactions`.
 6. Verify SA motorsport categories exist in `categories` (including `sim-racing-discussions`).
 7. Verify triggers in `Database` -> `Triggers`:
    - `on_auth_user_created`
@@ -242,6 +248,7 @@ Planned verification scripts for upcoming slices:
 - `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql`
 - `web/supabase/verification/pr22_attachments_checks.sql`
 - `web/supabase/verification/pr27_thread_last_activity_checks.sql`
+- `web/supabase/verification/pr34_reactions_checks.sql`
 
 ## Bootstrap Moderator/Admin Roles
 
@@ -467,6 +474,14 @@ Expected for non-mod: only own reports are returned (or none).
 5. Open `/forum/category/<slug>?signal=active` and confirm `Active` quick filter is marked active.
 6. Confirm signal filtering composes with sort/search/category/newsletter params.
 
+### W) Engagement reactions checks (V5 PR34)
+1. Open `/forum/[threadId]` while signed in and click `Like` on the thread starter post; confirm count increments and button changes to `Liked`.
+2. Click `Like` on at least one reply; confirm reply like count increments and button changes to `Liked`.
+3. While signed out, open `/forum/[threadId]` and confirm `Login to like` links are visible for thread/reply reactions.
+4. On `/profile?tab=activity`, open one of your own threads and confirm self-like is blocked with `You cannot like your own content.`.
+5. Open `/forum` and `/forum/category/<slug>` and confirm thread rows display like count pills.
+6. Run `web/supabase/verification/pr34_reactions_checks.sql` and confirm reactions table, indexes, constraints, and policies exist.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -485,6 +500,7 @@ Run these manually even when Playwright passes:
 - Writer experience checks (PR31).
 - Discovery intelligence checks (PR32).
 - Discovery quick filters checks (PR33).
+- Engagement reactions checks (PR34).
 - Backup/restore and release checklists from `web/docs/operations-runbook.md`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.
@@ -496,6 +512,7 @@ Detailed click-by-click steps are in `web/docs/testing-manual.md`.
 - `categories`: public read only
 - `replies`: public read, owner insert/update/delete, insert blocked when target thread is locked
 - `reports`: reporter insert, reporter own read, moderator/admin read all; no update/delete
+- `reactions`: public read, owner insert only, self-like blocked by policy, no update/delete
 - `user_roles`: user can read own roles; no client write policies
 - `newsletter_admins`: own-read only (deprecated for authorization)
 - `newsletters`: public read, admin owner insert/update/delete (admin from `user_roles`)

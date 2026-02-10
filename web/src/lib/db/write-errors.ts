@@ -3,6 +3,9 @@ export type WriteErrorCode =
   | "REPLY_COOLDOWN"
   | "REPORT_COOLDOWN"
   | "REPORT_BURST_LIMIT"
+  | "REACTION_AUTH_REQUIRED"
+  | "REACTION_SELF_LIKE_BLOCKED"
+  | "REACTION_FEATURE_UNAVAILABLE"
   | "UNKNOWN_WRITE_ERROR";
 
 export type NormalizedWriteError = {
@@ -15,6 +18,9 @@ const CODE_MESSAGE_MAP: Record<WriteErrorCode, string> = {
   REPLY_COOLDOWN: "You're replying too quickly. Please wait about 20 seconds and try again.",
   REPORT_COOLDOWN: "You're reporting too quickly. Please wait about 30 seconds and try again.",
   REPORT_BURST_LIMIT: "You reached the report limit (10 reports per 15 minutes). Please try again later.",
+  REACTION_AUTH_REQUIRED: "You must be signed in to like posts and replies.",
+  REACTION_SELF_LIKE_BLOCKED: "You cannot like your own content.",
+  REACTION_FEATURE_UNAVAILABLE: "Reactions are not available yet in this environment. Apply PR34 migrations first.",
   UNKNOWN_WRITE_ERROR: "Could not complete this action. Please try again.",
 };
 
@@ -53,6 +59,18 @@ function toWriteErrorCode(message: string): WriteErrorCode {
 
   if (message.includes("RATE_LIMIT_REPORT_BURST")) {
     return "REPORT_BURST_LIMIT";
+  }
+
+  if (message.includes("REACTION_AUTH_REQUIRED")) {
+    return "REACTION_AUTH_REQUIRED";
+  }
+
+  if (message.includes("REACTION_SELF_LIKE_BLOCKED")) {
+    return "REACTION_SELF_LIKE_BLOCKED";
+  }
+
+  if (message.includes("REACTION_FEATURE_UNAVAILABLE")) {
+    return "REACTION_FEATURE_UNAVAILABLE";
   }
 
   return "UNKNOWN_WRITE_ERROR";
