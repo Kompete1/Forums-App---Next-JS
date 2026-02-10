@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ForumCategory } from "@/lib/db/categories";
 import type { ThreadSort } from "@/lib/db/posts";
+import { getSortLabel } from "@/lib/ui/discovery-signals";
 
 type ForumFilterPanelProps = {
   categories: ForumCategory[];
@@ -29,6 +30,7 @@ export function ForumFilterPanel({
       <div className="inline-actions">
         <h2>Filters</h2>
         <p className="filter-chip">{selectedLabel}</p>
+        <p className="meta">Sort: {getSortLabel(sort)}</p>
       </div>
       <form method="get" action={applyPath} className="stack">
         {showCategorySelect ? (

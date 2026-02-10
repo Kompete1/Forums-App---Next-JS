@@ -135,6 +135,15 @@ This file lists checks that are still manual (not fully automated in e2e).
 7. Submit successful reply/thread and confirm stale draft is cleared on follow-up visit.
 8. Trigger rate-limit error path and confirm draft remains available.
 
+### 18) Discovery intelligence checks (PR32)
+1. Open `/forum` and confirm a visible discovery context line includes `Sort: Most recent activity`.
+2. Open `/forum?sort=newest` and confirm the context line updates to `Sort: Newest first`.
+3. Confirm `Unanswered` appears on rows with `0 replies`.
+4. Confirm `Active` appears on rows where last activity is within 24 hours.
+5. Confirm `Popular` appears on rows with at least 5 replies.
+6. Open `/forum/category/<slug>` and confirm sort context plus signal-chip behavior matches `/forum`.
+7. Confirm signal chips render cleanly at mobile width without overlapping row controls.
+
 ## SQL verification (Supabase Dashboard)
 1. Open `SQL Editor`.
 2. Run `web/supabase/verification/pr15_rate_limit_checks.sql`.

@@ -450,6 +450,34 @@ h4 {
   border: 1px solid var(--border-subtle);
 }
 
+.thread-signal-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid var(--border-subtle);
+}
+
+.thread-signal-pill-unanswered {
+  color: #7c2d12;
+  border-color: #fdba74;
+  background: #fff7ed;
+}
+
+.thread-signal-pill-active {
+  color: #14532d;
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.thread-signal-pill-popular {
+  color: #1e3a8a;
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
 .thread-status-pill.open {
   color: #166534;
   border-color: #86efac;
@@ -472,6 +500,24 @@ h4 {
   color: #fca5a5;
   border-color: #7f1d1d;
   background: rgba(239, 68, 68, 0.15);
+}
+
+[data-theme="dark"] .thread-signal-pill-unanswered {
+  color: #fdba74;
+  border-color: #9a3412;
+  background: rgba(124, 45, 18, 0.25);
+}
+
+[data-theme="dark"] .thread-signal-pill-active {
+  color: #86efac;
+  border-color: #166534;
+  background: rgba(22, 101, 52, 0.22);
+}
+
+[data-theme="dark"] .thread-signal-pill-popular {
+  color: #bfdbfe;
+  border-color: #1d4ed8;
+  background: rgba(30, 64, 175, 0.24);
 }
 
 .thread-row-aside {

@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/supabase/auth";
 import { CategoryHeader } from "@/components/category-header";
 import { ForumFilterPanel } from "@/components/forum-filter-panel";
 import { ThreadFeedList } from "@/components/thread-feed-list";
+import { getSortLabel } from "@/lib/ui/discovery-signals";
 
 export const dynamic = "force-dynamic";
 
@@ -83,6 +84,12 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     Object.entries(repliesByThreadId).map(([threadId, replies]) => [threadId, replies.length]),
   );
   const totalPages = Math.max(1, Math.ceil(threadsPage.total / threadsPage.pageSize));
+  const sortLabel = getSortLabel(sort);
+  const contextParts = [`Sort: ${sortLabel}`, `Category: ${category.name}`];
+  if (query) {
+    contextParts.push(`Search: "${query}"`);
+  }
+  const discoveryContextLine = contextParts.join(" | ");
 
   return (
     <main className="page-wrap stack">
@@ -111,6 +118,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             totalPages={totalPages}
             noResultsText="No threads found in this category yet."
             subtitleChip={`Showing: ${category.name}`}
+            contextLine={discoveryContextLine}
             showRecentBadgeOnFirst={hasPostedNotice}
             prevHref={
               threadsPage.page > 1

@@ -29,17 +29,21 @@ Current scope includes:
   - profile activity tab
   - contribution composer polish (counters, previews, sticky submit)
   - theme toggle and tokenized light/dark support
-- V5 PR31 writer experience wave (active):
+- V5 PR31 writer experience wave (completed):
   - markdown toolbar authoring controls
   - quote-to-reply shortcuts
   - local draft autosave/recovery and unload protection
+- V5 PR32 discovery intelligence wave (active):
+  - computed thread signal chips (`Unanswered`, `Active`, `Popular`) in discovery rows
+  - explicit sort/filter context line on `/forum` and `/forum/category/[slug]`
+  - no schema/policy/route changes
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
 - Completed through V4 PR26: auth session consistency and explicit logout route behavior.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Active build: V5 PR31 writer experience upgrades.
+- Active build: V5 PR32 discovery intelligence upgrades.
 
 ## Documentation Sync Contract
 
@@ -126,6 +130,7 @@ From `web/`:
 npm run lint
 npm run build
 npm run test:e2e
+npm run test:e2e -- tests/e2e/discovery-signals.spec.ts
 ```
 
 Security header smoke check is covered in e2e (`tests/e2e/security-headers.spec.ts`).
@@ -437,6 +442,16 @@ Expected for non-mod: only own reports are returned (or none).
 6. Post a successful reply and confirm stale draft does not reappear on subsequent visit.
 7. Trigger reply error path (cooldown) and confirm draft remains available.
 
+### U) Discovery intelligence checks (V5 PR32)
+1. Open `/forum` and confirm context text includes `Sort: Most recent activity`.
+2. Open `/forum?sort=newest` and confirm context text changes to `Sort: Newest first`.
+3. Confirm thread rows show signal chips using existing data rules:
+   - `Unanswered` when `0 replies`
+   - `Active` when last activity is within 24 hours
+   - `Popular` when replies are `>= 5`
+4. Open `/forum/category/<slug>` and confirm the same signal and sort-context behavior.
+5. Check mobile width and confirm chips wrap cleanly with no overlap.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -453,6 +468,7 @@ Run these manually even when Playwright passes:
 - UX returnTo and activity sorting checks (PR27).
 - UX modernization checks (PR28-PR30).
 - Writer experience checks (PR31).
+- Discovery intelligence checks (PR32).
 - Backup/restore and release checklists from `web/docs/operations-runbook.md`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.

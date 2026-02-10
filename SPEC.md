@@ -86,7 +86,7 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
 - Advanced email pipeline.
 - Multi-tenant forum architecture.
 
-## UX Modernization Slice (PR31 Active)
+## UX Modernization Slice (PR32 Active)
 - Objective: improve readability, contribution flow, and engagement surfaces while preserving authorization and route boundaries.
 - Delivered baseline:
   1. Post-login redirects:
@@ -112,6 +112,10 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
      - Markdown toolbar support in thread/reply composers.
      - Local draft autosave + restore/discard prompts.
      - Unsaved-change warning before unload when draft differs from baseline.
+  8. Discovery intelligence (PR32):
+     - Computed thread signals in discovery rows (`Unanswered`, `Active`, `Popular`) derived from existing thread/reply data.
+     - Clear sort/filter context line on `/forum` and `/forum/category/[slug]`.
+     - No schema, policy, or route contract changes.
 
 ## UX Route Behavior Contract
 - `/auth/login`:
