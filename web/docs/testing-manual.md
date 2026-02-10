@@ -144,6 +144,17 @@ This file lists checks that are still manual (not fully automated in e2e).
 6. Open `/forum/category/<slug>` and confirm sort context plus signal-chip behavior matches `/forum`.
 7. Confirm signal chips render cleanly at mobile width without overlapping row controls.
 
+### 19) Discovery quick filters checks (PR33)
+1. Open `/forum` and confirm quick filter controls are visible: `All`, `Unanswered`, `Active`, `Popular`.
+2. Click `Unanswered` and confirm URL includes `signal=unanswered`.
+3. Confirm context line includes `Signal: Unanswered`.
+4. Verify filtered semantics:
+   - each visible row has `0 replies`, or
+   - empty state shows `No threads found for this filter.`.
+5. Open `/forum/category/<slug>?signal=active` and confirm `Active` quick filter is active.
+6. Apply search/sort while a signal is selected and confirm signal state remains preserved.
+7. Click `Clear` and confirm signal filter resets to `All`.
+
 ## SQL verification (Supabase Dashboard)
 1. Open `SQL Editor`.
 2. Run `web/supabase/verification/pr15_rate_limit_checks.sql`.

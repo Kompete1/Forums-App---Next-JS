@@ -4,6 +4,7 @@ const ACTIVE_WINDOW_MS = 24 * 60 * 60 * 1000;
 const POPULAR_REPLIES_THRESHOLD = 5;
 
 export type ThreadSignal = "unanswered" | "active" | "popular";
+export type SignalFilter = ThreadSignal | "all";
 
 type GetThreadSignalsInput = {
   repliesCount: number;
@@ -37,4 +38,41 @@ export function getSortLabel(sort: ThreadSort) {
     return "Oldest first";
   }
   return "Most recent activity";
+}
+
+export function parseSignalFilter(raw: string): SignalFilter {
+  const normalized = raw.trim().toLowerCase();
+  if (normalized === "unanswered" || normalized === "active" || normalized === "popular") {
+    return normalized;
+  }
+  return "all";
+}
+
+export function getSignalLabel(signal: SignalFilter) {
+  if (signal === "unanswered") {
+    return "Unanswered";
+  }
+  if (signal === "active") {
+    return "Active";
+  }
+  if (signal === "popular") {
+    return "Popular";
+  }
+  return "All";
+}
+
+type MatchesSignalFilterInput = {
+  signal: SignalFilter;
+  repliesCount: number;
+  lastActivityAt: string;
+  now?: number;
+};
+
+export function matchesSignalFilter({ signal, repliesCount, lastActivityAt, now = Date.now() }: MatchesSignalFilterInput) {
+  if (signal === "all") {
+    return true;
+  }
+
+  const signals = getThreadSignals({ repliesCount, lastActivityAt, now });
+  return signals.includes(signal);
 }

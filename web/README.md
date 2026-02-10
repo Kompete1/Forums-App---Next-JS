@@ -33,17 +33,21 @@ Current scope includes:
   - markdown toolbar authoring controls
   - quote-to-reply shortcuts
   - local draft autosave/recovery and unload protection
-- V5 PR32 discovery intelligence wave (active):
+- V5 PR32 discovery intelligence wave (completed):
   - computed thread signal chips (`Unanswered`, `Active`, `Popular`) in discovery rows
   - explicit sort/filter context line on `/forum` and `/forum/category/[slug]`
   - no schema/policy/route changes
+- V5 PR33 discovery quick filters wave (active):
+  - quick filter chips (`All`, `Unanswered`, `Active`, `Popular`) for discovery lists
+  - URL `signal` param support on `/forum` and `/forum/category/[slug]`
+  - server-side signal filtering in discovery page loaders
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
 - Completed through V4 PR26: auth session consistency and explicit logout route behavior.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Active build: V5 PR32 discovery intelligence upgrades.
+- Active build: V5 PR33 discovery quick-filter upgrades.
 
 ## Documentation Sync Contract
 
@@ -130,6 +134,7 @@ From `web/`:
 npm run lint
 npm run build
 npm run test:e2e
+npm run test:e2e -- tests/e2e/discovery-quick-filters.spec.ts
 npm run test:e2e -- tests/e2e/discovery-signals.spec.ts
 ```
 
@@ -452,6 +457,16 @@ Expected for non-mod: only own reports are returned (or none).
 4. Open `/forum/category/<slug>` and confirm the same signal and sort-context behavior.
 5. Check mobile width and confirm chips wrap cleanly with no overlap.
 
+### V) Discovery quick filters checks (V5 PR33)
+1. Open `/forum` and confirm quick filter chips show `All`, `Unanswered`, `Active`, and `Popular`.
+2. Click `Unanswered` and confirm URL contains `signal=unanswered`.
+3. Confirm discovery context line includes `Signal: Unanswered`.
+4. Validate filtered semantics:
+   - each visible row shows `0 replies`, or
+   - empty state shows `No threads found for this filter.`.
+5. Open `/forum/category/<slug>?signal=active` and confirm `Active` quick filter is marked active.
+6. Confirm signal filtering composes with sort/search/category/newsletter params.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -469,6 +484,7 @@ Run these manually even when Playwright passes:
 - UX modernization checks (PR28-PR30).
 - Writer experience checks (PR31).
 - Discovery intelligence checks (PR32).
+- Discovery quick filters checks (PR33).
 - Backup/restore and release checklists from `web/docs/operations-runbook.md`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.
