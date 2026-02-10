@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ForumThread } from "@/lib/db/posts";
 import { getThreadSignals, type ThreadSignal } from "@/lib/ui/discovery-signals";
+import { PaginationControls } from "@/components/pagination-controls";
 
 type ThreadFeedListProps = {
   threads: ForumThread[];
@@ -10,8 +11,7 @@ type ThreadFeedListProps = {
   page: number;
   totalPages: number;
   noResultsText: string;
-  prevHref: string | null;
-  nextHref: string | null;
+  pageHref: (targetPage: number) => string;
   title?: string;
   subtitleChip?: string;
   contextLine?: string;
@@ -45,13 +45,32 @@ export function ThreadFeedList({
   page,
   totalPages,
   noResultsText,
-  prevHref,
-  nextHref,
+  pageHref,
   title = "Threads",
   subtitleChip,
   contextLine,
   showRecentBadgeOnFirst = false,
 }: ThreadFeedListProps) {
+  const pageStart = Math.max(1, page - 2);
+  const pageEnd = Math.min(totalPages, page + 2);
+  const pageLinks = Array.from({ length: pageEnd - pageStart + 1 }).map((_, offset) => {
+    const linkPage = pageStart + offset;
+    return {
+      page: linkPage,
+      href: pageHref(linkPage),
+      isCurrent: linkPage === page,
+    };
+  });
+  const nextHref = page < totalPages ? pageHref(page + 1) : null;
+  const lastHref = page < totalPages ? pageHref(totalPages) : null;
+  const pageSelectOptions = Array.from({ length: totalPages }).map((_, offset) => {
+    const linkPage = offset + 1;
+    return {
+      page: linkPage,
+      href: pageHref(linkPage),
+    };
+  });
+
   return (
     <section className="stack">
       <div className="inline-actions">
@@ -122,18 +141,14 @@ export function ThreadFeedList({
           );
         })}
       </div>
-      <div className="pagination">
-        {prevHref ? (
-          <Link href={prevHref} className="btn btn-secondary">
-            Previous
-          </Link>
-        ) : null}
-        {nextHref ? (
-          <Link href={nextHref} className="btn btn-secondary">
-            Next
-          </Link>
-        ) : null}
-      </div>
+      <PaginationControls
+        page={page}
+        totalPages={totalPages}
+        pageLinks={pageLinks}
+        nextHref={nextHref}
+        lastHref={lastHref}
+        pageSelectOptions={pageSelectOptions}
+      />
     </section>
   );
 }

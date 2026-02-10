@@ -230,25 +230,13 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             subtitleChip={`Showing: ${category.name}`}
             contextLine={discoveryContextLine}
             showRecentBadgeOnFirst={hasPostedNotice}
-            prevHref={
-              threadsPage.page > 1
-                ? categoryHref(category.slug, {
-                    q: query,
-                    sort,
-                    signal,
-                    page: threadsPage.page - 1,
-                  })
-                : null
-            }
-            nextHref={
-              threadsPage.page < totalPages
-                ? categoryHref(category.slug, {
-                    q: query,
-                    sort,
-                    signal,
-                    page: threadsPage.page + 1,
-                  })
-                : null
+            pageHref={(targetPage) =>
+              categoryHref(category.slug, {
+                q: query,
+                sort,
+                signal,
+                page: targetPage,
+              })
             }
           />
         </div>

@@ -299,29 +299,15 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
                 : `Showing: ${selectedCategory?.name ?? "All categories"}`
             }
             contextLine={discoveryContextLine}
-            prevHref={
-              threadsPage.page > 1
-                ? forumHref({
-                    category: selectedCategory?.slug,
-                    q: query,
-                    newsletter: linkedNewsletter?.id,
-                    sort,
-                    signal,
-                    page: threadsPage.page - 1,
-                  })
-                : null
-            }
-            nextHref={
-              threadsPage.page < totalPages
-                ? forumHref({
-                    category: selectedCategory?.slug,
-                    q: query,
-                    newsletter: linkedNewsletter?.id,
-                    sort,
-                    signal,
-                    page: threadsPage.page + 1,
-                  })
-                : null
+            pageHref={(targetPage) =>
+              forumHref({
+                category: selectedCategory?.slug,
+                q: query,
+                newsletter: linkedNewsletter?.id,
+                sort,
+                signal,
+                page: targetPage,
+              })
             }
           />
         </div>
