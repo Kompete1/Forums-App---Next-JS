@@ -373,9 +373,12 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
 
         <div className="thread-main-column stack">
           <article className="card stack thread-post-unit">
-            <header className="post-unit-head">
-              <p className="meta">Thread starter</p>
-              <div className="inline-actions">
+            <header className="post-unit-head thread-starter-head">
+              <div className="thread-starter-label-wrap">
+                <p className="kicker thread-starter-kicker">Thread starter</p>
+                <h2 className="thread-starter-heading">Starter post</h2>
+              </div>
+              <div className="inline-actions thread-starter-actions">
                 <span className="thread-info-pill reaction-count-pill">{threadLikeCount} likes</span>
                 {user ? (
                   <form action={likeThreadAction}>

@@ -560,6 +560,57 @@ h4 {
   align-items: center;
 }
 
+.pagination-advanced {
+  flex-wrap: wrap;
+  row-gap: 0.45rem;
+}
+
+.pagination-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  font-weight: 700;
+  color: var(--text-strong);
+  background: var(--bg-surface);
+  padding: 0 0.55rem;
+}
+
+.pagination-link:hover,
+.pagination-link:focus-visible {
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+}
+
+.pagination-link-current {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: #fff;
+}
+
+.pagination-link-nav {
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.pagination-select-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+}
+
+.pagination-select-wrap select {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0.35rem 0.45rem;
+  background: var(--bg-surface);
+  color: var(--text-strong);
+}
+
 .auth-wrap {
   width: min(520px, 94vw);
   margin: 1rem auto 0;
@@ -926,6 +977,37 @@ h4 {
   gap: 0.8rem;
 }
 
+.post-unit-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.thread-starter-head {
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.75rem;
+}
+
+.thread-starter-label-wrap {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.thread-starter-kicker {
+  font-size: 0.74rem;
+}
+
+.thread-starter-heading {
+  font-size: 1.25rem;
+}
+
+.thread-starter-actions {
+  margin-left: auto;
+  justify-content: flex-end;
+  align-items: center;
+}
+
 .thread-body-content {
   line-height: 1.75;
 }
@@ -1141,6 +1223,20 @@ textarea:focus-visible,
 
   .thread-side-rail {
     position: static;
+  }
+
+  .post-unit-head {
+    flex-direction: column;
+  }
+
+  .thread-starter-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .pagination-select-wrap {
+    margin-left: 0;
+    width: 100%;
   }
 
   .filter-summary {

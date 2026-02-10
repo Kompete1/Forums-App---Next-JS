@@ -164,6 +164,17 @@ This file lists checks that are still manual (not fully automated in e2e).
 6. Open `/forum` and `/forum/category/<slug>` and confirm thread rows show like count pills.
 7. Run `web/supabase/verification/pr34_reactions_checks.sql` and confirm table/index/policy objects exist.
 
+### 21) Thread starter emphasis + advanced pagination checks (PR35)
+1. Open `/forum/<threadId>` and confirm the thread starter section is visually prominent (`Thread starter` kicker + `Starter post` heading).
+2. Confirm thread starter reaction controls (`X likes` + `Like/Liked`) are right-aligned on desktop and wrap cleanly on mobile.
+3. Open `/forum` where multiple pages exist and confirm advanced pagination controls render:
+   - numbered page links
+   - `Next` with tooltip/title `Next page`
+   - `»` with tooltip/title `Last page`
+   - `Jump to page` select showing `Page X`
+4. Use `Next`, `»`, and select jump; confirm URL page query and visible page summary update.
+5. Open `/forum/category/<slug>` and confirm same controls work while preserving active query params (for example `sort` and `signal`).
+
 ## SQL verification (Supabase Dashboard)
 1. Open `SQL Editor`.
 2. Run `web/supabase/verification/pr15_rate_limit_checks.sql`.

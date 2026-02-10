@@ -41,17 +41,22 @@ Current scope includes:
   - quick filter chips (`All`, `Unanswered`, `Active`, `Popular`) for discovery lists
   - URL `signal` param support on `/forum` and `/forum/category/[slug]`
   - server-side signal filtering in discovery page loaders
-- V5 PR34 engagement reactions wave (active):
+- V5 PR34 engagement reactions wave (completed):
   - one-way likes for thread starter posts and replies
   - DB-backed reaction table with RLS and self-like guard
   - discovery rows show thread like counts
+- V5 PR35 thread starter emphasis + advanced feed pagination wave (active):
+  - stronger thread starter hierarchy in `/forum/[threadId]`
+  - starter like controls aligned right to match reply action clusters
+  - advanced pagination controls on `/forum` and `/forum/category/[slug]`:
+    page numbers, `Next`, `Last` (`>>`), and page-jump select
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
 - Completed through V4 PR26: auth session consistency and explicit logout route behavior.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Active build: V5 PR34 engagement reactions upgrades.
+- Active build: V5 PR35 thread starter emphasis and advanced feed pagination upgrades.
 
 ## Documentation Sync Contract
 
@@ -141,6 +146,7 @@ npm run test:e2e
 npm run test:e2e -- tests/e2e/reactions.spec.ts
 npm run test:e2e -- tests/e2e/discovery-quick-filters.spec.ts
 npm run test:e2e -- tests/e2e/discovery-signals.spec.ts
+npm run test:e2e -- tests/e2e/pagination-controls.spec.ts
 ```
 
 Security header smoke check is covered in e2e (`tests/e2e/security-headers.spec.ts`).
@@ -482,6 +488,14 @@ Expected for non-mod: only own reports are returned (or none).
 5. Open `/forum` and `/forum/category/<slug>` and confirm thread rows display like count pills.
 6. Run `web/supabase/verification/pr34_reactions_checks.sql` and confirm reactions table, indexes, constraints, and policies exist.
 
+### X) Thread starter emphasis + advanced pagination checks (V5 PR35)
+1. Open `/forum/<threadId>` and confirm the thread starter block presents stronger hierarchy (`Thread starter` kicker and `Starter post` heading).
+2. Confirm starter like controls align to the right on desktop and wrap cleanly on mobile.
+3. Open `/forum` with multiple pages and confirm advanced pagination controls show numbered links, `Next`, `>>`, and `Jump to page` select.
+4. Hover/focus `Next` and confirm tooltip/title `Next page`; hover/focus `>>` and confirm `Last page`.
+5. Navigate with `Next`, `>>`, and select jump; confirm URL and page summary update correctly.
+6. Repeat on `/forum/category/<slug>` and confirm query params (for example `sort` and `signal`) are preserved while paging.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -501,6 +515,7 @@ Run these manually even when Playwright passes:
 - Discovery intelligence checks (PR32).
 - Discovery quick filters checks (PR33).
 - Engagement reactions checks (PR34).
+- Thread starter emphasis + advanced pagination checks (PR35).
 - Backup/restore and release checklists from `web/docs/operations-runbook.md`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.

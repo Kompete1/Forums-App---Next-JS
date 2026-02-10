@@ -86,7 +86,7 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
 - Advanced email pipeline.
 - Multi-tenant forum architecture.
 
-## UX Modernization Slice (PR34 Active)
+## UX Modernization Slice (PR35 Active)
 - Objective: improve readability, contribution flow, and engagement surfaces while preserving authorization and route boundaries.
 - Delivered baseline:
   1. Post-login redirects:
@@ -124,6 +124,11 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
       - Persistent one-way likes for thread starters and replies.
       - Discovery rows show thread like counts for lightweight social proof.
       - Self-like attempts blocked by DB policy; no follow system or reaction notifications in this slice.
+  11. Thread starter emphasis and advanced feed pagination (PR35):
+      - Thread starter card now has stronger heading hierarchy and right-aligned starter reaction controls.
+      - Discovery feeds on `/forum` and `/forum/category/[slug]` support advanced pagination controls:
+        numbered links, `Next`, `Last` (`>>`), and direct page jump select.
+      - Existing query params (`sort`, `q`, `category`, `newsletter`, `signal`) remain preserved while paging.
 
 ## UX Route Behavior Contract
 - `/auth/login`:
