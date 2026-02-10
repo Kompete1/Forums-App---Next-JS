@@ -1,15 +1,17 @@
 import Link from "next/link";
 import type { ForumCategory } from "@/lib/db/categories";
 import type { ThreadSort } from "@/lib/db/posts";
-import { getSortLabel } from "@/lib/ui/discovery-signals";
+import { getSignalLabel, getSortLabel, type SignalFilter } from "@/lib/ui/discovery-signals";
 
 type ForumFilterPanelProps = {
   categories: ForumCategory[];
   selectedCategorySlug?: string;
   query: string;
   sort: ThreadSort;
+  signal: SignalFilter;
   applyPath: string;
   clearHref: string;
+  quickFilterHrefs: Record<SignalFilter, string>;
   showCategorySelect: boolean;
   selectedLabel: string;
 };
@@ -19,8 +21,10 @@ export function ForumFilterPanel({
   selectedCategorySlug,
   query,
   sort,
+  signal,
   applyPath,
   clearHref,
+  quickFilterHrefs,
   showCategorySelect,
   selectedLabel,
 }: ForumFilterPanelProps) {
@@ -32,7 +36,20 @@ export function ForumFilterPanel({
         <p className="filter-chip">{selectedLabel}</p>
         <p className="meta">Sort: {getSortLabel(sort)}</p>
       </div>
+      <div className="quick-filter-row" aria-label="Quick filters">
+        {(["all", "unanswered", "active", "popular"] as SignalFilter[]).map((item) => (
+          <Link
+            key={item}
+            href={quickFilterHrefs[item]}
+            className={`filter-chip ${signal === item ? "filter-chip-active" : ""}`}
+            aria-current={signal === item ? "true" : undefined}
+          >
+            {getSignalLabel(item)}
+          </Link>
+        ))}
+      </div>
       <form method="get" action={applyPath} className="stack">
+        {signal !== "all" ? <input type="hidden" name="signal" value={signal} /> : null}
         {showCategorySelect ? (
           <div className="field">
             <label htmlFor="category">Category</label>

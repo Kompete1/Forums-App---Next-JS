@@ -3,7 +3,7 @@
 Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase Auth + Postgres.
 
 ## Status
-- Current milestone: `Discovery Intelligence PR32` implementation wave.
+- Current milestone: `Discovery Quick Filters PR33` implementation wave.
 
 ## Repository Role
 - This repository contains the dynamic forums application.
@@ -17,7 +17,7 @@ Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase A
 ## Workflow
 1. Read `SPEC.md` for scoped requirements.
 2. Read `PLANS.md` for planning standards.
-3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr32-v5-discovery-intelligence-signals-execplan.md`).
+3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr33-v5-discovery-quick-filters-execplan.md`).
 4. Ship one logical chunk per PR.
 
 UX redesign planning baseline:

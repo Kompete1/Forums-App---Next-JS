@@ -6,7 +6,7 @@ import { listRepliesByThreadIds } from "@/lib/db/replies";
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { ForumFilterPanel } from "@/components/forum-filter-panel";
 import { ThreadFeedList } from "@/components/thread-feed-list";
-import { getSortLabel } from "@/lib/ui/discovery-signals";
+import { getSignalLabel, getSortLabel, matchesSignalFilter, parseSignalFilter, type SignalFilter } from "@/lib/ui/discovery-signals";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +16,7 @@ type ForumPageProps = {
     q?: string | string[];
     newsletter?: string | string[];
     sort?: string | string[];
+    signal?: string | string[];
     page?: string | string[];
   }>;
 };
@@ -36,7 +37,14 @@ function toPositiveInt(value: string, fallback: number) {
   return parsed;
 }
 
-function forumHref(input: { category?: string; q?: string; newsletter?: string; sort?: string; page?: number }) {
+function forumHref(input: {
+  category?: string;
+  q?: string;
+  newsletter?: string;
+  sort?: string;
+  signal?: SignalFilter;
+  page?: number;
+}) {
   const search = new URLSearchParams();
 
   if (input.category) {
@@ -51,12 +59,83 @@ function forumHref(input: { category?: string; q?: string; newsletter?: string; 
   if (input.sort && input.sort !== "activity") {
     search.set("sort", input.sort);
   }
+  if (input.signal && input.signal !== "all") {
+    search.set("signal", input.signal);
+  }
   if (input.page && input.page > 1) {
     search.set("page", String(input.page));
   }
 
   const query = search.toString();
   return query ? `/forum?${query}` : "/forum";
+}
+
+async function listForumThreadsWithSignalFilter(input: {
+  categoryId?: string;
+  newsletterId?: string;
+  query: string;
+  sort: ThreadSort;
+  signal: SignalFilter;
+  page: number;
+  pageSize: number;
+}) {
+  if (input.signal === "all") {
+    return listThreadsPage({
+      categoryId: input.categoryId,
+      newsletterId: input.newsletterId,
+      query: input.query,
+      sort: input.sort,
+      page: input.page,
+      pageSize: input.pageSize,
+    });
+  }
+
+  const sourcePageSize = 30;
+  const firstPage = await listThreadsPage({
+    categoryId: input.categoryId,
+    newsletterId: input.newsletterId,
+    query: input.query,
+    sort: input.sort,
+    page: 1,
+    pageSize: sourcePageSize,
+  });
+
+  let sourceThreads = [...firstPage.threads];
+  const sourceTotalPages = Math.max(1, Math.ceil(firstPage.total / sourcePageSize));
+  for (let sourcePage = 2; sourcePage <= sourceTotalPages; sourcePage += 1) {
+    const nextPage = await listThreadsPage({
+      categoryId: input.categoryId,
+      newsletterId: input.newsletterId,
+      query: input.query,
+      sort: input.sort,
+      page: sourcePage,
+      pageSize: sourcePageSize,
+    });
+    sourceThreads = sourceThreads.concat(nextPage.threads);
+  }
+
+  const repliesByThreadId = await listRepliesByThreadIds(sourceThreads.map((thread) => thread.id));
+  const filteredThreads = sourceThreads.filter((thread) => {
+    const repliesCount = repliesByThreadId[thread.id]?.length ?? 0;
+    return matchesSignalFilter({
+      signal: input.signal,
+      repliesCount,
+      lastActivityAt: thread.last_activity_at,
+    });
+  });
+
+  const filteredTotal = filteredThreads.length;
+  const filteredTotalPages = Math.max(1, Math.ceil(filteredTotal / input.pageSize));
+  const clampedPage = Math.min(input.page, filteredTotalPages);
+  const from = (clampedPage - 1) * input.pageSize;
+  const to = from + input.pageSize;
+
+  return {
+    threads: filteredThreads.slice(from, to),
+    total: filteredTotal,
+    page: clampedPage,
+    pageSize: input.pageSize,
+  };
 }
 
 export default async function ForumPage({ searchParams }: ForumPageProps) {
@@ -69,18 +148,20 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
   const hasInvalidCategoryFilter = Boolean(selectedCategorySlug) && !selectedCategory;
   const rawSort = getParamValue(resolvedParams.sort);
   const sort = rawSort === "oldest" ? ("oldest" as ThreadSort) : rawSort === "newest" ? ("newest" as ThreadSort) : ("activity" as ThreadSort);
+  const signal = parseSignalFilter(getParamValue(resolvedParams.signal));
   const query = getParamValue(resolvedParams.q);
   const newsletterId = getParamValue(resolvedParams.newsletter);
   const page = toPositiveInt(getParamValue(resolvedParams.page), 1);
   const linkedNewsletter = newsletterId ? await getNewsletterById(newsletterId).catch(() => null) : null;
   const activeNewsletterId = linkedNewsletter?.id ?? "";
-  const filterApplyPath = linkedNewsletter ? `/forum?newsletter=${encodeURIComponent(linkedNewsletter.id)}` : "/forum";
+  const filterApplyHrefBase = linkedNewsletter ? `/forum?newsletter=${encodeURIComponent(linkedNewsletter.id)}` : "/forum";
 
-  const threadsPage = await listThreadsPage({
+  const threadsPage = await listForumThreadsWithSignalFilter({
     categoryId: selectedCategory?.id,
     newsletterId: activeNewsletterId,
     query,
     sort,
+    signal,
     page,
     pageSize: 10,
   });
@@ -101,6 +182,7 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
   if (linkedNewsletter) {
     contextParts.push(`Newsletter: ${linkedNewsletter.title}`);
   }
+  contextParts.push(`Signal: ${getSignalLabel(signal)}`);
   const discoveryContextLine = contextParts.join(" | ");
 
   return (
@@ -119,8 +201,42 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
             selectedCategorySlug={selectedCategory?.slug}
             query={query}
             sort={sort}
-            applyPath={filterApplyPath}
-            clearHref={linkedNewsletter ? `/forum?newsletter=${encodeURIComponent(linkedNewsletter.id)}` : "/forum"}
+            signal={signal}
+            applyPath={filterApplyHrefBase}
+            clearHref={filterApplyHrefBase}
+            quickFilterHrefs={{
+              all: forumHref({
+                category: selectedCategory?.slug,
+                q: query,
+                newsletter: linkedNewsletter?.id,
+                sort,
+                page: 1,
+              }),
+              unanswered: forumHref({
+                category: selectedCategory?.slug,
+                q: query,
+                newsletter: linkedNewsletter?.id,
+                sort,
+                signal: "unanswered",
+                page: 1,
+              }),
+              active: forumHref({
+                category: selectedCategory?.slug,
+                q: query,
+                newsletter: linkedNewsletter?.id,
+                sort,
+                signal: "active",
+                page: 1,
+              }),
+              popular: forumHref({
+                category: selectedCategory?.slug,
+                q: query,
+                newsletter: linkedNewsletter?.id,
+                sort,
+                signal: "popular",
+                page: 1,
+              }),
+            }}
             showCategorySelect
             selectedLabel={selectedCategory?.name ?? "All categories"}
           />
@@ -185,6 +301,7 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
                     q: query,
                     newsletter: linkedNewsletter?.id,
                     sort,
+                    signal,
                     page: threadsPage.page - 1,
                   })
                 : null
@@ -196,6 +313,7 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
                     q: query,
                     newsletter: linkedNewsletter?.id,
                     sort,
+                    signal,
                     page: threadsPage.page + 1,
                   })
                 : null

@@ -624,6 +624,12 @@ h4 {
   overflow: hidden;
 }
 
+.quick-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
 .filter-summary {
   display: none;
 }
