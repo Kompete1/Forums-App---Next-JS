@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getThreadById, updateThread, deleteThread } from "@/lib/db/posts";
 import { listCategories } from "@/lib/db/categories";
 import { createReply, listRepliesByThreadIds } from "@/lib/db/replies";
+import { getMyLikedTargets, getReplyLikeCounts, getThreadLikeCount, likeReply, likeThread } from "@/lib/db/reactions";
 import { createReport } from "@/lib/db/reports";
 import { canCurrentUserModerateThreads, setThreadLockState } from "@/lib/db/moderation";
 import { normalizeWriteError } from "@/lib/db/write-errors";
@@ -34,6 +35,8 @@ type ThreadDetailPageProps = {
     replyAttachmentErrorCode?: string | string[];
     threadReportErrorCode?: string | string[];
     replyReportErrorCode?: string | string[];
+    threadLikeErrorCode?: string | string[];
+    replyLikeErrorCode?: string | string[];
   }>;
 };
 
@@ -44,6 +47,8 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
   const replyAttachmentErrorMessage = getAttachmentErrorMessage(getSingleSearchParam(resolvedSearchParams, "replyAttachmentErrorCode"));
   const threadReportErrorMessage = getWriteErrorMessageFromSearchParams(resolvedSearchParams, "threadReportErrorCode");
   const replyReportErrorMessage = getWriteErrorMessageFromSearchParams(resolvedSearchParams, "replyReportErrorCode");
+  const threadLikeErrorMessage = getWriteErrorMessageFromSearchParams(resolvedSearchParams, "threadLikeErrorCode");
+  const replyLikeErrorMessage = getWriteErrorMessageFromSearchParams(resolvedSearchParams, "replyLikeErrorCode");
   const { threadId } = resolvedParams;
   const thread = await getThreadById(threadId);
 
@@ -52,8 +57,10 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
   }
 
   const threadIdValue = thread.id;
+  const threadCategorySlug = thread.category_slug;
   const backToFeedHref = thread.category_slug ? `/forum/category/${encodeURIComponent(thread.category_slug)}` : "/forum";
   const loginToReplyHref = appendQueryParams("/auth/login", { returnTo: `/forum/${thread.id}#reply-composer` });
+  const loginToLikeThreadHref = appendQueryParams("/auth/login", { returnTo: `/forum/${thread.id}` });
   const [categories, repliesMap] = await Promise.all([listCategories(), listRepliesByThreadIds([thread.id])]);
   const replies = repliesMap[thread.id] ?? [];
   const attachments = await listAttachmentsForThreadAndReplies({ threadId: thread.id, replyIds: replies.map((reply) => reply.id) }).catch(
@@ -69,6 +76,19 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
   } = await supabase.auth.getUser();
   const isOwner = user?.id === thread.author_id;
   const canModerateThreads = user ? await canCurrentUserModerateThreads().catch(() => false) : false;
+  const [threadLikeCount, replyLikeCountByReplyId, myLikeState] = await Promise.all([
+    getThreadLikeCount(thread.id).catch(() => 0),
+    getReplyLikeCounts(replies.map((reply) => reply.id)).catch(() => ({} as Record<string, number>)),
+    user
+      ? getMyLikedTargets({ threadId: thread.id, replyIds: replies.map((reply) => reply.id) }).catch(() => ({
+          threadLiked: false,
+          replyLikedById: {} as Record<string, boolean>,
+        }))
+      : Promise.resolve({
+          threadLiked: false,
+          replyLikedById: {} as Record<string, boolean>,
+        }),
+  ]);
 
   async function updateThreadAction(formData: FormData) {
     "use server";
@@ -232,6 +252,55 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
     revalidatePath("/forum");
   }
 
+  async function likeThreadAction(formData: FormData) {
+    "use server";
+
+    const tid = String(formData.get("threadId") ?? "");
+    if (!tid) {
+      return;
+    }
+
+    try {
+      await likeThread(tid);
+    } catch (error) {
+      logServerError("likeThreadAction", error);
+      const normalized = normalizeWriteError(error);
+      redirect(appendWriteErrorCode(`/forum/${encodeURIComponent(tid)}`, "threadLikeErrorCode", normalized.code));
+    }
+
+    revalidatePath(`/forum/${tid}`);
+    revalidatePath("/forum");
+    if (threadCategorySlug) {
+      revalidatePath(`/forum/category/${encodeURIComponent(threadCategorySlug)}`);
+    }
+    redirect(`/forum/${encodeURIComponent(tid)}`);
+  }
+
+  async function likeReplyAction(formData: FormData) {
+    "use server";
+
+    const tid = String(formData.get("threadId") ?? "");
+    const rid = String(formData.get("replyId") ?? "");
+    if (!tid || !rid) {
+      return;
+    }
+
+    try {
+      await likeReply(rid);
+    } catch (error) {
+      logServerError("likeReplyAction", error);
+      const normalized = normalizeWriteError(error);
+      redirect(appendWriteErrorCode(`/forum/${encodeURIComponent(tid)}`, "replyLikeErrorCode", normalized.code));
+    }
+
+    revalidatePath(`/forum/${tid}`);
+    revalidatePath("/forum");
+    if (threadCategorySlug) {
+      revalidatePath(`/forum/category/${encodeURIComponent(threadCategorySlug)}`);
+    }
+    redirect(`/forum/${encodeURIComponent(tid)}#reply-${encodeURIComponent(rid)}`);
+  }
+
   return (
     <main className="page-wrap stack">
       <nav className="breadcrumbs" aria-label="Breadcrumb">
@@ -306,7 +375,23 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
           <article className="card stack thread-post-unit">
             <header className="post-unit-head">
               <p className="meta">Thread starter</p>
+              <div className="inline-actions">
+                <span className="thread-info-pill reaction-count-pill">{threadLikeCount} likes</span>
+                {user ? (
+                  <form action={likeThreadAction}>
+                    <input type="hidden" name="threadId" value={thread.id} />
+                    <button type="submit" className={`btn ${myLikeState.threadLiked ? "btn-secondary" : "btn-ghost"}`} disabled={myLikeState.threadLiked}>
+                      {myLikeState.threadLiked ? "Liked" : "Like"}
+                    </button>
+                  </form>
+                ) : (
+                  <Link href={loginToLikeThreadHref} className="btn btn-secondary">
+                    Login to like
+                  </Link>
+                )}
+              </div>
             </header>
+            {threadLikeErrorMessage ? <p className="thread-status locked">{threadLikeErrorMessage}</p> : null}
             <div className="thread-body-content" style={{ whiteSpace: "pre-wrap" }}>
               {thread.body}
             </div>
@@ -346,12 +431,33 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
             {replies.length === 0 ? <p className="empty-note">No replies yet. Start the discussion below.</p> : null}
             <div className="stack">
               {replies.map((reply) => (
-                <article key={reply.id} className="reply-unit">
+                <article key={reply.id} className="reply-unit" id={`reply-${reply.id}`}>
                   <div className="reply-unit-head">
                     <p className="meta">
                       {reply.author_display_name ?? reply.author_id} | {new Date(reply.created_at).toLocaleString()}
                     </p>
                     <div className="inline-actions">
+                      <span className="thread-info-pill reaction-count-pill">{replyLikeCountByReplyId[reply.id] ?? 0} likes</span>
+                      {user ? (
+                        <form action={likeReplyAction}>
+                          <input type="hidden" name="threadId" value={thread.id} />
+                          <input type="hidden" name="replyId" value={reply.id} />
+                          <button
+                            type="submit"
+                            className={`btn ${myLikeState.replyLikedById[reply.id] ? "btn-secondary" : "btn-ghost"}`}
+                            disabled={Boolean(myLikeState.replyLikedById[reply.id])}
+                          >
+                            {myLikeState.replyLikedById[reply.id] ? "Liked" : "Like"}
+                          </button>
+                        </form>
+                      ) : (
+                        <Link
+                          href={appendQueryParams("/auth/login", { returnTo: `/forum/${thread.id}#reply-${reply.id}` })}
+                          className="btn btn-secondary"
+                        >
+                          Login to like
+                        </Link>
+                      )}
                       {user ? <ReplyQuoteButton threadId={thread.id} replyBody={reply.body} /> : null}
                       {user ? (
                         <ReportActionDialog
@@ -366,6 +472,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
                       ) : null}
                     </div>
                   </div>
+                  {replyLikeErrorMessage ? <p className="thread-status locked">{replyLikeErrorMessage}</p> : null}
                   <p style={{ whiteSpace: "pre-wrap" }}>{reply.body}</p>
                   {(attachments.replyAttachmentsById[reply.id] ?? []).length > 0 ? (
                     <div className="attachments-grid">

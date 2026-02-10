@@ -155,6 +155,15 @@ This file lists checks that are still manual (not fully automated in e2e).
 6. Apply search/sort while a signal is selected and confirm signal state remains preserved.
 7. Click `Clear` and confirm signal filter resets to `All`.
 
+### 20) Engagement reactions checks (PR34)
+1. Open `/forum/[threadId]` while signed in and click `Like` on the thread starter post.
+2. Confirm thread like count increments and button changes to `Liked`.
+3. In the same thread, click `Like` on one reply and confirm reply count increments with `Liked` state.
+4. Open `/profile?tab=activity`, navigate to one of your own threads, and confirm self-like is blocked with `You cannot like your own content.`.
+5. Sign out, open `/forum/[threadId]`, and confirm `Login to like` links are visible.
+6. Open `/forum` and `/forum/category/<slug>` and confirm thread rows show like count pills.
+7. Run `web/supabase/verification/pr34_reactions_checks.sql` and confirm table/index/policy objects exist.
+
 ## SQL verification (Supabase Dashboard)
 1. Open `SQL Editor`.
 2. Run `web/supabase/verification/pr15_rate_limit_checks.sql`.
@@ -164,3 +173,4 @@ This file lists checks that are still manual (not fully automated in e2e).
 6. Run `web/supabase/verification/pr20_newsletter_discussion_link_checks.sql` once PR20 migration is applied.
 7. After PR22 migration, run `web/supabase/verification/pr22_attachments_checks.sql`.
 8. After PR27 migration, run `web/supabase/verification/pr27_thread_last_activity_checks.sql`.
+9. After PR34 migration, run `web/supabase/verification/pr34_reactions_checks.sql`.
