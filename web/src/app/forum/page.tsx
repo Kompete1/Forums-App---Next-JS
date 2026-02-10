@@ -6,6 +6,7 @@ import { listRepliesByThreadIds } from "@/lib/db/replies";
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { ForumFilterPanel } from "@/components/forum-filter-panel";
 import { ThreadFeedList } from "@/components/thread-feed-list";
+import { getSortLabel } from "@/lib/ui/discovery-signals";
 
 export const dynamic = "force-dynamic";
 
@@ -89,6 +90,18 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
     Object.entries(repliesByThreadId).map(([threadId, replies]) => [threadId, replies.length]),
   );
   const totalPages = Math.max(1, Math.ceil(threadsPage.total / threadsPage.pageSize));
+  const sortLabel = getSortLabel(sort);
+  const contextParts = [`Sort: ${sortLabel}`];
+  if (query) {
+    contextParts.push(`Search: "${query}"`);
+  }
+  if (selectedCategory) {
+    contextParts.push(`Category: ${selectedCategory.name}`);
+  }
+  if (linkedNewsletter) {
+    contextParts.push(`Newsletter: ${linkedNewsletter.title}`);
+  }
+  const discoveryContextLine = contextParts.join(" | ");
 
   return (
     <main className="page-wrap stack">
@@ -164,6 +177,7 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
                 ? `Showing: ${selectedCategory?.name ?? "All categories"} | Linked to: ${linkedNewsletter.title}`
                 : `Showing: ${selectedCategory?.name ?? "All categories"}`
             }
+            contextLine={discoveryContextLine}
             prevHref={
               threadsPage.page > 1
                 ? forumHref({

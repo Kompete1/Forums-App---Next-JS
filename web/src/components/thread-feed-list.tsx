@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ForumThread } from "@/lib/db/posts";
+import { getThreadSignals, type ThreadSignal } from "@/lib/ui/discovery-signals";
 
 type ThreadFeedListProps = {
   threads: ForumThread[];
@@ -12,6 +13,7 @@ type ThreadFeedListProps = {
   nextHref: string | null;
   title?: string;
   subtitleChip?: string;
+  contextLine?: string;
   showRecentBadgeOnFirst?: boolean;
 };
 
@@ -22,6 +24,16 @@ function authorInitial(value: string | null) {
   }
 
   return source.slice(0, 1).toUpperCase();
+}
+
+function signalLabel(signal: ThreadSignal) {
+  if (signal === "unanswered") {
+    return "Unanswered";
+  }
+  if (signal === "active") {
+    return "Active";
+  }
+  return "Popular";
 }
 
 export function ThreadFeedList({
@@ -35,6 +47,7 @@ export function ThreadFeedList({
   nextHref,
   title = "Threads",
   subtitleChip,
+  contextLine,
   showRecentBadgeOnFirst = false,
 }: ThreadFeedListProps) {
   return (
@@ -42,6 +55,7 @@ export function ThreadFeedList({
       <div className="inline-actions">
         <h2>{title}</h2>
         {subtitleChip ? <p className="filter-chip">{subtitleChip}</p> : null}
+        {contextLine ? <p className="meta">{contextLine}</p> : null}
         <p className="meta">
           Page {page} of {totalPages} | {total} total
         </p>
@@ -51,6 +65,10 @@ export function ThreadFeedList({
         {threads.map((thread, index) => {
           const repliesCount = repliesCountByThreadId[thread.id] ?? 0;
           const authorLabel = thread.author_display_name ?? thread.author_id;
+          const signals = getThreadSignals({
+            repliesCount,
+            lastActivityAt: thread.last_activity_at,
+          });
           return (
             <article key={thread.id} className="thread-row">
               <div className="thread-row-main">
@@ -75,6 +93,11 @@ export function ThreadFeedList({
                   <span className={`thread-status-pill ${thread.is_locked ? "locked" : "open"}`}>
                     {thread.is_locked ? "Locked" : "Open"}
                   </span>
+                  {signals.map((signal) => (
+                    <span key={`${thread.id}-${signal}`} className={`thread-signal-pill thread-signal-pill-${signal}`}>
+                      {signalLabel(signal)}
+                    </span>
+                  ))}
                   <span className="thread-info-pill">{repliesCount} replies</span>
                   <span className="thread-info-pill">Last activity {new Date(thread.last_activity_at).toLocaleString()}</span>
                   {thread.source_newsletter_id ? (
