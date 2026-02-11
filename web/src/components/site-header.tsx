@@ -48,9 +48,30 @@ export async function SiteHeader() {
         </a>
         <nav className="site-nav" aria-label="Primary">
           <div className="site-nav-group">
-            <a href="/forum" className="site-nav-link">Forum</a>
-            <a href="/categories" className="site-nav-link">Categories</a>
-            <a href="/newsletter" className="site-nav-link">Newsletter</a>
+            <a href="/forum" className="site-nav-link">
+              <span aria-hidden className="site-nav-icon">
+                <svg viewBox="0 0 24 24" width="14" height="14">
+                  <path d="M4 5h16v11H7l-3 3V5Zm2 2v7.2L6.2 14H18V7H6Z" fill="currentColor" />
+                </svg>
+              </span>
+              Forum
+            </a>
+            <a href="/categories" className="site-nav-link">
+              <span aria-hidden className="site-nav-icon">
+                <svg viewBox="0 0 24 24" width="14" height="14">
+                  <path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z" fill="currentColor" />
+                </svg>
+              </span>
+              Categories
+            </a>
+            <a href="/newsletter" className="site-nav-link">
+              <span aria-hidden className="site-nav-icon">
+                <svg viewBox="0 0 24 24" width="14" height="14">
+                  <path d="M3 5h18v14H3V5Zm2 2v1.2l7 4.8 7-4.8V7l-7 4.8L5 7Z" fill="currentColor" />
+                </svg>
+              </span>
+              Newsletter
+            </a>
           </div>
           <a href={createThreadPath} className="btn btn-primary site-nav-cta">
             New thread

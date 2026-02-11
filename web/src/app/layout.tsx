@@ -36,11 +36,16 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning>
       <body className={`${displayFont.variable} ${bodyFont.variable} ${monoFont.variable}`}>
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <Suspense fallback={null}>
           <DraftSubmissionCleanup />
         </Suspense>
         <SiteHeader />
-        <div className="app-shell">{children}</div>
+        <div id="main-content" className="app-shell" tabIndex={-1}>
+          {children}
+        </div>
         <AppToaster />
       </body>
     </html>

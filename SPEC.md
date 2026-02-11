@@ -129,6 +129,14 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
       - Discovery feeds on `/forum` and `/forum/category/[slug]` support advanced pagination controls:
         numbered links, `Next`, `Last` (`>>`), and direct page jump select.
       - Existing query params (`sort`, `q`, `category`, `newsletter`, `signal`) remain preserved while paging.
+  12. UX proposal reconciliation and remaining gap-close (PR36):
+      - Homepage now supports light dual-state behavior:
+        - guest CTA-first account module
+        - signed-in recent-activity module (threads/replies/notifications shortcuts)
+      - Category cards on `/` and `/categories` now include thread-count badges.
+      - Primary header nav links include compact icons while preserving text labels.
+      - Accessibility finish pass includes keyboard skip link, stateful theme-toggle label, and reduced-motion CSS handling.
+      - Explicit deferrals retained: auth interruption modals, full WYSIWYG, nested replies/follow model, heavy faceted search.
 
 ## UX Route Behavior Contract
 - `/auth/login`:

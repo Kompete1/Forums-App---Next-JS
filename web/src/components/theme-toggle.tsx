@@ -36,11 +36,14 @@ export function ThemeToggle() {
     setMode(next);
   }
 
+  const buttonLabel = "Switch theme";
+
   return (
     <button
       type="button"
       className="theme-toggle-btn"
-      aria-label="Switch theme"
+      aria-label={buttonLabel}
+      title={buttonLabel}
       onClick={onToggle}
     >
       <span aria-hidden>Theme</span>
