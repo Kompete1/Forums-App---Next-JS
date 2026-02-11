@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { logServerError } from "@/lib/server/logging";
 import { appendQueryParams } from "@/lib/ui/flash-message";
 import { formatNotificationMessage } from "@/lib/ui/notification-message";
+import { formatForumDateTime } from "@/lib/ui/date-time";
 
 export const dynamic = "force-dynamic";
 
@@ -186,7 +187,7 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
                     actorId: notification.actor_id,
                   })}
                 </p>
-                <p className="meta">{new Date(notification.created_at).toLocaleString()}</p>
+                <p className="meta">{formatForumDateTime(notification.created_at)}</p>
                 <div className="inline-actions">
                   {notification.thread_id ? (
                     <Link href={`/forum/${notification.thread_id}`} className="btn-link focus-link">

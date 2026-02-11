@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  makeReplyDraftKey,
   clearDraft,
   clearPendingClearNewThreadDraft,
   clearPendingClearReplyDraft,
@@ -15,6 +16,14 @@ export function DraftSubmissionCleanup() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    const replyPosted = searchParams.get("replyPosted") === "1";
+    if (replyPosted) {
+      const match = pathname.match(/^\/forum\/([0-9a-f-]{36})$/i);
+      if (match?.[1]) {
+        clearDraft(makeReplyDraftKey(match[1]));
+      }
+    }
+
     const pendingThreadDraftKey = getPendingClearNewThreadDraft();
     if (pendingThreadDraftKey) {
       const onNewThreadPath = pathname === "/forum/new";
@@ -29,8 +38,11 @@ export function DraftSubmissionCleanup() {
     if (pendingReply) {
       const onExpectedThreadPath = pathname === `/forum/${pendingReply.threadId}`;
       const hasReplyError = Boolean(searchParams.get("replyErrorCode") || searchParams.get("replyAttachmentErrorCode"));
-      if (!onExpectedThreadPath || !hasReplyError) {
+      const hasReplyPosted = replyPosted;
+      if (!onExpectedThreadPath || hasReplyPosted) {
         clearDraft(pendingReply.draftKey);
+        clearPendingClearReplyDraft();
+      } else if (hasReplyError) {
         clearPendingClearReplyDraft();
       }
     }

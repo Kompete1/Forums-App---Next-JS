@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { formatForumDateTime } from "@/lib/ui/date-time";
 import {
   DropdownContent,
   DropdownItem,
@@ -50,7 +51,7 @@ export function HeaderNotificationMenu({ unreadCount, previews, markAllAction }:
             <DropdownItem key={notification.id} asChild>
               <Link href={notification.href} className={`notification-preview-item ${notification.isRead ? "notification-preview-read" : ""}`}>
                 <span className="notification-preview-message">{notification.message}</span>
-                <span className="meta">{new Date(notification.createdAt).toLocaleString()}</span>
+                <span className="meta">{formatForumDateTime(notification.createdAt)}</span>
               </Link>
             </DropdownItem>
           ))}

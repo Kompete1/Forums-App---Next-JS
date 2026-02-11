@@ -8,6 +8,7 @@ import { MarkdownLitePreview } from "@/components/ui/markdown-lite-preview";
 import { MarkdownToolbar } from "@/components/ui/markdown-toolbar";
 import { useDraftAutosave } from "@/hooks/use-draft-autosave";
 import { makeThreadDraftKey, setPendingClearNewThreadDraft } from "@/lib/ui/drafts";
+import { formatForumDateTime } from "@/lib/ui/date-time";
 
 type CreateThreadFormProps = {
   categories: ForumCategory[];
@@ -128,7 +129,7 @@ export function CreateThreadForm({
       {draft.hasRestorableDraft ? (
         <div className="draft-banner">
           <p className="meta">
-            Draft found from {draft.restorableUpdatedAt ? new Date(draft.restorableUpdatedAt).toLocaleString() : "earlier"}.
+            Draft found from {draft.restorableUpdatedAt ? formatForumDateTime(draft.restorableUpdatedAt) : "earlier"}.
           </p>
           <div className="inline-actions">
             <button type="button" className="btn btn-secondary" onClick={restoreDraft}>

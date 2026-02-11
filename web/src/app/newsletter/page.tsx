@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isCurrentUserNewsletterAdmin } from "@/lib/db/newsletter-admins";
 import { createNewsletter, listNewsletters } from "@/lib/db/newsletters";
 import { logServerError } from "@/lib/server/logging";
+import { formatForumDateTime } from "@/lib/ui/date-time";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,7 @@ export default async function NewsletterPage() {
               <h3>{item.title}</h3>
               <p style={{ whiteSpace: "pre-wrap" }}>{item.body}</p>
               <p className="meta">
-                By {item.author_display_name ?? item.author_id} on {new Date(item.created_at).toLocaleString()}
+                By {item.author_display_name ?? item.author_id} on {formatForumDateTime(item.created_at)}
               </p>
               <div className="inline-actions">
                 {user ? (

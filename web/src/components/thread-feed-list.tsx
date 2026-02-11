@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ForumThread } from "@/lib/db/posts";
 import { getThreadSignals, type ThreadSignal } from "@/lib/ui/discovery-signals";
+import { formatForumDateTime } from "@/lib/ui/date-time";
 import { PaginationControls } from "@/components/pagination-controls";
 
 type ThreadFeedListProps = {
@@ -109,7 +110,7 @@ export function ThreadFeedList({
                 <div className="thread-meta-row">
                   <span>{thread.category_name ?? "Unknown category"}</span>
                   <span>Started by {authorLabel}</span>
-                  <span>{new Date(thread.created_at).toLocaleString()}</span>
+                  <span>{formatForumDateTime(thread.created_at)}</span>
                 </div>
                 <div className="thread-pills-row">
                   <span className={`thread-status-pill ${thread.is_locked ? "locked" : "open"}`}>
@@ -122,7 +123,7 @@ export function ThreadFeedList({
                   ))}
                   <span className="thread-info-pill">{repliesCount} replies</span>
                   <span className="thread-info-pill reaction-count-pill">{likeCount} likes</span>
-                  <span className="thread-info-pill">Last activity {new Date(thread.last_activity_at).toLocaleString()}</span>
+                  <span className="thread-info-pill">Last activity {formatForumDateTime(thread.last_activity_at)}</span>
                   {thread.source_newsletter_id ? (
                     <span className="thread-info-pill">Linked newsletter: {thread.source_newsletter_title ?? "Newsletter topic"}</span>
                   ) : null}

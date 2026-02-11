@@ -11,6 +11,7 @@ import { createReport } from "@/lib/db/reports";
 import { canCurrentUserModerateThreads, setThreadLockState } from "@/lib/db/moderation";
 import { normalizeWriteError } from "@/lib/db/write-errors";
 import { appendQueryParams, appendWriteErrorCode, getSingleSearchParam, getWriteErrorMessageFromSearchParams } from "@/lib/ui/flash-message";
+import { formatForumDateTime } from "@/lib/ui/date-time";
 import {
   AttachmentActionError,
   getAttachmentErrorMessage,
@@ -37,6 +38,7 @@ type ThreadDetailPageProps = {
     replyReportErrorCode?: string | string[];
     threadLikeErrorCode?: string | string[];
     replyLikeErrorCode?: string | string[];
+    replyPosted?: string | string[];
   }>;
 };
 
@@ -139,6 +141,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
     const tid = String(formData.get("threadId") ?? "");
     const body = String(formData.get("body") ?? "");
     const replyAttachments = getAttachmentFiles(formData, "replyAttachments");
+    let replyId = "";
 
     if (!tid) {
       return;
@@ -146,7 +149,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
 
     try {
       validateAttachmentFiles(replyAttachments);
-      const replyId = await createReply({ threadId: tid, body });
+      replyId = await createReply({ threadId: tid, body });
       await saveReplyAttachments(replyId, replyAttachments);
     } catch (error) {
       if (error instanceof AttachmentActionError) {
@@ -157,9 +160,10 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
       redirect(appendWriteErrorCode(`/forum/${encodeURIComponent(tid)}`, "replyErrorCode", normalized.code));
     }
 
+    const successPath = appendQueryParams(`/forum/${encodeURIComponent(tid)}`, { replyPosted: "1" });
     revalidatePath(`/forum/${tid}`);
     revalidatePath("/forum");
-    redirect(`/forum/${encodeURIComponent(tid)}`);
+    redirect(`${successPath}#reply-${encodeURIComponent(replyId)}`);
   }
 
   async function createThreadReportAction(formData: FormData) {
@@ -329,7 +333,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
             <p className="kicker">{thread.category_name ?? "Forum Thread"}</p>
             <h1>{thread.title}</h1>
             <p className="meta">By {thread.author_display_name ?? thread.author_id}</p>
-            <p className="meta">{new Date(thread.created_at).toLocaleString()}</p>
+            <p className="meta">{formatForumDateTime(thread.created_at)}</p>
             <p className={`thread-status ${thread.is_locked ? "locked" : "open"}`}>{thread.is_locked ? "Locked" : "Open"}</p>
             <div className="stack-tight">
               <Link href={backToFeedHref} className="btn-link focus-link">
@@ -437,7 +441,7 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
                 <article key={reply.id} className="reply-unit" id={`reply-${reply.id}`}>
                   <div className="reply-unit-head">
                     <p className="meta">
-                      {reply.author_display_name ?? reply.author_id} | {new Date(reply.created_at).toLocaleString()}
+                      {reply.author_display_name ?? reply.author_id} | {formatForumDateTime(reply.created_at)}
                     </p>
                     <div className="inline-actions">
                       <span className="thread-info-pill reaction-count-pill">{replyLikeCountByReplyId[reply.id] ?? 0} likes</span>
