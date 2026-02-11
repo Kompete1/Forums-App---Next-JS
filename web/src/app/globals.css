@@ -69,6 +69,22 @@ h4 {
   min-height: calc(100vh - 70px);
 }
 
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0.5rem;
+  z-index: 90;
+  background: var(--brand-primary);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 700;
+}
+
+.skip-link:focus-visible {
+  left: 0.75rem;
+}
+
 .page-wrap {
   width: min(1240px, 94vw);
   margin: 0 auto;
@@ -129,6 +145,11 @@ h4 {
   gap: 0.3rem;
   border-radius: 999px;
   padding: 0.35rem 0.62rem;
+}
+
+.site-nav-icon {
+  display: inline-flex;
+  color: var(--text-muted);
 }
 
 .site-nav-link:hover,
@@ -718,6 +739,12 @@ h4 {
   color: inherit;
 }
 
+.category-thread-count {
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+  opacity: 0.9;
+}
+
 .attachments-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -1266,5 +1293,16 @@ textarea:focus-visible,
 
   .notifications-menu {
     min-width: min(90vw, 20rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

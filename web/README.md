@@ -45,18 +45,24 @@ Current scope includes:
   - one-way likes for thread starter posts and replies
   - DB-backed reaction table with RLS and self-like guard
   - discovery rows show thread like counts
-- V5 PR35 thread starter emphasis + advanced feed pagination wave (active):
+- V5 PR35 thread starter emphasis + advanced feed pagination wave (completed):
   - stronger thread starter hierarchy in `/forum/[threadId]`
   - starter like controls aligned right to match reply action clusters
   - advanced pagination controls on `/forum` and `/forum/category/[slug]`:
     page numbers, `Next`, `Last` (`>>`), and page-jump select
+- V5 PR36 UX proposal reconciliation + remaining gap-close wave (active):
+  - light dual-state home behavior for guest vs signed-in users
+  - category thread-count badges on `/` and `/categories`
+  - compact icon support in primary header navigation links
+  - accessibility pass: skip link, stateful theme-toggle label, reduced-motion CSS handling
+  - explicit deferrals: auth interruption modals, full WYSIWYG, nested replies/follow model, heavy faceted search
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
 - Completed through V4 PR26: auth session consistency and explicit logout route behavior.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Active build: V5 PR35 thread starter emphasis and advanced feed pagination upgrades.
+- Active build: V5 PR36 UX proposal reconciliation and remaining gap-close upgrades.
 
 ## Documentation Sync Contract
 
@@ -147,6 +153,7 @@ npm run test:e2e -- tests/e2e/reactions.spec.ts
 npm run test:e2e -- tests/e2e/discovery-quick-filters.spec.ts
 npm run test:e2e -- tests/e2e/discovery-signals.spec.ts
 npm run test:e2e -- tests/e2e/pagination-controls.spec.ts
+npm run test:e2e -- tests/e2e/pr36-home-a11y.spec.ts
 ```
 
 Security header smoke check is covered in e2e (`tests/e2e/security-headers.spec.ts`).
@@ -496,6 +503,14 @@ Expected for non-mod: only own reports are returned (or none).
 5. Navigate with `Next`, `>>`, and select jump; confirm URL and page summary update correctly.
 6. Repeat on `/forum/category/<slug>` and confirm query params (for example `sort` and `signal`) are preserved while paging.
 
+### Y) UX proposal reconciliation and gap-close checks (V5 PR36)
+1. Open `/` as guest and confirm `Join the Community` CTA module is visible and `Your recent activity` is not rendered.
+2. Sign in, open `/`, and confirm `Your recent activity` renders with recent threads/replies/notifications shortcuts.
+3. Confirm category cards on `/` and `/categories` show thread-count badges.
+4. Use keyboard `Tab` from top of page and confirm `Skip to main content` appears and focuses main content when activated.
+5. Toggle theme button and confirm `aria-label` changes between `Switch to dark theme` and `Switch to light theme` actions.
+6. Enable reduced-motion preference and confirm transitions/animations are minimized.
+
 ## Manual-Only Checks After E2E
 
 Run these manually even when Playwright passes:
@@ -516,6 +531,7 @@ Run these manually even when Playwright passes:
 - Discovery quick filters checks (PR33).
 - Engagement reactions checks (PR34).
 - Thread starter emphasis + advanced pagination checks (PR35).
+- UX proposal reconciliation + gap-close checks (PR36).
 - Backup/restore and release checklists from `web/docs/operations-runbook.md`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.

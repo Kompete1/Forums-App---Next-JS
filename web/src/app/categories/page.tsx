@@ -20,6 +20,7 @@ export default async function CategoriesPage() {
             <Link href={`/forum/category/${encodeURIComponent(category.slug)}`} className="category-card-link focus-link">
               <h2>{category.name}</h2>
               <p className="meta">{category.description ?? "Community category"}</p>
+              <p className="meta category-thread-count">{category.thread_count} threads</p>
               <span className="btn-link">Browse threads</span>
             </Link>
           </article>
