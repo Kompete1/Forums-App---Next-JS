@@ -135,8 +135,13 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
         - signed-in recent-activity module (threads/replies/notifications shortcuts)
       - Category cards on `/` and `/categories` now include thread-count badges.
       - Primary header nav links include compact icons while preserving text labels.
-      - Accessibility finish pass includes keyboard skip link, stateful theme-toggle label, and reduced-motion CSS handling.
+      - Accessibility finish pass includes keyboard skip link, accessible theme-toggle labeling, and reduced-motion CSS handling.
       - Explicit deferrals retained: auth interruption modals, full WYSIWYG, nested replies/follow model, heavy faceted search.
+  13. Attachment rendering, draft reliability, and timestamp standardization (PR37):
+      - Thread/reply attachments now render with full-image visibility (no crop).
+      - Reply-submit success flow sets `replyPosted=1` marker and clears pending reply drafts deterministically.
+      - Forum timestamps now use fixed SAST (`Africa/Johannesburg`) 24-hour format: `YYYY/MM/DD, HH:mm:ss`.
+      - Shared timestamp formatter utility is used across forum-facing surfaces instead of locale-dependent rendering.
 
 ## UX Route Behavior Contract
 - `/auth/login`:

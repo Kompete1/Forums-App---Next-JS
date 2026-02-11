@@ -25,6 +25,25 @@ async function clearThreadDraftForCurrentCategory(page: Page) {
   }, { category: categoryId });
 }
 
+async function openReplyableThread(page: Page) {
+  await page.goto("/forum");
+  const openThreadLinks = page.getByRole("link", { name: "Open thread" });
+  const threadCount = await openThreadLinks.count();
+  test.skip(threadCount === 0, "No thread available for reply flow test.");
+
+  for (let index = 0; index < threadCount; index += 1) {
+    await openThreadLinks.nth(index).click();
+    const replyField = page.getByLabel("Add reply");
+    const canReply = await replyField.isVisible().catch(() => false);
+    if (canReply) {
+      return;
+    }
+    await page.goto("/forum");
+  }
+
+  test.skip(true, "No unlocked/replyable thread available in this environment.");
+}
+
 test("create-thread toolbar inserts markdown snippets", async ({ page }) => {
   await login(page);
   await page.goto("/forum/new");
@@ -60,16 +79,8 @@ test("create-thread toolbar inserts markdown snippets", async ({ page }) => {
 
 test("quote button appends quoted markdown into reply composer", async ({ page }) => {
   await login(page);
-  await page.goto("/forum");
-
-  const openThreadLinks = page.getByRole("link", { name: "Open thread" });
-  const threadCount = await openThreadLinks.count();
-  test.skip(threadCount === 0, "No thread available for quote flow test.");
-  await openThreadLinks.first().click();
-
+  await openReplyableThread(page);
   const replyField = page.getByLabel("Add reply");
-  const canReply = await replyField.isVisible().catch(() => false);
-  test.skip(!canReply, "Selected thread is not replyable (locked or unavailable).");
 
   const seedText = `E2E quote seed ${Date.now()}`;
   await replyField.fill(seedText);
@@ -115,4 +126,85 @@ test("thread draft restore/discard works after reload", async ({ page }) => {
   await page.getByRole("button", { name: "Discard" }).click();
   await page.reload();
   await expect(page.getByRole("button", { name: "Restore draft" })).toHaveCount(0);
+});
+
+test("reply draft clears after successful submit on same thread path", async ({ page }) => {
+  await login(page);
+  await openReplyableThread(page);
+
+  const threadMatch = page.url().match(/\/forum\/([0-9a-f-]{36})/i);
+  test.skip(!threadMatch, "Could not resolve thread id for draft key cleanup.");
+  const threadId = threadMatch?.[1] ?? "";
+
+  await page.evaluate(({ tid }) => {
+    window.localStorage.removeItem(`draft:reply:${tid}`);
+    window.sessionStorage.removeItem("draft:pending-clear:reply");
+  }, { tid: threadId });
+
+  const replyField = page.getByLabel("Add reply");
+  const message = `E2E reply draft clear ${Date.now()}`;
+  await replyField.fill(message);
+  await page.waitForTimeout(900);
+
+  await page.getByRole("button", { name: "Post reply" }).click();
+
+  if (await page.getByText("You're replying too quickly.").isVisible().catch(() => false)) {
+    test.skip(true, "Reply cooldown active for this account; rerun after cooldown.");
+  }
+
+  await expect(page).toHaveURL(/replyPosted=1/, { timeout: 15_000 });
+  await expect(page).not.toHaveURL(/replyErrorCode=/);
+  await expect(page.getByText("Could not complete this action. Please try again.")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Restore draft" })).toHaveCount(0);
+  await expect(page.locator("#reply-composer-body")).toHaveValue("");
+});
+
+test("reply attachment images render without cropping (contain fit)", async ({ page }) => {
+  await login(page);
+  await openReplyableThread(page);
+
+  const replyField = page.getByLabel("Add reply");
+  const message = `E2E image contain ${Date.now()}`;
+  await replyField.fill(message);
+
+  const oneByOnePng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO9WJxQAAAAASUVORK5CYII=";
+  await page.setInputFiles("input[name='replyAttachments']", [
+    {
+      name: "e2e-reply-image.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(oneByOnePng, "base64"),
+    },
+  ]);
+
+  await page.getByRole("button", { name: "Post reply" }).click();
+
+  if (await page.getByText("You're replying too quickly.").isVisible().catch(() => false)) {
+    test.skip(true, "Reply cooldown active for this account; rerun after cooldown.");
+  }
+
+  const createdReply = page.locator(".reply-unit", { hasText: message }).first();
+  await expect(createdReply).toBeVisible();
+  const attachmentImage = createdReply.locator(".attachment-image").first();
+  await expect(attachmentImage).toBeVisible();
+  await expect(attachmentImage).toHaveCSS("object-fit", "contain");
+});
+
+test("thread and reply timestamps use SAST 24h forum format", async ({ page }) => {
+  await page.goto("/forum");
+  const openThreadLinks = page.getByRole("link", { name: "Open thread" });
+  const threadCount = await openThreadLinks.count();
+  test.skip(threadCount === 0, "No thread available for timestamp format test.");
+  await openThreadLinks.first().click();
+
+  const forumDateTimePattern = /\d{4}\/\d{2}\/\d{2}, \d{2}:\d{2}:\d{2}/;
+
+  const anyTimestampCount = await page.locator("text=/\\d{4}\\/\\d{2}\\/\\d{2}, \\d{2}:\\d{2}:\\d{2}/").count();
+  expect(anyTimestampCount).toBeGreaterThan(0);
+
+  const replyMetaTexts = await page.locator(".reply-unit .reply-unit-head .meta").allTextContents();
+  test.skip(replyMetaTexts.length === 0, "No replies available to validate reply timestamp format.");
+  for (const text of replyMetaTexts) {
+    expect(text).toMatch(forumDateTimePattern);
+    expect(text).not.toMatch(/\bAM\b|\bPM\b/i);
+  }
 });

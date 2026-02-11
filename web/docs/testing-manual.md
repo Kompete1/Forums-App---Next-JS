@@ -185,3 +185,13 @@ This file lists checks that are still manual (not fully automated in e2e).
 7. After PR22 migration, run `web/supabase/verification/pr22_attachments_checks.sql`.
 8. After PR27 migration, run `web/supabase/verification/pr27_thread_last_activity_checks.sql`.
 9. After PR34 migration, run `web/supabase/verification/pr34_reactions_checks.sql`.
+
+### 22) Attachment rendering, draft reliability, and timestamp checks (PR37)
+1. Open `/forum/<threadId>` and post replies with a wide image and a tall image.
+2. Confirm each rendered reply attachment shows the full image (no crop) within the card.
+3. Click attachments and confirm full-size image still opens in a new tab.
+4. In an unlocked thread, type a reply and submit successfully.
+5. Confirm `Draft found` / `Restore draft` is not shown for that just-posted reply content.
+6. Trigger a reply error path (for example cooldown by posting twice quickly) and confirm draft restore remains available.
+7. Confirm thread/reply/notification/profile timestamps use `YYYY/MM/DD, HH:mm:ss` and do not show `AM/PM`.
+8. Validate displayed values align with SAST (`Africa/Johannesburg`) for known UTC source timestamps.

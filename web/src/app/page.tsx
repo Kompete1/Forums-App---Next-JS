@@ -8,6 +8,7 @@ import { listMyNotifications } from "@/lib/db/notifications";
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { formatNotificationMessage } from "@/lib/ui/notification-message";
 import { appendQueryParams } from "@/lib/ui/flash-message";
+import { formatForumDateTime } from "@/lib/ui/date-time";
 
 export default async function HomePage() {
   const [categories, latest, user] = await Promise.all([
@@ -90,7 +91,7 @@ export default async function HomePage() {
               {recentThreads.map((thread) => (
                 <Link key={thread.id} href={`/forum/${thread.id}`} className="activity-row focus-link">
                   <span>{thread.title}</span>
-                  <span className="meta">{new Date(thread.last_activity_at).toLocaleString()}</span>
+                  <span className="meta">{formatForumDateTime(thread.last_activity_at)}</span>
                 </Link>
               ))}
             </article>
@@ -120,7 +121,7 @@ export default async function HomePage() {
                       actorId: item.actor_id,
                     })}
                   </span>
-                  <span className="meta">{new Date(item.created_at).toLocaleString()}</span>
+                  <span className="meta">{formatForumDateTime(item.created_at)}</span>
                 </Link>
               ))}
             </article>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { canCurrentUserModerateThreads } from "@/lib/db/moderation";
 import { listReportsForModeration } from "@/lib/db/reports";
 import { createClient } from "@/lib/supabase/server";
+import { formatForumDateTime } from "@/lib/ui/date-time";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +49,7 @@ export default async function ModerationReportsPage() {
             <p>Reason: {report.reason}</p>
             {report.notes ? <p>Notes: {report.notes}</p> : null}
             <p className="meta">
-              Reporter: {report.reporter_display_name ?? report.reporter_id} | {new Date(report.created_at).toLocaleString()}
+              Reporter: {report.reporter_display_name ?? report.reporter_id} | {formatForumDateTime(report.created_at)}
             </p>
           </article>
         ))}

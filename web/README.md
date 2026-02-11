@@ -50,19 +50,23 @@ Current scope includes:
   - starter like controls aligned right to match reply action clusters
   - advanced pagination controls on `/forum` and `/forum/category/[slug]`:
     page numbers, `Next`, `Last` (`>>`), and page-jump select
-- V5 PR36 UX proposal reconciliation + remaining gap-close wave (active):
+- V5 PR36 UX proposal reconciliation + remaining gap-close wave (completed):
   - light dual-state home behavior for guest vs signed-in users
   - category thread-count badges on `/` and `/categories`
   - compact icon support in primary header navigation links
-  - accessibility pass: skip link, stateful theme-toggle label, reduced-motion CSS handling
+  - accessibility pass: skip link, accessible theme-toggle labeling, reduced-motion CSS handling
   - explicit deferrals: auth interruption modals, full WYSIWYG, nested replies/follow model, heavy faceted search
+- V5 PR37 attachments + draft reliability + timestamp standardization wave (active):
+  - thread/reply attachments render full image (`contain`) to avoid crop
+  - reply success redirect uses `replyPosted=1` to clear pending reply drafts deterministically
+  - forum timestamps standardized to SAST (`Africa/Johannesburg`) in `YYYY/MM/DD, HH:mm:ss` 24-hour format
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
 - Completed through V4 PR26: auth session consistency and explicit logout route behavior.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Active build: V5 PR36 UX proposal reconciliation and remaining gap-close upgrades.
+- Active build: V5 PR37 attachment rendering, draft reliability, and timestamp standardization upgrades.
 
 ## Documentation Sync Contract
 
@@ -154,6 +158,7 @@ npm run test:e2e -- tests/e2e/discovery-quick-filters.spec.ts
 npm run test:e2e -- tests/e2e/discovery-signals.spec.ts
 npm run test:e2e -- tests/e2e/pagination-controls.spec.ts
 npm run test:e2e -- tests/e2e/pr36-home-a11y.spec.ts
+npm run test:e2e -- tests/e2e/writer-flows.spec.ts
 ```
 
 Security header smoke check is covered in e2e (`tests/e2e/security-headers.spec.ts`).
@@ -508,8 +513,16 @@ Expected for non-mod: only own reports are returned (or none).
 2. Sign in, open `/`, and confirm `Your recent activity` renders with recent threads/replies/notifications shortcuts.
 3. Confirm category cards on `/` and `/categories` show thread-count badges.
 4. Use keyboard `Tab` from top of page and confirm `Skip to main content` appears and focuses main content when activated.
-5. Toggle theme button and confirm `aria-label` changes between `Switch to dark theme` and `Switch to light theme` actions.
+5. Toggle theme button and confirm control remains keyboard accessible with stable `aria-label="Switch theme"`.
 6. Enable reduced-motion preference and confirm transitions/animations are minimized.
+
+### Z) Attachment rendering, draft reliability, and timestamp checks (V5 PR37)
+1. Open `/forum/<threadId>` and post a reply with a wide image and a tall image; confirm rendered attachments are not cropped (full image visible in card).
+2. Click each attachment and confirm full-size open still works in a new tab.
+3. In an unlocked thread, type a reply and submit successfully; confirm `Draft found`/`Restore draft` does not remain for that posted content.
+4. Trigger reply cooldown (post twice rapidly) and confirm draft restore remains available after error path.
+5. Confirm forum timestamps follow `YYYY/MM/DD, HH:mm:ss` and do not show `AM/PM` on thread side rail, reply headers, notifications, and profile activity surfaces.
+6. Confirm displayed time aligns with SAST (`Africa/Johannesburg`) expectations for known UTC source timestamps.
 
 ## Manual-Only Checks After E2E
 
@@ -532,6 +545,7 @@ Run these manually even when Playwright passes:
 - Engagement reactions checks (PR34).
 - Thread starter emphasis + advanced pagination checks (PR35).
 - UX proposal reconciliation + gap-close checks (PR36).
+- Attachment rendering, draft reliability, and timestamp checks (PR37).
 - Backup/restore and release checklists from `web/docs/operations-runbook.md`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.

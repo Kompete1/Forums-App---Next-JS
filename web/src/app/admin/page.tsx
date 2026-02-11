@@ -2,6 +2,7 @@ import Link from "next/link";
 import { canCurrentUserModerateThreads } from "@/lib/db/moderation";
 import { getAdminDashboardData } from "@/lib/db/admin-dashboard";
 import { createClient } from "@/lib/supabase/server";
+import { formatForumDateTime } from "@/lib/ui/date-time";
 
 export const dynamic = "force-dynamic";
 
@@ -97,7 +98,7 @@ export default async function AdminDashboardPage() {
               {dashboardData.recentReports.map((report) => (
                 <article key={report.id} className="stack-tight">
                   <p style={{ fontWeight: 700 }}>{report.target_type === "thread" ? "Thread report" : "Reply report"}</p>
-                  <p className="meta">{new Date(report.created_at).toLocaleString()}</p>
+                  <p className="meta">{formatForumDateTime(report.created_at)}</p>
                   <p>Reason: {report.reason}</p>
                 </article>
               ))}
@@ -110,7 +111,7 @@ export default async function AdminDashboardPage() {
                 <article key={entry.id} className="stack-tight">
                   <p style={{ fontWeight: 700 }}>{entry.title}</p>
                   <p className="meta">
-                    By {entry.author_display_name ?? entry.author_id} on {new Date(entry.created_at).toLocaleString()}
+                    By {entry.author_display_name ?? entry.author_id} on {formatForumDateTime(entry.created_at)}
                   </p>
                 </article>
               ))}
@@ -125,7 +126,7 @@ export default async function AdminDashboardPage() {
                     {thread.title}
                   </Link>
                   <p className="meta">
-                    By {thread.author_display_name ?? thread.author_id} on {new Date(thread.created_at).toLocaleString()}
+                    By {thread.author_display_name ?? thread.author_id} on {formatForumDateTime(thread.created_at)}
                   </p>
                   <p className={`thread-status ${thread.is_locked ? "locked" : "open"}`}>
                     {thread.is_locked ? "Locked" : "Open"}

@@ -10,6 +10,7 @@ import { getCurrentUser } from "@/lib/supabase/auth";
 import { logServerError } from "@/lib/server/logging";
 import { appendQueryParams } from "@/lib/ui/flash-message";
 import { formatNotificationMessage } from "@/lib/ui/notification-message";
+import { formatForumDateTime } from "@/lib/ui/date-time";
 
 export const dynamic = "force-dynamic";
 
@@ -138,7 +139,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               {recentThreads.map((thread) => (
                 <Link key={thread.id} href={`/forum/${thread.id}`} className="activity-row focus-link">
                   <span>{thread.title}</span>
-                  <span className="meta">{new Date(thread.last_activity_at).toLocaleString()}</span>
+                  <span className="meta">{formatForumDateTime(thread.last_activity_at)}</span>
                 </Link>
               ))}
             </div>
@@ -178,7 +179,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                       actorId: item.actor_id,
                     })}
                   </span>
-                  <span className="meta">{new Date(item.created_at).toLocaleString()}</span>
+                  <span className="meta">{formatForumDateTime(item.created_at)}</span>
                 </div>
               ))}
             </div>

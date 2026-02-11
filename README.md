@@ -3,7 +3,7 @@
 Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase Auth + Postgres.
 
 ## Status
-- Current milestone: `UX Proposal Reconciliation + Remaining Gap Close PR36` implementation wave.
+- Current milestone: `Attachment Rendering + Draft Reliability + Timestamp Standardization PR37` implementation wave.
 
 ## Repository Role
 - This repository contains the dynamic forums application.
@@ -17,7 +17,7 @@ Forums mini-app built with Next.js, deployed on Vercel, and backed by Supabase A
 ## Workflow
 1. Read `SPEC.md` for scoped requirements.
 2. Read `PLANS.md` for planning standards.
-3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr36-v5-ux-gap-close-execplan.md`).
+3. Execute from the relevant current ExecPlan in `plans/` (latest: `plans/pr37-v5-attachments-drafts-time-execplan.md`).
 4. Ship one logical chunk per PR.
 
 UX redesign planning baseline:
