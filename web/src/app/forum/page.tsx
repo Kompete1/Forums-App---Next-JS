@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { listCategories } from "@/lib/db/categories";
 import { listThreadsPage, type ThreadSort } from "@/lib/db/posts";
@@ -10,6 +11,10 @@ import { ThreadFeedList } from "@/components/thread-feed-list";
 import { getSignalLabel, getSortLabel, matchesSignalFilter, parseSignalFilter, type SignalFilter } from "@/lib/ui/discovery-signals";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Forum",
+  description: "Explore active South African motorsport threads, filter by category, and join race-focused discussions.",
+};
 
 type ForumPageProps = {
   searchParams?: Promise<{

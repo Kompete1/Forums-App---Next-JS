@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { listCategories } from "@/lib/db/categories";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Categories",
+  description: "Browse forum categories for South African motorsport discussions, from circuit racing to karting and sim racing.",
+};
 
 export default async function CategoriesPage() {
   const categories = await listCategories();

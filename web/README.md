@@ -92,13 +92,17 @@ Set these values in `web/.env.local` (do not commit):
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SITE_URL=https://forums-app-next-js.vercel.app
 # optional: enable write/preview tabs in thread/reply composers
 NEXT_PUBLIC_ENABLE_MARKDOWN_PREVIEW=0
+# optional: cap thread URLs included in sitemap.xml (default 200)
+SITEMAP_THREAD_LIMIT=200
 ```
 
 Set the same values in Vercel Preview and Production:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SITE_URL`
 
 ## Supabase Auth URL Configuration
 
@@ -161,6 +165,7 @@ npm run test:e2e -- tests/e2e/pagination-controls.spec.ts
 npm run test:e2e -- tests/e2e/pr36-home-a11y.spec.ts
 npm run test:e2e -- tests/e2e/writer-flows.spec.ts
 npm run test:e2e -- tests/e2e/resources-guest.spec.ts
+npm run test:e2e -- tests/e2e/seo-foundations.spec.ts
 ```
 
 Security header smoke check is covered in e2e (`tests/e2e/security-headers.spec.ts`).
@@ -549,6 +554,7 @@ Run these manually even when Playwright passes:
 - UX proposal reconciliation + gap-close checks (PR36).
 - Attachment rendering, draft reliability, and timestamp checks (PR37).
 - Backup/restore and release checklists from `web/docs/operations-runbook.md`.
+- SEO route + Search Console checks from `web/docs/seo-verification.md`.
 
 Detailed click-by-click steps are in `web/docs/testing-manual.md`.
 

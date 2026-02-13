@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
@@ -41,6 +42,30 @@ type ThreadDetailPageProps = {
     replyPosted?: string | string[];
   }>;
 };
+
+function toMetaSnippet(value: string, maxLength: number) {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+  return `${normalized.slice(0, Math.max(0, maxLength - 3)).trim()}...`;
+}
+
+export async function generateMetadata({ params }: ThreadDetailPageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const thread = await getThreadById(resolvedParams.threadId).catch(() => null);
+  if (!thread) {
+    return {
+      title: "Thread",
+      description: "Read and join motorsport discussion threads on SA Racing Forum.",
+    };
+  }
+
+  return {
+    title: thread.title,
+    description: toMetaSnippet(thread.body, 160) || "Read and join motorsport discussion threads on SA Racing Forum.",
+  };
+}
 
 export default async function ThreadDetailPage({ params, searchParams }: ThreadDetailPageProps) {
   const resolvedParams = await params;

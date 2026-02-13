@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { canCurrentUserModerateThreads } from "@/lib/db/moderation";
 import { getAdminDashboardData } from "@/lib/db/admin-dashboard";
@@ -5,6 +6,12 @@ import { createClient } from "@/lib/supabase/server";
 import { formatForumDateTime } from "@/lib/ui/date-time";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();

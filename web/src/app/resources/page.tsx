@@ -1,18 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Resources | SA Racing Forum",
+  title: "Resources",
   description: "Official links, calendars, karting starter guidance, and practical checklists for South African racers.",
-  openGraph: {
-    title: "Resources | SA Racing Forum",
-    description: "Official links, calendars, karting starter guidance, and practical checklists for South African racers.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary",
-    title: "Resources | SA Racing Forum",
-    description: "Official links, calendars, karting starter guidance, and practical checklists for South African racers.",
-  },
 };
 
 function ExternalLink({ href, label }: { href: string; label: string }) {
