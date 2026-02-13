@@ -422,8 +422,8 @@ export default async function ThreadDetailPage({ params, searchParams }: ThreadD
             {thread.source_newsletter_id ? (
               <p className="meta">
                 Source newsletter: {thread.source_newsletter_title ?? "Newsletter topic"} |{" "}
-                <Link href="/newsletter" className="btn-link focus-link">
-                  Open newsletter feed
+                <Link href="/resources" className="btn-link focus-link">
+                  Open resources hub
                 </Link>
               </p>
             ) : null}

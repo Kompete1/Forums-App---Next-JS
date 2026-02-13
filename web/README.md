@@ -139,7 +139,8 @@ Open:
 - `http://localhost:3000/forum/category/main-circuit-discussions`
 - `http://localhost:3000/categories`
 - `http://localhost:3000/profile`
-- `http://localhost:3000/newsletter`
+- `http://localhost:3000/resources`
+- `http://localhost:3000/newsletter` (legacy route, redirects to `/resources`)
 - `http://localhost:3000/notifications`
 - `http://localhost:3000/admin` (mod/admin only)
 - `http://localhost:3000/auth/login`
@@ -159,6 +160,7 @@ npm run test:e2e -- tests/e2e/discovery-signals.spec.ts
 npm run test:e2e -- tests/e2e/pagination-controls.spec.ts
 npm run test:e2e -- tests/e2e/pr36-home-a11y.spec.ts
 npm run test:e2e -- tests/e2e/writer-flows.spec.ts
+npm run test:e2e -- tests/e2e/resources-guest.spec.ts
 ```
 
 Security header smoke check is covered in e2e (`tests/e2e/security-headers.spec.ts`).
@@ -357,25 +359,20 @@ order by created_at desc;
 
 Expected for non-mod: only own reports are returned (or none).
 
-### E) Newsletter feed public read (V1.5)
-1. Open `/newsletter` as guest.
-2. Confirm existing newsletter entries are visible.
+### E) Resources hub public read (V6 PR38)
+1. Open `/resources` as guest.
+2. Confirm section headings are visible:
+   - `Official notices & schedules`
+   - `Calendars`
+   - `Karting essentials`
+   - `Track guides`
+   - `Templates`
+3. Open `/newsletter` and confirm immediate redirect to `/resources`.
 
-### F) Newsletter admin-only create via roles (V2 PR1)
-1. Ensure your user has `admin` in `user_roles`.
-2. Sign in as that user.
-3. Open `/newsletter` and confirm create form is visible.
-4. Publish a newsletter entry and confirm it appears in feed.
-
-### G) Newsletter non-admin restrictions
-1. Sign in as user without `admin` role in `user_roles`.
-2. Open `/newsletter` and confirm create form is hidden.
-3. Attempt insert/update/delete directly as non-admin and confirm RLS rejection.
-
-### H) Owner boundary on newsletters
-1. Create newsletter as admin user A.
-2. Sign in as admin user B.
-3. Attempt update/delete of user A's newsletter and confirm rejection (owner boundary remains enforced).
+### F) Newsletter route compatibility (legacy)
+1. Open `/newsletter`.
+2. Confirm browser ends on `/resources`.
+3. Confirm no server/runtime error appears in logs for the redirect path.
 
 ### I) Anti-spam / rate-limit baseline (V2 PR15)
 1. Sign in as regular user and create a thread in `/forum/new`.
@@ -395,14 +392,19 @@ Expected for non-mod: only own reports are returned (or none).
 7. Click `Mark all as read` and confirm no unread notifications remain.
 8. If user A has `mod`/`admin`, submit a new report as user B and confirm moderation notification appears for user A.
 
-### K) Newsletter discussion bridge (V3 PR20)
-1. Open `/newsletter`.
-2. Click `Start discussion` on one newsletter entry while signed in.
-3. Confirm `/forum/new` is prefilled and shows newsletter linkage context.
-4. Publish thread and confirm it is created successfully.
-5. Open `/newsletter` again and click `View discussions` for that newsletter.
-6. Confirm `/forum?newsletter=<id>` shows linked threads for that newsletter topic.
-7. Open linked thread and confirm source newsletter backlink metadata is visible.
+### K) Newsletter linkage compatibility (V3 PR20, post-PR38)
+1. Fetch one newsletter id from Supabase:
+
+```sql
+select id, title
+from public.newsletters
+order by created_at desc
+limit 1;
+```
+
+2. Open `/forum?newsletter=<id>` and confirm linked-thread filtering still works.
+3. Open a linked thread and confirm source newsletter metadata is visible.
+4. Confirm source backlink points users to `/resources`.
 
 ### L) Attachments and storage (V3 PR22)
 1. Apply `web/supabase/migrations/20260208_pr22_v3_attachments_storage.sql` in Supabase SQL Editor.
@@ -414,7 +416,7 @@ Expected for non-mod: only own reports are returned (or none).
 
 ### M) Admin dashboard (V3 PR23)
 1. Sign in as mod/admin and open `/admin`; confirm dashboard totals and recent panels render.
-2. Confirm quick links route correctly to `/moderation/reports`, `/newsletter`, `/forum`, and `/notifications`.
+2. Confirm quick links route correctly to `/moderation/reports`, `/resources`, `/forum`, and `/notifications`.
 3. Sign in as non-mod and open `/admin`; confirm access denied.
 
 ### N) Production hardening pack (V4 PR24)

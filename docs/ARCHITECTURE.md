@@ -27,7 +27,8 @@ Repo A points users into Repo B using an iframe and/or direct link.
 - `/categories`: category directory for forum taxonomy.
 - `/profile`: account settings and display name updates.
 - `/moderation/reports`: role-gated moderation report review.
-- `/newsletter`: public feed with admin-only creation.
+- `/resources`: curated links/checklists hub for official notices, calendars, karting essentials, and track guides.
+- `/newsletter`: legacy compatibility route that redirects permanently to `/resources`.
 - `/forum/new?fromNewsletter=<newsletter-id>`: prefilled thread creation from newsletter CTA.
 - `/forum?newsletter=<newsletter-id>`: linked-discussion filtering for newsletter topics.
 - `/notifications`: signed-in inbox for reply/report notifications with read-state controls.

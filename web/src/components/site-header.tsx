@@ -64,13 +64,13 @@ export async function SiteHeader() {
               </span>
               Categories
             </a>
-            <a href="/newsletter" className="site-nav-link">
+            <a href="/resources" className="site-nav-link">
               <span aria-hidden className="site-nav-icon">
                 <svg viewBox="0 0 24 24" width="14" height="14">
                   <path d="M3 5h18v14H3V5Zm2 2v1.2l7 4.8 7-4.8V7l-7 4.8L5 7Z" fill="currentColor" />
                 </svg>
               </span>
-              Newsletter
+              Resources
             </a>
           </div>
           <a href={createThreadPath} className="btn btn-primary site-nav-cta">

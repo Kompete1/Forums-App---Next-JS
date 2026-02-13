@@ -10,7 +10,7 @@ This runbook is the reproducible baseline for production hardening checks.
    - `npm run test:e2e`
 2. Confirm Vercel preview is healthy:
    - `/health` returns `OK`
-   - `/forum`, `/newsletter`, `/notifications`, `/admin` load
+   - `/forum`, `/resources`, `/notifications`, `/admin` load
 3. Verify role-gated routes:
    - `/admin` and `/moderation/reports` allowed for mod/admin
    - denied for non-mod users

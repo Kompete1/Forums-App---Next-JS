@@ -112,7 +112,7 @@ export default async function NewThreadPage({ searchParams }: NewThreadPageProps
     revalidatePath("/forum");
     revalidatePath("/");
     revalidatePath("/categories");
-    revalidatePath("/newsletter");
+    revalidatePath("/resources");
     if (category?.slug) {
       revalidatePath(`/forum/category/${category.slug}`);
       redirect(appendQueryParams(`/forum/category/${category.slug}`, { posted: "1" }));

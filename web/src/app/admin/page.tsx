@@ -37,8 +37,8 @@ export default async function AdminDashboardPage() {
         <Link href="/moderation/reports" className="btn btn-primary">
           Open reports
         </Link>
-        <Link href="/newsletter" className="btn btn-secondary">
-          Open newsletter
+        <Link href="/resources" className="btn btn-secondary">
+          Open resources
         </Link>
         <Link href="/forum" className="btn btn-secondary">
           Open forum
