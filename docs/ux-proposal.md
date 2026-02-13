@@ -53,7 +53,7 @@ This document is now the source of truth for UX proposal status in Repo B. It re
 - Back category list with a category query that includes per-category thread count.
 
 ### 3) Header scanability improvements
-- Add compact icons to primary nav links (`Forum`, `Categories`, `Newsletter`).
+- Add compact icons to primary nav links (`Forum`, `Categories`, `Resources`).
 - Keep text labels for readability and accessibility.
 
 ### 4) Accessibility finish pass

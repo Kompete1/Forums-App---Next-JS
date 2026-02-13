@@ -9,6 +9,15 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "20mb",
     },
   },
+  async redirects() {
+    return [
+      {
+        source: "/newsletter",
+        destination: "/resources",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     const baseHeaders = [
       { key: "X-Content-Type-Options", value: "nosniff" },

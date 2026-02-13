@@ -28,7 +28,7 @@ This file lists checks that are still manual (not fully automated in e2e).
 3. After 10 reports in 15 minutes, confirm message: report limit reached.
 
 ### 4) Cross-user owner boundaries
-1. User A creates thread/reply/newsletter.
+1. User A creates thread/reply.
 2. User B attempts update/delete for User A content.
 3. Confirm rejection by RLS.
 
@@ -50,11 +50,15 @@ This file lists checks that are still manual (not fully automated in e2e).
 4. Open `/forum/[threadId]` and confirm thread/replies/report controls remain visible and readable.
 5. Confirm no owner/mod controls disappeared after UI polish.
 
-### 7) Newsletter discussion bridge checks (PR20 active)
-1. Open `/newsletter` and click `Start discussion` on one newsletter entry.
-2. Confirm `/forum/new` is prefilled for discussion bootstrap.
-3. Publish thread and verify thread is linked back to source newsletter.
-4. Use linked-discussion view/filter and verify only related threads show.
+### 7) Resources hub checks (PR38 active)
+1. Open `/resources` as guest.
+2. Confirm section headings are visible:
+   - `Official notices & schedules`
+   - `Calendars`
+   - `Karting essentials`
+   - `Track guides`
+   - `Templates`
+3. Open `/newsletter` and confirm it redirects to `/resources`.
 
 ### 8) Fixture setup checks (PR21)
 1. Create test users in Supabase Auth (admin/mod/user A/user B).
@@ -78,7 +82,7 @@ This file lists checks that are still manual (not fully automated in e2e).
 ### 10) Admin dashboard checks (PR23 active)
 1. Sign in as mod/admin and open `/admin`; confirm dashboard is visible.
 2. Sign in as non-mod user and open `/admin`; confirm access denied.
-3. Verify dashboard links route correctly to moderation/newsletter/forum/notifications workflows.
+3. Verify dashboard links route correctly to moderation/resources/forum/notifications workflows.
 
 ### 11) Production hardening checks (PR24)
 1. Verify response security headers in preview deployment.
