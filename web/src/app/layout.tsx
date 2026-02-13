@@ -4,6 +4,7 @@ import { JetBrains_Mono, Rajdhani, Source_Sans_3 } from "next/font/google";
 import { AppToaster } from "@/components/app-toaster";
 import { DraftSubmissionCleanup } from "@/components/draft-submission-cleanup";
 import { SiteHeader } from "@/components/site-header";
+import { getSiteUrl, toAbsoluteUrl } from "@/lib/seo/site-url";
 import "./globals.css";
 
 const displayFont = Rajdhani({
@@ -24,8 +25,33 @@ const monoFont = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SA Racing Forum",
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: "SA Racing Forum",
+    template: "%s | SA Racing Forum",
+  },
   description: "South African motorsport community forum for drivers and enthusiasts.",
+  openGraph: {
+    type: "website",
+    title: "SA Racing Forum",
+    description: "South African motorsport community forum for drivers and enthusiasts.",
+    url: toAbsoluteUrl("/"),
+    siteName: "SA Racing Forum",
+    images: [
+      {
+        url: toAbsoluteUrl("/social/sa-racing-forum-social.png"),
+        width: 1200,
+        height: 630,
+        alt: "SA Racing Forum social preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SA Racing Forum",
+    description: "South African motorsport community forum for drivers and enthusiasts.",
+    images: [toAbsoluteUrl("/social/sa-racing-forum-social.png")],
+  },
 };
 
 export default function RootLayout({

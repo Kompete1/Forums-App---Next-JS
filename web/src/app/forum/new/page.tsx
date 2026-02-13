@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -18,6 +19,12 @@ import { logServerError } from "@/lib/server/logging";
 import { CreateThreadForm } from "@/components/create-thread-form";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 type NewThreadPageProps = {
   searchParams?: Promise<{

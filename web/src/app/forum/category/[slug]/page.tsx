@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { listCategories } from "@/lib/db/categories";
 import { listThreadsPage, type ThreadSort } from "@/lib/db/posts";
@@ -23,6 +24,23 @@ type CategoryPageProps = {
     posted?: string | string[];
   }>;
 };
+
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const categories = await listCategories().catch(() => []);
+  const category = categories.find((item) => item.slug === slug) ?? null;
+  if (!category) {
+    return {
+      title: "Category",
+      description: "Browse category threads on SA Racing Forum.",
+    };
+  }
+
+  return {
+    title: `${category.name} Threads`,
+    description: `Browse ${category.name} discussions on SA Racing Forum for South African motorsport fans.`,
+  };
+}
 
 function getParamValue(value: string | string[] | undefined) {
   if (Array.isArray(value)) {

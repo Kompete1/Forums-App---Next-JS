@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { heroSlides } from "@/content/hero-slides";
@@ -9,6 +10,11 @@ import { getCurrentUser } from "@/lib/supabase/auth";
 import { formatNotificationMessage } from "@/lib/ui/notification-message";
 import { appendQueryParams } from "@/lib/ui/flash-message";
 import { formatForumDateTime } from "@/lib/ui/date-time";
+
+export const metadata: Metadata = {
+  title: "Home",
+  description: "South African motorsport forum with category discovery, latest threads, and racer-focused community discussions.",
+};
 
 export default async function HomePage() {
   const [categories, latest, user] = await Promise.all([

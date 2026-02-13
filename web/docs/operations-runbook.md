@@ -17,6 +17,10 @@ This runbook is the reproducible baseline for production hardening checks.
 4. Confirm no secrets are introduced in diff:
    - no `.env.local` commit
    - no service-role keys in code/docs
+5. Confirm SEO foundations in preview/production:
+   - `/robots.txt` loads and includes sitemap reference
+   - `/sitemap.xml` loads and contains core URLs
+   - follow `web/docs/seo-verification.md` for full checklist
 
 ## 2) Security Header Check
 
