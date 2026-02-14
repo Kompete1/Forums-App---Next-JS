@@ -42,13 +42,17 @@ export default async function HomePage() {
         </div>
         <div className="category-grid">
           {categories.map((category) => (
-            <article key={category.id} className="card stack">
-              <h3>{category.name}</h3>
-              <p className="meta">{category.description ?? "Community discussions."}</p>
-              <p className="meta category-thread-count">{category.thread_count} threads</p>
-              <Link href={`/forum/category/${encodeURIComponent(category.slug)}`} className="btn-link focus-link">
-                Open discussions
-              </Link>
+            <article key={category.id} className="card category-card">
+              <div className="stack-tight">
+                <h3>{category.name}</h3>
+                <p className="meta">{category.description ?? "Community discussions."}</p>
+              </div>
+              <div className="category-card-footer stack-tight">
+                <p className="meta category-thread-count">{category.thread_count} threads</p>
+                <Link href={`/forum/category/${encodeURIComponent(category.slug)}`} className="btn-link focus-link">
+                  Browse threads
+                </Link>
+              </div>
             </article>
           ))}
         </div>

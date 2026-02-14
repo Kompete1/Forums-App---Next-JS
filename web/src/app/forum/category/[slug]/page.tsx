@@ -5,6 +5,7 @@ import { listThreadsPage, type ThreadSort } from "@/lib/db/posts";
 import { listRepliesByThreadIds } from "@/lib/db/replies";
 import { getThreadLikeCounts } from "@/lib/db/reactions";
 import { getCurrentUser } from "@/lib/supabase/auth";
+import { canCurrentUserModerateThreads, setThreadPinState } from "@/lib/db/moderation";
 import { CategoryHeader } from "@/components/category-header";
 import { ForumFilterPanel } from "@/components/forum-filter-panel";
 import { ThreadFeedList } from "@/components/thread-feed-list";
@@ -154,6 +155,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const { slug } = await params;
   const resolvedParams = (await searchParams) ?? {};
   const user = await getCurrentUser();
+  const canModerateThreads = user ? await canCurrentUserModerateThreads().catch(() => false) : false;
   const categories = await listCategories();
   const category = categories.find((item) => item.slug === slug) ?? null;
 
@@ -191,6 +193,16 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   }
   contextParts.push(`Signal: ${getSignalLabel(signal)}`);
   const discoveryContextLine = contextParts.join(" | ");
+
+  async function pinThreadAction(threadId: string, nextPinned: boolean) {
+    "use server";
+
+    if (!threadId) {
+      return;
+    }
+
+    await setThreadPinState(threadId, nextPinned);
+  }
 
   return (
     <main className="page-wrap stack">
@@ -241,13 +253,14 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             threads={threadsPage.threads}
             repliesCountByThreadId={repliesCountByThreadId}
             threadLikeCountByThreadId={threadLikeCountByThreadId}
-            total={threadsPage.total}
             page={threadsPage.page}
             totalPages={totalPages}
             noResultsText="No threads found in this category yet."
             subtitleChip={`Showing: ${category.name}`}
             contextLine={discoveryContextLine}
             showRecentBadgeOnFirst={hasPostedNotice}
+            canModerateThreads={canModerateThreads}
+            pinAction={pinThreadAction}
             pageHref={(targetPage) =>
               categoryHref(category.slug, {
                 q: query,

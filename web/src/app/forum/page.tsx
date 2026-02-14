@@ -6,6 +6,7 @@ import { getNewsletterById } from "@/lib/db/newsletters";
 import { listRepliesByThreadIds } from "@/lib/db/replies";
 import { getThreadLikeCounts } from "@/lib/db/reactions";
 import { getCurrentUser } from "@/lib/supabase/auth";
+import { canCurrentUserModerateThreads, setThreadPinState } from "@/lib/db/moderation";
 import { ForumFilterPanel } from "@/components/forum-filter-panel";
 import { ThreadFeedList } from "@/components/thread-feed-list";
 import { getSignalLabel, getSortLabel, matchesSignalFilter, parseSignalFilter, type SignalFilter } from "@/lib/ui/discovery-signals";
@@ -147,6 +148,7 @@ async function listForumThreadsWithSignalFilter(input: {
 export default async function ForumPage({ searchParams }: ForumPageProps) {
   const resolvedParams = (await searchParams) ?? {};
   const user = await getCurrentUser();
+  const canModerateThreads = user ? await canCurrentUserModerateThreads().catch(() => false) : false;
 
   const categories = await listCategories();
   const selectedCategorySlug = getParamValue(resolvedParams.category);
@@ -193,6 +195,16 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
   }
   contextParts.push(`Signal: ${getSignalLabel(signal)}`);
   const discoveryContextLine = contextParts.join(" | ");
+
+  async function pinThreadAction(threadId: string, nextPinned: boolean) {
+    "use server";
+
+    if (!threadId) {
+      return;
+    }
+
+    await setThreadPinState(threadId, nextPinned);
+  }
 
   return (
     <main className="page-wrap stack">
@@ -294,7 +306,6 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
             threads={threadsPage.threads}
             repliesCountByThreadId={repliesCountByThreadId}
             threadLikeCountByThreadId={threadLikeCountByThreadId}
-            total={threadsPage.total}
             page={threadsPage.page}
             totalPages={totalPages}
             noResultsText="No threads found for this filter."
@@ -304,6 +315,8 @@ export default async function ForumPage({ searchParams }: ForumPageProps) {
                 : `Showing: ${selectedCategory?.name ?? "All categories"}`
             }
             contextLine={discoveryContextLine}
+            canModerateThreads={canModerateThreads}
+            pinAction={pinThreadAction}
             pageHref={(targetPage) =>
               forumHref({
                 category: selectedCategory?.slug,
