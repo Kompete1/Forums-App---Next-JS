@@ -60,13 +60,17 @@ Current scope includes:
   - thread/reply attachments render full image (`contain`) to avoid crop
   - reply success redirect uses `replyPosted=1` to clear pending reply drafts deterministically
   - forum timestamps standardized to SAST (`Africa/Johannesburg`) in `YYYY/MM/DD, HH:mm:ss` 24-hour format
+- V6 PR40 security header hardening wave (active):
+  - CSP baseline on all routes (including `/health`)
+  - mode-based frame strategy (`deny` default, optional `allowlist`)
+  - mode-aware e2e header assertions and docs updates
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
 - Completed through V4 PR26: auth session consistency and explicit logout route behavior.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Active build: V5 PR37 attachment rendering, draft reliability, and timestamp standardization upgrades.
+- Active build: V6 PR40 security header hardening upgrades.
 
 ## Documentation Sync Contract
 
@@ -93,6 +97,10 @@ Set these values in `web/.env.local` (do not commit):
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_SITE_URL=https://forums-app-next-js.vercel.app
+# security header embed mode (default anti-embed)
+SECURITY_EMBED_MODE=deny
+# optional allow-list mode for showcase embedding
+# SECURITY_EMBED_ORIGINS=https://kompete1.github.io
 # optional: enable write/preview tabs in thread/reply composers
 NEXT_PUBLIC_ENABLE_MARKDOWN_PREVIEW=0
 # optional: cap thread URLs included in sitemap.xml (default 200)
@@ -103,6 +111,13 @@ Set the same values in Vercel Preview and Production:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_SITE_URL`
+- `SECURITY_EMBED_MODE`
+- `SECURITY_EMBED_ORIGINS` (required when mode is `allowlist`)
+
+Embedding decision (PR40):
+- Default is non-embedded (`SECURITY_EMBED_MODE=deny`).
+- Showcase embedding is opt-in via allowlist mode.
+- Current showcase parent origin: `https://kompete1.github.io`.
 
 ## Supabase Auth URL Configuration
 
@@ -431,8 +446,17 @@ limit 1;
    - `permissions-policy` includes `camera=(), microphone=(), geolocation=()`
    - `x-dns-prefetch-control: off`
    - `cross-origin-opener-policy: same-origin`
-2. Trigger a known write failure (for example rate-limit path) and confirm logs include sanitized action context without raw token values.
-3. Follow `web/docs/operations-runbook.md` backup/restore dry-run checklist and record results.
+   - `content-security-policy` includes:
+     - `default-src 'self'`
+     - `base-uri 'self'`
+     - `object-src 'none'`
+     - `form-action 'self'`
+2. Verify frame policy for configured mode:
+   - `SECURITY_EMBED_MODE=deny`: `frame-ancestors 'none'` and `x-frame-options: DENY`
+   - `SECURITY_EMBED_MODE=allowlist`: `frame-ancestors 'self'` + allowlisted origin(s), and no `x-frame-options`
+3. If allowlist mode is enabled, confirm iframe embed works from `https://kompete1.github.io/Coding-Playground/`.
+4. Trigger a known write failure (for example rate-limit path) and confirm logs include sanitized action context without raw token values.
+5. Follow `web/docs/operations-runbook.md` backup/restore dry-run checklist and record results.
 
 ### O) Auth redirect-back flow for create thread (PR25)
 1. Open `/forum/category/general-paddock` while signed out.

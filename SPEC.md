@@ -80,6 +80,16 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
 - Active execution slice:
   - PR24 production hardening pack
   - PR26 auth session consistency hotfix (logout prefetch)
+  - PR40 security header hardening (CSP + framing strategy)
+
+## V6: Security Header Hardening (PR40)
+- `Content-Security-Policy` added as baseline hardening for all routes (including `/health`).
+- Embedding posture is explicit and environment-controlled:
+  - default: non-embedded (`SECURITY_EMBED_MODE=deny`)
+  - optional allow-list mode for trusted parent origins (`SECURITY_EMBED_MODE=allowlist`, `SECURITY_EMBED_ORIGINS`)
+- Frame-control policy:
+  - deny mode: `frame-ancestors 'none'` + `X-Frame-Options: DENY`
+  - allow-list mode: `frame-ancestors 'self' <origins>` and `X-Frame-Options` omitted to avoid conflicts with external embed allow-listing
 
 ## Non-Goals (Current)
 - Complex rich-text editor.

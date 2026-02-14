@@ -86,9 +86,18 @@ This file lists checks that are still manual (not fully automated in e2e).
 
 ### 11) Production hardening checks (PR24)
 1. Verify response security headers in preview deployment.
-2. Confirm no sensitive auth/session values appear in server logs.
-3. Dry-run backup/restore checklist from `web/docs/operations-runbook.md` and record outcome.
-4. Re-run role-gated route checks after hardening changes.
+2. Confirm `/health` includes `content-security-policy` with:
+   - `default-src 'self'`
+   - `base-uri 'self'`
+   - `object-src 'none'`
+   - `form-action 'self'`
+3. Confirm frame strategy based on mode:
+   - default `SECURITY_EMBED_MODE=deny`: CSP has `frame-ancestors 'none'` and `x-frame-options: DENY`
+   - `SECURITY_EMBED_MODE=allowlist`: CSP has `frame-ancestors 'self'` + allowlisted origin(s) and no `x-frame-options`
+4. In allowlist mode, confirm showcase iframe parent (`https://kompete1.github.io`) can still embed the app.
+5. Confirm no sensitive auth/session values appear in server logs.
+6. Dry-run backup/restore checklist from `web/docs/operations-runbook.md` and record outcome.
+7. Re-run role-gated route checks after hardening changes.
 
 ### 12) Create-thread auth redirect checks (PR25)
 1. Open `/forum/category/general-paddock` while signed out.
