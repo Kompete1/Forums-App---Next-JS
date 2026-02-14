@@ -64,13 +64,17 @@ Current scope includes:
   - CSP baseline on all routes (including `/health`)
   - mode-based frame strategy (`deny` default, optional `allowlist`)
   - mode-aware e2e header assertions and docs updates
+- V6 PR41 community trust and authority scaffolding wave (active):
+  - public governance pages (`/community-guidelines`, `/moderation-policy`)
+  - global footer trust links + unofficial-site disclaimer
+  - published escalation contact and moderation response expectations
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
 - Completed through V4 PR26: auth session consistency and explicit logout route behavior.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Active build: V6 PR40 security header hardening upgrades.
+- Active build: V6 PR41 community trust and authority scaffolding upgrades.
 
 ## Documentation Sync Contract
 
@@ -159,6 +163,8 @@ Open:
 - `http://localhost:3000/categories`
 - `http://localhost:3000/profile`
 - `http://localhost:3000/resources`
+- `http://localhost:3000/community-guidelines`
+- `http://localhost:3000/moderation-policy`
 - `http://localhost:3000/newsletter` (legacy route, redirects to `/resources`)
 - `http://localhost:3000/notifications`
 - `http://localhost:3000/admin` (mod/admin only)
@@ -181,6 +187,7 @@ npm run test:e2e -- tests/e2e/pr36-home-a11y.spec.ts
 npm run test:e2e -- tests/e2e/writer-flows.spec.ts
 npm run test:e2e -- tests/e2e/resources-guest.spec.ts
 npm run test:e2e -- tests/e2e/seo-foundations.spec.ts
+npm run test:e2e -- tests/e2e/trust-governance.spec.ts
 ```
 
 Security header smoke check is covered in e2e (`tests/e2e/security-headers.spec.ts`).
@@ -457,6 +464,13 @@ limit 1;
 3. If allowlist mode is enabled, confirm iframe embed works from `https://kompete1.github.io/Coding-Playground/`.
 4. Trigger a known write failure (for example rate-limit path) and confirm logs include sanitized action context without raw token values.
 5. Follow `web/docs/operations-runbook.md` backup/restore dry-run checklist and record results.
+
+### N2) Community trust and governance scaffolding (V6 PR41)
+1. Open `/community-guidelines` and confirm sections for civility, spam, unsafe advice, impersonation, self-promotion, privacy, and consequences ladder are visible.
+2. Open `/moderation-policy` and confirm sections for moderator/admin role, reporting flow, appeals process, and response expectations are visible.
+3. Confirm both pages include escalation email link `mailto:peterj.swartz@outlook.com`.
+4. Open `/`, `/forum`, and `/resources`; confirm footer links to `Community Guidelines`, `Moderation`, and `Resources`.
+5. Confirm footer includes `Unofficial community site` disclaimer and points to `/resources` for official sources.
 
 ### O) Auth redirect-back flow for create thread (PR25)
 1. Open `/forum/category/general-paddock` while signed out.

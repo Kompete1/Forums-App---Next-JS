@@ -55,6 +55,16 @@ export function HeaderUserMenu({ email, showAdminLinks }: HeaderUserMenuProps) {
               Notifications archive
             </Link>
           </DropdownItem>
+          <DropdownItem asChild>
+            <Link href="/community-guidelines" className="user-menu-item">
+              Community Guidelines
+            </Link>
+          </DropdownItem>
+          <DropdownItem asChild>
+            <Link href="/moderation-policy" className="user-menu-item">
+              Moderation Policy
+            </Link>
+          </DropdownItem>
           {showAdminLinks ? (
             <>
               <DropdownItem asChild>

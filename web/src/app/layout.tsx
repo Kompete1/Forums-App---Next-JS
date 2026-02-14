@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { JetBrains_Mono, Rajdhani, Source_Sans_3 } from "next/font/google";
 import { AppToaster } from "@/components/app-toaster";
 import { DraftSubmissionCleanup } from "@/components/draft-submission-cleanup";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getSiteUrl, toAbsoluteUrl } from "@/lib/seo/site-url";
 import "./globals.css";
@@ -72,6 +73,7 @@ export default function RootLayout({
         <div id="main-content" className="app-shell" tabIndex={-1}>
           {children}
         </div>
+        <SiteFooter />
         <AppToaster />
       </body>
     </html>
