@@ -37,8 +37,11 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
           src={activeSlide.imageSrc}
           alt={activeSlide.imageAlt}
           fill
-          priority
-          sizes="(max-width: 768px) 100vw, 1100px"
+          priority={activeIndex === 0}
+          loading={activeIndex === 0 ? "eager" : "lazy"}
+          fetchPriority={activeIndex === 0 ? "high" : "auto"}
+          quality={75}
+          sizes="(max-width: 860px) 94vw, 62vw"
           className="hero-image"
         />
       </div>

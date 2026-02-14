@@ -331,7 +331,7 @@ h4 {
 
 .hero-card {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: 1rem;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -342,7 +342,9 @@ h4 {
 
 .hero-image-wrap {
   position: relative;
-  min-height: 300px;
+  width: 100%;
+  min-width: 0;
+  height: clamp(240px, 30vw, 420px);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -355,6 +357,7 @@ h4 {
   display: grid;
   align-content: center;
   gap: 0.8rem;
+  min-width: 0;
 }
 
 .hero-content h1 {
@@ -1236,7 +1239,7 @@ textarea:focus-visible,
   }
 
   .hero-image-wrap {
-    min-height: 220px;
+    height: clamp(190px, 52vw, 300px);
   }
 
   .split {
