@@ -208,3 +208,12 @@ This file lists checks that are still manual (not fully automated in e2e).
 6. Trigger a reply error path (for example cooldown by posting twice quickly) and confirm draft restore remains available.
 7. Confirm thread/reply/notification/profile timestamps use `YYYY/MM/DD, HH:mm:ss` and do not show `AM/PM`.
 8. Validate displayed values align with SAST (`Africa/Johannesburg`) for known UTC source timestamps.
+
+### 23) Community trust and governance scaffolding checks (PR41)
+1. Open `/community-guidelines` and confirm headings/sections for civility, on-topic behavior, spam, unsafe advice, impersonation, self-promotion, privacy, and consequences ladder.
+2. Confirm escalation contact link is present and uses `mailto:peterj.swartz@outlook.com`.
+3. Open `/moderation-policy` and confirm sections for moderator/admin responsibilities, reporting workflow, appeals process, and response expectations.
+4. Confirm moderation page states first-response target of 48 hours and clarifies this is a target expectation.
+5. Open `/`, `/forum`, and `/resources` as guest and confirm footer renders links to `Community Guidelines`, `Moderation`, and `Resources`.
+6. Confirm footer disclaimer marks the site as unofficial and points to `/resources` for official sources.
+7. If signed in, open Account menu and confirm `Community Guidelines` and `Moderation Policy` links appear.

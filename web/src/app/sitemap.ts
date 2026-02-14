@@ -12,6 +12,8 @@ function baseEntries(): MetadataRoute.Sitemap {
     { url: toAbsoluteUrl("/forum"), lastModified: now, changeFrequency: "hourly", priority: 0.9 },
     { url: toAbsoluteUrl("/categories"), lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: toAbsoluteUrl("/resources"), lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: toAbsoluteUrl("/community-guidelines"), lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: toAbsoluteUrl("/moderation-policy"), lastModified: now, changeFrequency: "monthly", priority: 0.6 },
   ];
 }
 

@@ -91,6 +91,17 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
   - deny mode: `frame-ancestors 'none'` + `X-Frame-Options: DENY`
   - allow-list mode: `frame-ancestors 'self' <origins>` and `X-Frame-Options` omitted to avoid conflicts with external embed allow-listing
 
+## V6: Trust and Governance Scaffolding (PR41)
+- Added public trust pages:
+  - `/community-guidelines`
+  - `/moderation-policy`
+- Added global footer links and explicit unofficial-site disclaimer with official-source redirect path to `/resources`.
+- Published moderation process expectations:
+  - report handling overview
+  - appeal contact path
+  - first-response target within 48 hours (target, not guarantee)
+- No schema, RLS, or moderation-permission model changes in this slice.
+
 ## Non-Goals (Current)
 - Complex rich-text editor.
 - Advanced email pipeline.

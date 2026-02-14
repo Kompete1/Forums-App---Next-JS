@@ -7,7 +7,7 @@ test("robots.txt is reachable and includes sitemap + private disallow rules", as
   const body = await response.text();
   expect(body).toContain("Sitemap:");
   expect(body).toContain("Disallow: /admin");
-  expect(body).toContain("Disallow: /moderation");
+  expect(body).toContain("Disallow: /moderation/reports");
   expect(body).toContain("Disallow: /auth");
 });
 
@@ -21,4 +21,6 @@ test("sitemap.xml is reachable and includes core public routes", async ({ reques
   expect(body).toMatch(/<loc>https?:\/\/[^<]+\/forum<\/loc>/);
   expect(body).toMatch(/<loc>https?:\/\/[^<]+\/categories<\/loc>/);
   expect(body).toMatch(/<loc>https?:\/\/[^<]+\/resources<\/loc>/);
+  expect(body).toMatch(/<loc>https?:\/\/[^<]+\/community-guidelines<\/loc>/);
+  expect(body).toMatch(/<loc>https?:\/\/[^<]+\/moderation-policy<\/loc>/);
 });

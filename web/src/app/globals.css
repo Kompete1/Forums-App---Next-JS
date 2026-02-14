@@ -110,6 +110,26 @@ h4 {
   align-items: center;
 }
 
+.site-footer {
+  border-top: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-surface) 94%, transparent);
+}
+
+.site-footer-inner {
+  width: min(1240px, 94vw);
+  margin: 0 auto;
+  padding: 1rem 0 1.3rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.site-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: center;
+}
+
 .site-brand {
   font-family: var(--font-display), sans-serif;
   font-size: 1.15rem;
@@ -1294,6 +1314,10 @@ textarea:focus-visible,
 
   .notifications-menu {
     min-width: min(90vw, 20rem);
+  }
+
+  .site-footer-nav {
+    gap: 0.55rem;
   }
 }
 
