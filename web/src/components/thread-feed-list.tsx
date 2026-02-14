@@ -3,12 +3,12 @@ import type { ForumThread } from "@/lib/db/posts";
 import { getThreadSignals, type ThreadSignal } from "@/lib/ui/discovery-signals";
 import { formatForumDateTime } from "@/lib/ui/date-time";
 import { PaginationControls } from "@/components/pagination-controls";
+import { PinThreadToggle } from "@/components/pin-thread-toggle";
 
 type ThreadFeedListProps = {
   threads: ForumThread[];
   repliesCountByThreadId: Record<string, number>;
   threadLikeCountByThreadId?: Record<string, number>;
-  total: number;
   page: number;
   totalPages: number;
   noResultsText: string;
@@ -17,6 +17,8 @@ type ThreadFeedListProps = {
   subtitleChip?: string;
   contextLine?: string;
   showRecentBadgeOnFirst?: boolean;
+  canModerateThreads?: boolean;
+  pinAction?: (threadId: string, nextPinned: boolean) => Promise<void>;
 };
 
 function authorInitial(value: string | null) {
@@ -42,7 +44,6 @@ export function ThreadFeedList({
   threads,
   repliesCountByThreadId,
   threadLikeCountByThreadId = {},
-  total,
   page,
   totalPages,
   noResultsText,
@@ -51,6 +52,8 @@ export function ThreadFeedList({
   subtitleChip,
   contextLine,
   showRecentBadgeOnFirst = false,
+  canModerateThreads = false,
+  pinAction,
 }: ThreadFeedListProps) {
   const pageStart = Math.max(1, page - 2);
   const pageEnd = Math.min(totalPages, page + 2);
@@ -78,10 +81,15 @@ export function ThreadFeedList({
         <h2>{title}</h2>
         {subtitleChip ? <p className="filter-chip">{subtitleChip}</p> : null}
         {contextLine ? <p className="meta">{contextLine}</p> : null}
-        <p className="meta">
-          Page {page} of {totalPages} | {total} total
-        </p>
       </div>
+      <PaginationControls
+        page={page}
+        totalPages={totalPages}
+        pageLinks={pageLinks}
+        nextHref={nextHref}
+        lastHref={lastHref}
+        pageSelectOptions={pageSelectOptions}
+      />
       {threads.length === 0 ? <p className="empty-note">{noResultsText}</p> : null}
       <div className="thread-list">
         {threads.map((thread, index) => {
@@ -113,6 +121,7 @@ export function ThreadFeedList({
                   <span>{formatForumDateTime(thread.created_at)}</span>
                 </div>
                 <div className="thread-pills-row">
+                  {thread.is_pinned ? <span className="thread-info-pill thread-pin-pill">Pinned</span> : null}
                   <span className={`thread-status-pill ${thread.is_locked ? "locked" : "open"}`}>
                     {thread.is_locked ? "Locked" : "Open"}
                   </span>
@@ -137,6 +146,10 @@ export function ThreadFeedList({
                 <Link href={`/forum/${thread.id}`} className="btn-link focus-link">
                   Open thread
                 </Link>
+                {thread.is_pinned ? <span className="meta thread-aside-pin-label">Pinned</span> : null}
+                {canModerateThreads && pinAction ? (
+                  <PinThreadToggle threadId={thread.id} initialPinned={thread.is_pinned} action={pinAction} />
+                ) : null}
               </div>
             </article>
           );

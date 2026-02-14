@@ -68,13 +68,17 @@ Current scope includes:
   - public governance pages (`/community-guidelines`, `/moderation-policy`)
   - global footer trust links + unofficial-site disclaimer
   - published escalation contact and moderation response expectations
+- V6 PR42 moderator/admin thread pinning wave (active):
+  - category/feed row controls to pin/unpin threads (mod/admin only)
+  - pinned threads sorted above unpinned in discovery feeds
+  - support for multiple pinned threads in the same category
 
 ## Roadmap Status Note
 
 - Completed through V2 PR6: roles, thread locking, reports, UI/UX redesign + SA category structure, anti-spam/rate-limit baseline, hardening/test automation baseline.
 - Completed through V4 PR26: auth session consistency and explicit logout route behavior.
 - Hide/remove posts moderation slice is intentionally deferred/skipped for now.
-- Active build: V6 PR41 community trust and authority scaffolding upgrades.
+- Active build: V6 PR42 moderator/admin thread pinning upgrades.
 
 ## Documentation Sync Contract
 
@@ -188,6 +192,8 @@ npm run test:e2e -- tests/e2e/writer-flows.spec.ts
 npm run test:e2e -- tests/e2e/resources-guest.spec.ts
 npm run test:e2e -- tests/e2e/seo-foundations.spec.ts
 npm run test:e2e -- tests/e2e/trust-governance.spec.ts
+npm run test:e2e -- tests/e2e/forum-guest.spec.ts
+npm run test:e2e -- tests/e2e/pinning-auth.spec.ts
 ```
 
 Security header smoke check is covered in e2e (`tests/e2e/security-headers.spec.ts`).
@@ -213,6 +219,7 @@ Notes:
 - Guest e2e tests run without these credentials.
 - Auth e2e tests are skipped automatically if credentials are missing.
 - Dual-user notifications e2e tests are skipped if `E2E_ALT_*` credentials are missing.
+- Pinning auth e2e requires `E2E_TEST_*` account to have `mod` or `admin` role.
 
 Fixture setup templates (PR21):
 - `web/supabase/testing/assign_test_roles_template.sql`
@@ -270,6 +277,7 @@ Apply in this exact order:
 - `web/supabase/migrations/20260208_pr22_v3_attachments_storage.sql`
 - `web/supabase/migrations/20260209_pr27_v5_thread_last_activity.sql`
 - `web/supabase/migrations/20260210_pr34_v5_engagement_reactions.sql`
+- `web/supabase/migrations/20260214_pr42_v6_thread_pinning.sql`
 
 Planned upcoming migration checkpoints:
 - PR24: production hardening config/docs checkpoint.
@@ -296,6 +304,7 @@ Planned verification scripts for upcoming slices:
 - `web/supabase/verification/pr22_attachments_checks.sql`
 - `web/supabase/verification/pr27_thread_last_activity_checks.sql`
 - `web/supabase/verification/pr34_reactions_checks.sql`
+- `web/supabase/verification/pr42_thread_pinning_checks.sql`
 
 ## Bootstrap Moderator/Admin Roles
 
@@ -472,6 +481,15 @@ limit 1;
 4. Open `/`, `/forum`, and `/resources`; confirm footer links to `Community Guidelines`, `Moderation`, and `Resources`.
 5. Confirm footer includes `Unofficial community site` disclaimer and points to `/resources` for official sources.
 
+### N3) Moderator/admin thread pinning (V6 PR42)
+1. Sign in as `mod` or `admin` and open `/forum/category/<slug>`.
+2. Confirm each thread row shows a `Pin`/`Pinned` button beneath `Open thread`.
+3. Click `Pin` on at least two threads in the same category and confirm label changes to `Pinned` with state styling while keeping button size stable.
+4. Confirm pinned threads move to the top of that category discovery list.
+5. Click `Pinned` on one thread to unpin and confirm it reorders beneath pinned threads according to existing sort behavior.
+6. Sign in as non-mod user (or guest) and confirm pin controls are not shown.
+7. Run `web/supabase/verification/pr42_thread_pinning_checks.sql` and confirm columns/indexes/policy updates are present.
+
 ### O) Auth redirect-back flow for create thread (PR25)
 1. Open `/forum/category/general-paddock` while signed out.
 2. Click `Login to create thread` and confirm URL includes `/auth/login?returnTo=...`.
@@ -599,7 +617,7 @@ Detailed click-by-click steps are in `web/docs/testing-manual.md`.
 ## RLS Policy Summary
 
 - `profiles`: public read, owner insert/update
-- `posts` (threads): public read, owner insert/update/delete + moderator/admin lock/unlock updates
+- `posts` (threads): public read, owner insert/update/delete, moderator/admin lock/unlock + pin/unpin updates
 - `categories`: public read only
 - `replies`: public read, owner insert/update/delete, insert blocked when target thread is locked
 - `reports`: reporter insert, reporter own read, moderator/admin read all; no update/delete

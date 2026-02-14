@@ -198,6 +198,7 @@ This file lists checks that are still manual (not fully automated in e2e).
 7. After PR22 migration, run `web/supabase/verification/pr22_attachments_checks.sql`.
 8. After PR27 migration, run `web/supabase/verification/pr27_thread_last_activity_checks.sql`.
 9. After PR34 migration, run `web/supabase/verification/pr34_reactions_checks.sql`.
+10. After PR42 migration, run `web/supabase/verification/pr42_thread_pinning_checks.sql`.
 
 ### 22) Attachment rendering, draft reliability, and timestamp checks (PR37)
 1. Open `/forum/<threadId>` and post replies with a wide image and a tall image.
@@ -217,3 +218,13 @@ This file lists checks that are still manual (not fully automated in e2e).
 5. Open `/`, `/forum`, and `/resources` as guest and confirm footer renders links to `Community Guidelines`, `Moderation`, and `Resources`.
 6. Confirm footer disclaimer marks the site as unofficial and points to `/resources` for official sources.
 7. If signed in, open Account menu and confirm `Community Guidelines` and `Moderation Policy` links appear.
+
+### 24) Moderator/admin thread pinning checks (PR42)
+1. Sign in as a user with `mod` or `admin` role and open `/forum/category/<slug>`.
+2. Confirm thread rows show a pin-state control beneath `Open thread`:
+   - `Pin` for unpinned threads
+   - `Pinned` for pinned threads
+3. Pin at least two threads in the same category and confirm both stay above unpinned rows.
+4. Confirm pinned rows preserve existing secondary sort among themselves (activity/newest/oldest behavior beneath pin priority).
+5. Click `Pinned` on one row and confirm it unpins (state text changes back to `Pin`) and reorders accordingly.
+6. Sign out (or use non-mod account) and confirm pin controls are not visible.

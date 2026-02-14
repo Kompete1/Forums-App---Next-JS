@@ -9,6 +9,9 @@ export type ForumThread = {
   category_id: string;
   source_newsletter_id: string | null;
   source_newsletter_title: string | null;
+  is_pinned: boolean;
+  pinned_at: string | null;
+  pinned_by: string | null;
   is_locked: boolean;
   locked_at: string | null;
   locked_by: string | null;
@@ -27,6 +30,9 @@ type ThreadRow = {
   body: string;
   category_id: string;
   source_newsletter_id?: string | null;
+  is_pinned?: boolean;
+  pinned_at?: string | null;
+  pinned_by?: string | null;
   is_locked: boolean;
   locked_at: string | null;
   locked_by: string | null;
@@ -177,11 +183,12 @@ export async function listThreadsPage(params: ListThreadsParams = {}) {
 
   const supabase = await createClient();
   const selectWithNewsletter =
-    "id, author_id, title, body, category_id, source_newsletter_id, is_locked, locked_at, locked_by, created_at, updated_at, last_activity_at, profiles:author_id(display_name), categories:category_id(slug, name), newsletters:source_newsletter_id(title)";
+    "id, author_id, title, body, category_id, source_newsletter_id, is_pinned, pinned_at, pinned_by, is_locked, locked_at, locked_by, created_at, updated_at, last_activity_at, profiles:author_id(display_name), categories:category_id(slug, name), newsletters:source_newsletter_id(title)";
   const selectLegacy =
     "id, author_id, title, body, category_id, is_locked, locked_at, locked_by, created_at, updated_at, profiles:author_id(display_name), categories:category_id(slug, name)";
 
   let request = supabase.from("posts").select(selectWithNewsletter, { count: "exact" });
+  request = request.order("is_pinned", { ascending: false });
   if (sort === "activity") {
     request = request.order("last_activity_at", { ascending: false }).order("created_at", { ascending: false });
   } else {
@@ -204,8 +211,9 @@ export async function listThreadsPage(params: ListThreadsParams = {}) {
   let count = primary.count;
   const missingNewsletterColumn =
     error?.message.includes("source_newsletter_id") || error?.message.includes("schema cache");
+  const missingPinnedColumn = error?.message.includes("is_pinned") || error?.message.includes("schema cache");
   const missingActivityColumn = error?.message.includes("last_activity_at") || error?.message.includes("schema cache");
-  if (error && (missingNewsletterColumn || missingActivityColumn) && !newsletterId) {
+  if (error && (missingNewsletterColumn || missingPinnedColumn || missingActivityColumn) && !newsletterId) {
     let fallbackRequest = supabase
       .from("posts")
       .select(selectLegacy, { count: "exact" })
@@ -239,6 +247,9 @@ export async function listThreadsPage(params: ListThreadsParams = {}) {
       category_id: row.category_id,
       source_newsletter_id: row.source_newsletter_id ?? null,
       source_newsletter_title: toNewsletterTitle(row.newsletters),
+      is_pinned: row.is_pinned ?? false,
+      pinned_at: row.pinned_at ?? null,
+      pinned_by: row.pinned_by ?? null,
       is_locked: row.is_locked,
       locked_at: row.locked_at,
       locked_by: row.locked_by,
@@ -268,7 +279,7 @@ export async function getThreadById(id: string) {
 
   const supabase = await createClient();
   const selectWithNewsletter =
-    "id, author_id, title, body, category_id, source_newsletter_id, is_locked, locked_at, locked_by, created_at, updated_at, last_activity_at, profiles:author_id(display_name), categories:category_id(slug, name), newsletters:source_newsletter_id(title)";
+    "id, author_id, title, body, category_id, source_newsletter_id, is_pinned, pinned_at, pinned_by, is_locked, locked_at, locked_by, created_at, updated_at, last_activity_at, profiles:author_id(display_name), categories:category_id(slug, name), newsletters:source_newsletter_id(title)";
   const selectLegacy =
     "id, author_id, title, body, category_id, is_locked, locked_at, locked_by, created_at, updated_at, profiles:author_id(display_name), categories:category_id(slug, name)";
 
@@ -277,8 +288,9 @@ export async function getThreadById(id: string) {
   let error = primary.error;
   const missingNewsletterColumn =
     error?.message.includes("source_newsletter_id") || error?.message.includes("schema cache");
+  const missingPinnedColumn = error?.message.includes("is_pinned") || error?.message.includes("schema cache");
   const missingActivityColumn = error?.message.includes("last_activity_at") || error?.message.includes("schema cache");
-  if (error && (missingNewsletterColumn || missingActivityColumn)) {
+  if (error && (missingNewsletterColumn || missingPinnedColumn || missingActivityColumn)) {
     const fallback = await supabase.from("posts").select(selectLegacy).eq("id", threadId).limit(1).maybeSingle();
     data = (fallback.data ?? null) as ThreadRow | null;
     error = fallback.error;
@@ -303,6 +315,9 @@ export async function getThreadById(id: string) {
     category_id: row.category_id,
     source_newsletter_id: row.source_newsletter_id ?? null,
     source_newsletter_title: toNewsletterTitle(row.newsletters),
+    is_pinned: row.is_pinned ?? false,
+    pinned_at: row.pinned_at ?? null,
+    pinned_by: row.pinned_by ?? null,
     is_locked: row.is_locked,
     locked_at: row.locked_at,
     locked_by: row.locked_by,

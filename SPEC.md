@@ -102,6 +102,13 @@ Build a production-style forums mini-app (Next.js + Vercel + Supabase) that is l
   - first-response target within 48 hours (target, not guarantee)
 - No schema, RLS, or moderation-permission model changes in this slice.
 
+## V6: Moderator/Admin Thread Pinning (PR42)
+- Added moderator/admin thread pinning for discovery feeds.
+- Pin controls are visible only to moderators/admins in thread discovery rows.
+- Pinned threads sort above unpinned threads while preserving existing secondary sort behavior.
+- Multiple pinned threads per category are supported.
+- Owner update policy is tightened so moderation-managed lock/pin columns cannot be changed by thread authors.
+
 ## Non-Goals (Current)
 - Complex rich-text editor.
 - Advanced email pipeline.

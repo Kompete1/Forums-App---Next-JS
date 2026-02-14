@@ -4,6 +4,8 @@ test("guest can browse forum and open a thread", async ({ page }) => {
   await page.goto("/forum");
 
   await expect(page.getByRole("heading", { name: "South African Motorsport Forum" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pin" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Pinned" })).toHaveCount(0);
   const threadLinks = page.getByRole("link", { name: "Open thread" });
   const threadCount = await threadLinks.count();
   test.skip(threadCount === 0, "No threads available to open in this environment.");
