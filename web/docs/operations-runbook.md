@@ -33,8 +33,28 @@ Validate at least once per release window:
    - `permissions-policy: camera=(), microphone=(), geolocation=()`
    - `x-dns-prefetch-control: off`
    - `cross-origin-opener-policy: same-origin`
+   - `content-security-policy` includes:
+     - `default-src 'self'`
+     - `base-uri 'self'`
+     - `object-src 'none'`
+     - `form-action 'self'`
 3. In production only, also confirm:
    - `strict-transport-security` present
+4. Confirm embedding mode behavior:
+   - default (`SECURITY_EMBED_MODE=deny`):
+     - CSP includes `frame-ancestors 'none'`
+     - `x-frame-options: DENY` present
+   - allowlist (`SECURITY_EMBED_MODE=allowlist`):
+     - CSP includes `frame-ancestors 'self' ...`
+     - configured origin(s) from `SECURITY_EMBED_ORIGINS` are present
+     - `x-frame-options` is not set
+
+## 2.1) Embedding Configuration
+
+- Default posture is non-embedded (`SECURITY_EMBED_MODE=deny`).
+- To allow showcase embedding, set:
+  - `SECURITY_EMBED_MODE=allowlist`
+  - `SECURITY_EMBED_ORIGINS=https://kompete1.github.io`
 
 ## 3) Backup/Restore Dry Run (Supabase Dashboard-first)
 

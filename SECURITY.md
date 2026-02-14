@@ -41,6 +41,15 @@
 - Reproducible release and backup/restore checklists documented in `web/docs/operations-runbook.md`.
 - Current retention/privacy baseline documented (with fixture-cleanup workflow).
 
+## Security Header Hardening (PR40)
+- `Content-Security-Policy` is enforced for all app routes (including `/health`) via `web/next.config.ts`.
+- Embedding strategy is mode-driven:
+  - `SECURITY_EMBED_MODE=deny` (default): `frame-ancestors 'none'` + `X-Frame-Options: DENY`
+  - `SECURITY_EMBED_MODE=allowlist`: `frame-ancestors 'self' <allowlisted-origins>` and `X-Frame-Options` is omitted to avoid external-embed conflicts
+- Allowlisted origins are provided with `SECURITY_EMBED_ORIGINS` (comma-separated HTTPS origins).
+- Current showcase parent origin: `https://kompete1.github.io`.
+- Primary deployment posture remains non-embedded by default; allowlist mode is an explicit opt-in.
+
 ## Attachments Security Notes (PR22)
 - Restrict uploads to image MIME types only (JPEG, PNG, WEBP, GIF).
 - Enforce per-file size limit (5MB) and per-action count limit.
